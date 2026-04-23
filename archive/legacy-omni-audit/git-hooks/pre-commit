@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# 민감 자산 실수 커밋 차단 — Tier 1 파일 패턴 감지.
+# 설치: ln -sf ../../scripts/git-hooks/pre-commit .git/hooks/pre-commit
+# 우회: COMMIT_SKIP_SEC=1 git commit ...
+
+set -e
+
+if [ "${COMMIT_SKIP_SEC:-}" = "1" ]; then
+  echo "[pre-commit] security check skipped"
+  exit 0
+fi
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$STAGED" ] && exit 0
+
+# Tier 1 — 절대 커밋 금지 패턴
+BLOCK_PATTERNS=(
+  'commenter-corpus'
+  'corpus-stats\.json'
+  'persona-data\.json'
+  '^apps/web/lib/ai/prompts/'
+  '^bench/'
+  '^\.omc/audit/'
+  '^apps/web/\.turing-test/'
+  '\.env\.local'
+  '\.env\.production'
+  'credentials'
+  'secret'
+)
+
+VIOLATIONS=()
+for pat in "${BLOCK_PATTERNS[@]}"; do
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    VIOLATIONS+=("$f ← $pat")
+  done < <(echo "$STAGED" | grep -E "$pat" || true)
+done
+
+# 인라인 시크릿 (API 키 패턴) 스캔
+SECRET_PATTERNS='(sk-ant-api[0-9]{2}-|sk-proj-|up-[a-zA-Z0-9]{20,}|hf_[a-zA-Z0-9]{30,}|nv-[a-zA-Z0-9]{20,})'
+while IFS= read -r f; do
+  [ -z "$f" ] && continue
+  [ ! -f "$f" ] && continue
+  if grep -E -l "$SECRET_PATTERNS" "$f" >/dev/null 2>&1; then
+    VIOLATIONS+=("$f ← API key 평문 포함")
+  fi
+done <<< "$STAGED"
+
+if [ ${#VIOLATIONS[@]} -gt 0 ]; then
+  echo ""
+  echo "❌ pre-commit 차단 — 민감 자산 감지:"
+  for v in "${VIOLATIONS[@]}"; do
+    echo "   $v"
+  done
+  echo ""
+  echo "해결:"
+  echo "   1) git restore --staged <file>"
+  echo "   2) .gitignore 확인"
+  echo "   3) 정말 커밋해야 하면: COMMIT_SKIP_SEC=1 git commit ..."
+  echo "      (권장하지 않음. _system/SECURITY-POSTURE.md 참조)"
+  exit 1
+fi
+
+exit 0

@@ -1,0 +1,318 @@
+{
+  "judge": "gpt-5",
+  "samples_file": "bench/v3-20260421/samples-full.jsonl",
+  "n": 50,
+  "accuracy": 0.88,
+  "confusion": {
+    "ai_as_ai": 19,
+    "ai_as_human": 6,
+    "human_as_human": 25,
+    "human_as_ai": 0
+  },
+  "fn_rate": 0.24,
+  "fp_rate": 0,
+  "results": [
+    {
+      "id": "v3-004",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-003",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-006",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-008",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-018",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-007",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-014",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-016",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-002",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-009",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-024",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-022",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-010",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-005",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-011",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-013",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-019",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-001",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-021",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-015",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-012",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-017",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-025",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-020",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "v3-023",
+      "source": "human",
+      "predicted": "human",
+      "correct": true
+    },
+    {
+      "id": "ai-001",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-002",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-003",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-004",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-005",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-006",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-007",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-008",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-009",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-010",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-011",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-012",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-013",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-014",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-015",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-016",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-017",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-018",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-019",
+      "source": "ai",
+      "predicted": "ai",
+      "correct": true
+    },
+    {
+      "id": "ai-020",
+      "source": "ai",
+      "predicted": "human",
+      "correct": false
+    },
+    {
+      "id": "ai-021",
+      "source": "ai",
+      "predicted": "human",
+      "correct": false
+    },
+    {
+      "id": "ai-022",
+      "source": "ai",
+      "predicted": "human",
+      "correct": false
+    },
+    {
+      "id": "ai-023",
+      "source": "ai",
+      "predicted": "human",
+      "correct": false
+    },
+    {
+      "id": "ai-024",
+      "source": "ai",
+      "predicted": "human",
+      "correct": false
+    },
+    {
+      "id": "ai-025",
+      "source": "ai",
+      "predicted": "human",
+      "correct": false
+    }
+  ],
+  "generated_at": "2026-04-21T05:32:35.147Z",
+  "dry": true
+}

@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# OMNI-AUDIT + 블라인드 dry-run pre-push gate.
+# 설치: ln -s ../../scripts/git-hooks/pre-push .git/hooks/pre-push
+#
+# Skip: PUSH_SKIP_OMNI=1 git push
+
+set -e
+
+if [ "${PUSH_SKIP_OMNI:-}" = "1" ]; then
+  echo "[pre-push] OMNI-AUDIT skipped (PUSH_SKIP_OMNI=1)"
+  exit 0
+fi
+
+if [ -z "${CRAWL_SRC:-}" ] && [ -d "$HOME/Desktop/queenalba-crawler/crawled-data-v2" ]; then
+  export CRAWL_SRC="$HOME/Desktop/queenalba-crawler/crawled-data-v2"
+fi
+
+if [ -z "${CRAWL_SRC:-}" ] || [ ! -d "$CRAWL_SRC" ]; then
+  echo "[pre-push] CRAWL_SRC 미설정 — gate 스킵 (CI 에서 실행됨)"
+  exit 0
+fi
+
+echo "[pre-push] OMNI-AUDIT 12관점 측정..."
+node apps/web/scripts/run-omni-audit.mjs || {
+  rc=$?
+  if [ $rc -eq 3 ]; then
+    echo "❌ OMNI-AUDIT BLOCK — corpus-stats 보강 후 재시도. 우회: PUSH_SKIP_OMNI=1"
+    exit 1
+  fi
+  echo "⚠️  OMNI-AUDIT WARN — push 진행 (다음 sprint 백로그)"
+}
+
+echo "[pre-push] 블라인드 dry-run (n=20)..."
+TMP=$(mktemp -d)
+node apps/web/scripts/build-scaleup-bench.mjs \
+  --version pp-$(date +%Y%m%d-%H%M) \
+  --n 20 \
+  --out "$TMP" 2>/dev/null || { echo "[pre-push] bench 생성 실패 — skip"; exit 0; }
+
+[ -f "$TMP/samples.jsonl" ] || exit 0
+
+node apps/web/scripts/llm-judge.mjs \
+  --judge claude-opus-4-7 \
+  --samples "$TMP/samples.jsonl" \
+  --out "$TMP/claude.json" \
+  --dry 2>&1 | tail -3
+
+ACC=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$TMP/claude.json','utf-8')).accuracy)")
+echo "[pre-push] blind dry acc=$ACC"
+
+# 회귀: dry-run mock 기준 0.65 초과면 경고만 (mock이라 실제 회귀 아님)
+echo "[pre-push] ✓ 게이트 통과"

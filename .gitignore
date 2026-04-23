@@ -1,0 +1,13 @@
+logs/
+out/
+.state/
+__pycache__/
+*.pyc
+*.log
+
+eval/results/
+eval/*.html
+eval/*.md
+ai_generated.jsonl
+eval_samples.jsonl
+eval_key.json

@@ -1,0 +1,39 @@
+name: RunPod Train
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Print the RunPod payload without creating a pod
+        required: false
+        default: "false"
+
+jobs:
+  launch-train:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Launch training pod
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USERNAME: ${{ secrets.HF_USERNAME }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: unoa-eng/dalbitalba-train-data
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          BASE_MODEL: ${{ vars.BASE_MODEL }}
+          GPU_TYPE: ${{ vars.GPU_TYPE }}
+          CONTAINER_IMAGE: ${{ vars.CONTAINER_IMAGE }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python scripts/launch_train_pod.py --dry-run
+          else
+            python scripts/launch_train_pod.py
+          fi

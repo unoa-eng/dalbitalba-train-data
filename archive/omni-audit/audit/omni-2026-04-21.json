@@ -1,0 +1,77 @@
+{
+  "generated_at": "2026-04-21T04:51:06.918Z",
+  "cycle_id": "omni-2026-04-21",
+  "crawl_dir": "/mnt/c/Users/mapdr/Desktop/queenalba-crawler/crawled-data-v2",
+  "total_posts": 11288,
+  "stats_source": "apps/web/lib/ai/corpus-stats.json",
+  "verdicts": [
+    {
+      "perspective": "L5_pragmatic_question",
+      "coverage_pct": 73.07,
+      "total_hits": 25919,
+      "reflection_score": 100,
+      "verdict": "PASS"
+    },
+    {
+      "perspective": "L6_discourse_temporal",
+      "coverage_pct": 25.41,
+      "total_hits": 4367,
+      "reflection_score": 100,
+      "verdict": "PASS"
+    },
+    {
+      "perspective": "L6_discourse_groupaddr",
+      "coverage_pct": 39.19,
+      "total_hits": 8772,
+      "reflection_score": 100,
+      "verdict": "PASS"
+    },
+    {
+      "perspective": "L7_socio_dialect_busan",
+      "coverage_pct": 0,
+      "total_hits": 0,
+      "reflection_score": 100,
+      "verdict": "PASS"
+    },
+    {
+      "perspective": "L7_socio_firstperson_me",
+      "coverage_pct": 39.08,
+      "total_hits": 8740,
+      "reflection_score": 100,
+      "verdict": "PASS"
+    },
+    {
+      "perspective": "L11_inter_insta",
+      "coverage_pct": 1.73,
+      "total_hits": 232,
+      "reflection_score": 0,
+      "verdict": "PASS"
+    },
+    {
+      "perspective": "L11_inter_celeb",
+      "coverage_pct": 1.67,
+      "total_hits": 259,
+      "reflection_score": 0,
+      "verdict": "PASS"
+    },
+    {
+      "perspective": "L12_nonling_emoji_jamo",
+      "coverage_pct": 55.55,
+      "total_hits": 14427,
+      "reflection_score": 100,
+      "verdict": "PASS"
+    },
+    {
+      "perspective": "L12_nonling_ellipsis",
+      "coverage_pct": 51.66,
+      "total_hits": 13144,
+      "reflection_score": 100,
+      "verdict": "PASS"
+    }
+  ],
+  "summary": {
+    "pass": 9,
+    "warn": 0,
+    "block": 0
+  }
+}

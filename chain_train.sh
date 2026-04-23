@@ -9,6 +9,8 @@
 #   HF_USERNAME    — HuggingFace username (예: unoa-labs)
 #   RUNPOD_POD_ID  — RunPod pod ID (RunPod 자동 주입)
 #   NTFY_TOPIC     — (선택) ntfy.sh topic, 비워두면 알림 skip
+#   GITHUB_TOKEN   — (선택) train repo branch push token
+#   GITHUB_REPO    — (선택) train repo name, 기본값 unoa-eng/dalbitalba-train-data
 #
 # 장애 전략: graceful degradation
 #   - CPT 실패 → DONE.txt 에 cpt_failed 기록, exit 1
@@ -28,6 +30,7 @@ CPT_OUT="${OUT_DIR}/cpt-lora"
 SFT_OUT="${OUT_DIR}/sft-lora"
 DONE_FILE="${OUT_DIR}/DONE.txt"
 SCRIPTS_DIR="${WORKSPACE}/scripts"
+REPO_CLONE_DIR="${WORKSPACE}/repo"
 
 mkdir -p "${LOG_DIR}" "${OUT_DIR}" "${DATA_DIR}"
 
@@ -86,6 +89,74 @@ write_done() {
         echo "hf_repo=${HF_REPO:-not_uploaded}"
     } > "${DONE_FILE}"
     log "[DONE] ${DONE_FILE} 기록 완료: status=${status}"
+}
+
+persist_run_artifacts() {
+    local final_status="$1"
+    local stamp
+    local branch
+    local run_dir
+    local repo_url
+
+    if [ -z "${GITHUB_TOKEN:-}" ] || [ -z "${GITHUB_REPO:-}" ]; then
+        log "[runs] GITHUB_TOKEN/GITHUB_REPO 미설정 — 원격 push skip"
+        return 0
+    fi
+    if [ ! -d "${REPO_CLONE_DIR}/.git" ]; then
+        log "[runs] repo clone 미존재 — 원격 push skip"
+        return 0
+    fi
+
+    stamp="$(date -u '+%Y%m%d-%H%M%S')"
+    branch="train-run-${stamp}"
+    run_dir="${REPO_CLONE_DIR}/runs/${branch}"
+    mkdir -p "${run_dir}"
+
+    cp "${DONE_FILE}" "${run_dir}/DONE.txt"
+    [ -f "${LOG_FILE}" ] && cp "${LOG_FILE}" "${run_dir}/chain.log"
+    [ -f "${WORKSPACE}/train_cpt.log" ] && cp "${WORKSPACE}/train_cpt.log" "${run_dir}/train_cpt.log"
+    [ -f "${WORKSPACE}/train_sft.log" ] && cp "${WORKSPACE}/train_sft.log" "${run_dir}/train_sft.log"
+
+    cat > "${run_dir}/manifest.json" <<EOF
+{
+  "timestamp": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')",
+  "status": "${final_status}",
+  "hf_repo": "${HF_REPO:-}",
+  "hf_status": "${HF_STATUS:-}",
+  "pod_id": "${RUNPOD_POD_ID:-unknown}",
+  "cpt_elapsed_min": "${CPT_ELAPSED:-}",
+  "sft_elapsed_min": "${SFT_ELAPSED:-}",
+  "total_elapsed_min": "${CHAIN_TOTAL:-}",
+  "source_repo": "${GITHUB_REPO}"
+}
+EOF
+
+    mkdir -p "${REPO_CLONE_DIR}/runs"
+    cat > "${REPO_CLONE_DIR}/runs/latest-train.json" <<EOF
+{
+  "branch": "${branch}",
+  "status": "${final_status}",
+  "hf_repo": "${HF_REPO:-}",
+  "timestamp": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+}
+EOF
+
+    repo_url="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git"
+    (
+        cd "${REPO_CLONE_DIR}"
+        git checkout -b "${branch}" >/dev/null 2>&1
+        git add "runs/${branch}" "runs/latest-train.json"
+        git commit -m "train: ${branch}" >/dev/null 2>&1 || exit 0
+        git push "${repo_url}" "${branch}" >/dev/null 2>&1
+    )
+
+    if [ $? -eq 0 ]; then
+        log "[runs] 원격 branch push 완료: ${branch}"
+        notify "dalbitalba train artifact push 완료: ${branch}"
+        echo "${branch}" > "${OUT_DIR}/RUN_BRANCH.txt"
+    else
+        log "[runs] 원격 branch push 실패: ${branch}"
+    fi
 }
 
 # ── STEP 0: 필수 환경변수 확인 ───────────────────────────────────────────────
@@ -342,5 +413,6 @@ log "chain_train.sh 완료: ${FINAL_STATUS} (총 ${CHAIN_TOTAL}분)"
 log "=========================================="
 
 notify "dalbitalba chain 완료: ${FINAL_STATUS} (${CHAIN_TOTAL}min) | HF: ${HF_REPO}"
+persist_run_artifacts "${FINAL_STATUS}"
 
 stop_pod "${FINAL_STATUS}"
