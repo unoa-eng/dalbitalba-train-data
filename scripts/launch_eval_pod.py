@@ -75,6 +75,21 @@ def save_state(pod_id: str, metadata: dict) -> None:
     )
 
 
+def redact_payload(payload: dict) -> dict:
+    redacted = json.loads(json.dumps(payload))
+    for item in redacted.get("input", {}).get("env", []):
+        if "value" in item:
+            item["value"] = "***REDACTED***"
+
+    start_cmd = redacted.get("input", {}).get("dockerStartCmd")
+    if isinstance(start_cmd, str) and "x-access-token:" in start_cmd:
+        prefix, _, rest = start_cmd.partition("x-access-token:")
+        _, sep, tail = rest.partition("@github.com/")
+        if sep:
+            redacted["input"]["dockerStartCmd"] = f"{prefix}x-access-token:***REDACTED***@github.com/{tail}"
+    return redacted
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Launch dalbitalba-train-data RunPod eval pod")
     parser.add_argument("--dry-run", action="store_true")
@@ -93,6 +108,7 @@ def main() -> None:
     api_key = require_env("RUNPOD_API_KEY")
     github_token = require_env("GITHUB_TOKEN")
     github_repo = os.environ.get("GITHUB_REPO", "unoa-eng/dalbitalba-train-data").strip()
+    github_ref = os.environ.get("GITHUB_REF", "main").strip() or "main"
     hf_adapter_repo = require_env("HF_ADAPTER_REPO")
     anthropic_api_key = require_env("ANTHROPIC_API_KEY")
     hf_token = os.environ.get("HF_TOKEN", "").strip()
@@ -104,7 +120,7 @@ def main() -> None:
     startup_cmd = (
         "bash -lc "
         "\"mkdir -p /workspace/logs && "
-        f"git clone {clone_url} /workspace/repo && "
+        f"git clone --branch {github_ref} --single-branch {clone_url} /workspace/repo && "
         "chmod +x /workspace/repo/scripts/run_eval.sh && "
         "nohup bash /workspace/repo/scripts/run_eval.sh > /workspace/logs/eval.log 2>&1 &\""
     )
@@ -147,7 +163,7 @@ def main() -> None:
     }
 
     if args.dry_run:
-        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        print(json.dumps(redact_payload(payload), indent=2, ensure_ascii=False))
         return
 
     mutation = """
@@ -167,6 +183,7 @@ def main() -> None:
         pod_id,
         {
             "github_repo": github_repo,
+            "github_ref": github_ref,
             "hf_adapter_repo": hf_adapter_repo,
             "gpu_type": args.gpu_type,
             "base_model": base_model,

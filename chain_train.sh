@@ -187,13 +187,17 @@ log "[0/5] 환경 확인 완료. 데이터 파일 확인 완료."
 
 # ── STEP 1: 패키지 설치 ──────────────────────────────────────────────────────
 log "[1/5] 필수 패키지 설치..."
-pip install -q \
-    "transformers>=4.40" \
-    "peft>=0.10" \
-    "bitsandbytes>=0.43" \
-    "datasets" \
-    "accelerate" \
-    "huggingface_hub" \
+pip install -q --no-cache-dir --upgrade \
+    "transformers==4.44.2" \
+    "peft==0.12.0" \
+    "bitsandbytes==0.43.3" \
+    "datasets==2.21.0" \
+    "accelerate==0.33.0" \
+    "huggingface_hub>=0.24.0" \
+    "safetensors>=0.4.3" \
+    "sentencepiece" \
+    "tokenizers>=0.19" \
+    "protobuf" \
     >> "${LOG_FILE}" 2>&1
 
 if [ $? -ne 0 ]; then
@@ -207,6 +211,27 @@ log "[1/5] 패키지 설치 완료."
 # ── train scripts 확인 및 복사 ───────────────────────────────────────────────
 # launch_chain.py 가 scripts/ 를 함께 업로드했다고 가정
 # 없으면 SCRIPTS_DIR 에서 찾아 WORKSPACE 루트로 복사
+python - <<'EOF' >> "${LOG_FILE}" 2>&1
+import torch
+import transformers
+import peft
+import bitsandbytes
+import datasets
+
+print("torch", torch.__version__, "cuda", torch.cuda.is_available(), torch.cuda.device_count())
+print("transformers", transformers.__version__)
+print("peft", peft.__version__)
+print("bitsandbytes", bitsandbytes.__version__)
+print("datasets", datasets.__version__)
+EOF
+
+if [ $? -ne 0 ]; then
+    log "[ERROR] import smoke test failed"
+    write_done "import_failed"
+    stop_pod "import_failed"
+    exit 1
+fi
+
 for script in train_cpt.py train_sft.py; do
     if [ ! -f "${WORKSPACE}/${script}" ]; then
         if [ -f "${SCRIPTS_DIR}/${script}" ]; then

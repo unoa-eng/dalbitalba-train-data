@@ -110,18 +110,36 @@ git config user.email "${GITHUB_EMAIL:-eval@dalbitalba.local}"
 git config user.name "${GITHUB_NAME:-dalbitalba-eval}"
 
 log "[1/5] install python dependencies"
-pip install -q \
-  "transformers>=4.40" \
-  "peft>=0.10" \
-  "bitsandbytes>=0.43" \
-  accelerate \
-  huggingface_hub \
-  safetensors \
-  sentencepiece \
+pip install -q --no-cache-dir --upgrade \
+  "transformers==4.44.2" \
+  "peft==0.12.0" \
+  "bitsandbytes==0.43.3" \
+  "accelerate==0.33.0" \
+  "datasets==2.21.0" \
+  "huggingface_hub>=0.24.0" \
+  "safetensors>=0.4.3" \
+  "sentencepiece" \
+  "tokenizers>=0.19" \
+  "protobuf" \
   anthropic \
   openai \
   jinja2 \
   >> "${LOG_FILE}" 2>&1
+
+log "[1/5] verify python imports"
+python - <<'EOF' >> "${LOG_FILE}" 2>&1
+import torch
+import transformers
+import peft
+import bitsandbytes
+import accelerate
+
+print("torch", torch.__version__, "cuda", torch.cuda.is_available(), torch.cuda.device_count())
+print("transformers", transformers.__version__)
+print("peft", peft.__version__)
+print("bitsandbytes", bitsandbytes.__version__)
+print("accelerate", accelerate.__version__)
+EOF
 
 log "[2/5] generate ai samples"
 HF_ADAPTER_REPO="${HF_ADAPTER_REPO}" HF_TOKEN="${HF_TOKEN:-}" BASE_MODEL="${BASE_MODEL:-upstage/SOLAR-10.7B-v1.0}" \
