@@ -131,9 +131,10 @@ def main() -> None:
     clone_url = f"https://x-access-token:{github_token}@github.com/{github_repo}.git"
     startup_cmd = (
         "mkdir -p /workspace/logs && "
+        "rm -rf /workspace/repo && "
         f"git clone --branch {github_ref} --single-branch {clone_url} /workspace/repo && "
         "chmod +x /workspace/repo/scripts/run_eval.sh && "
-        "nohup bash /workspace/repo/scripts/run_eval.sh > /workspace/logs/eval.log 2>&1 &"
+        "exec bash /workspace/repo/scripts/run_eval.sh"
     )
 
     env = {

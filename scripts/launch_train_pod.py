@@ -128,11 +128,12 @@ def main() -> None:
     clone_url = f"https://x-access-token:{github_token}@github.com/{github_repo}.git"
     startup_cmd = (
         "mkdir -p /workspace/logs /workspace/data /workspace/scripts /workspace/out && "
+        "rm -rf /workspace/repo && "
         f"git clone --branch {github_ref} --single-branch {clone_url} /workspace/repo && "
         "cp /workspace/repo/*.jsonl /workspace/data/ 2>/dev/null || true && "
         "cp /workspace/repo/train_*.py /workspace/ 2>/dev/null || true && "
         "cp /workspace/repo/chain_train.sh /workspace/chain_train.sh && "
-        "nohup bash /workspace/chain_train.sh > /workspace/logs/chain.log 2>&1 &"
+        "exec bash /workspace/chain_train.sh"
     )
 
     env = {
