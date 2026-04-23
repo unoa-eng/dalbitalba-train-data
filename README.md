@@ -34,6 +34,22 @@ Training, evaluation, RunPod, and research repository for the dalbitalba writing
 3. Launch evaluation with `python scripts/launch_eval_pod.py`.
 4. Evaluation generates samples, runs judges, renders reports, and pushes `runs/latest-eval.json` plus `runs/eval-run-*` branches back to GitHub.
 
+## Bring-up on another environment
+
+1. Clone this repository.
+2. Copy `.env.local.example` to `.env.local`.
+3. Fill the shared keys you may already have in `dalbitalba/apps/web/.env.local`:
+   `RUNPOD_API_KEY`, `HF_TOKEN`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`.
+4. Add the train-repo-only keys:
+   `HF_USERNAME`, `GITHUB_TOKEN`, and for local eval launches `HF_ADAPTER_REPO`.
+5. Optionally set `NTFY_TOPIC`, `BASE_MODEL`, `GPU_TYPE`, and `CONTAINER_IMAGE`.
+6. Run `python scripts/check_env.py --target train` or `python scripts/check_env.py --target eval`.
+7. Launch with `python scripts/launch_train_pod.py` or `python scripts/launch_eval_pod.py`.
+
+This means another machine can reconstruct the pipeline quickly, but resuming an old run
+from the exact previous checkpoint still depends on whether the adapter or checkpoint was
+already uploaded to Hugging Face or another persistent storage target.
+
 ## Service repo bridge
 
 `unoa-eng/dalbitalba` can manually dispatch these workflows through its `Train Data Bridge`
@@ -47,6 +63,7 @@ Repository secrets used here:
 - `RUNPOD_API_KEY`
 - `HF_TOKEN`
 - `HF_USERNAME` for training uploads
+- `TRAIN_REPO_PUSH_TOKEN` for Git clone/push from inside RunPod
 - `ANTHROPIC_API_KEY` for eval judging
 - `OPENAI_API_KEY` for eval judging
 - `NTFY_TOPIC` optional notification topic
@@ -61,6 +78,9 @@ Additional service-repo secret:
 
 - `dalbitalba` needs `TRAIN_REPO_DISPATCH_TOKEN` so its bridge workflow can dispatch
   these train-repo workflows.
+
+If you are operating only through GitHub Actions, these values should be placed in
+repository secrets and variables instead of a local `.env.local` file.
 
 ## Research note
 

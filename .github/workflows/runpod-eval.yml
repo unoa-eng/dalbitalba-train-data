@@ -28,14 +28,14 @@ jobs:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_ADAPTER_REPO: ${{ github.event.inputs.hf_adapter_repo }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TRAIN_REPO_PUSH_TOKEN }}
           GITHUB_REPO: unoa-eng/dalbitalba-train-data
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          BASE_MODEL: ${{ vars.BASE_MODEL }}
-          GPU_TYPE: ${{ vars.GPU_TYPE }}
-          CONTAINER_IMAGE: ${{ vars.CONTAINER_IMAGE }}
+          BASE_MODEL: ${{ vars.BASE_MODEL || 'upstage/SOLAR-10.7B-v1.0' }}
+          GPU_TYPE: ${{ vars.GPU_TYPE || 'NVIDIA A100 80GB PCIe' }}
+          CONTAINER_IMAGE: ${{ vars.CONTAINER_IMAGE || 'runpod/pytorch:2.2.0-py3.10-cuda12.1.1-devel-ubuntu22.04' }}
         run: |
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
             python scripts/launch_eval_pod.py --dry-run

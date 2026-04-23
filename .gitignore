@@ -1,6 +1,7 @@
 logs/
 out/
 .state/
+.env.local
 __pycache__/
 *.pyc
 *.log
