@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import json
 import random
+from collections import defaultdict
 from pathlib import Path
 
 
@@ -54,15 +55,65 @@ def normalize(rows: list[dict], truth: str, source: str) -> list[dict]:
             continue
         normalized.append(
             {
-                "source_id": row.get("id"),
+                "source_id": row.get("id") or row.get("source_id"),
                 "truth": truth,
                 "source": source,
                 "title": pick_meta(row, TITLE_KEYS),
                 "topic": pick_meta(row, TOPIC_KEYS),
+                "kind": row.get("kind") or row.get("pair_type") or "post",
                 "text": text,
             }
         )
     return normalized
+
+
+def stratified_sample(ai_rows: list[dict], human_rows: list[dict], n: int) -> list[dict]:
+    ai_by_kind: dict[str, list[dict]] = defaultdict(list)
+    human_by_kind: dict[str, list[dict]] = defaultdict(list)
+
+    for row in ai_rows:
+        ai_by_kind[str(row.get("kind") or "post")].append(row)
+    for row in human_rows:
+        human_by_kind[str(row.get("kind") or "post")].append(row)
+
+    common_kinds = sorted(set(ai_by_kind) & set(human_by_kind))
+    if not common_kinds:
+        sample_size = min(n, len(ai_rows), len(human_rows))
+        if sample_size == 0:
+            return []
+        return random.sample(ai_rows, sample_size) + random.sample(human_rows, sample_size)
+
+    target_by_kind = {kind: n // len(common_kinds) for kind in common_kinds}
+    for kind in common_kinds[: n % len(common_kinds)]:
+        target_by_kind[kind] += 1
+
+    kind_limits = {
+        kind: min(target_by_kind[kind], len(ai_by_kind[kind]), len(human_by_kind[kind]))
+        for kind in common_kinds
+    }
+
+    remaining = n - sum(kind_limits.values())
+    while remaining > 0:
+        grew = False
+        for kind in common_kinds:
+            max_available = min(len(ai_by_kind[kind]), len(human_by_kind[kind]))
+            if kind_limits[kind] < max_available:
+                kind_limits[kind] += 1
+                remaining -= 1
+                grew = True
+                if remaining == 0:
+                    break
+        if not grew:
+            break
+
+    combined: list[dict] = []
+    for kind in common_kinds:
+        take = kind_limits[kind]
+        if take <= 0:
+            continue
+        combined.extend(random.sample(ai_by_kind[kind], take))
+        combined.extend(random.sample(human_by_kind[kind], take))
+    return combined
 
 
 def main() -> None:
@@ -80,11 +131,10 @@ def main() -> None:
     ai_rows = normalize(read_jsonl(args.ai_output), "AI", "generated")
     human_rows = normalize(read_jsonl(args.crawl), "HUMAN", "crawl")
 
-    sample_size = min(args.n, len(ai_rows), len(human_rows))
-    if sample_size == 0:
+    combined = stratified_sample(ai_rows, human_rows, args.n)
+    if not combined:
         raise SystemExit("[ERROR] insufficient AI or HUMAN samples")
 
-    combined = random.sample(ai_rows, sample_size) + random.sample(human_rows, sample_size)
     random.shuffle(combined)
 
     answer_key: list[dict] = []
@@ -97,6 +147,7 @@ def main() -> None:
                 "id": index,
                 "title": row["title"],
                 "topic": row["topic"],
+                "kind": row.get("kind"),
                 "text": row["text"],
                 "truth": row["truth"],
                 "source": row["source"],
@@ -109,6 +160,7 @@ def main() -> None:
                     "truth": row["truth"],
                     "source": row["source"],
                     "source_id": row["source_id"],
+                    "kind": row.get("kind"),
                 }
             )
 
