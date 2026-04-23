@@ -46,18 +46,18 @@ except ImportError as e:
     sys.exit(1)
 
 # ── 설정 ──────────────────────────────────────────────────────────────────────
-BASE_MODEL = "upstage/SOLAR-10.7B-v1.0"          # HuggingFace 모델 ID
-INPUT_JSONL = "/workspace/data/cpt_corpus.jsonl"  # Phase 1 산출물
-OUTPUT_DIR = "/workspace/out/cpt-lora"            # LoRA adapter 저장
-CKPT_DIR = "/workspace/out/cpt-ckpt"              # 중간 체크포인트
-LOG_FILE = "/workspace/train_cpt.log"
+BASE_MODEL = os.environ.get("BASE_MODEL", "upstage/SOLAR-10.7B-v1.0")          # HuggingFace 모델 ID
+INPUT_JSONL = os.environ.get("INPUT_JSONL", "/workspace/data/cpt_corpus.jsonl")  # Phase 1 산출물
+OUTPUT_DIR = os.environ.get("CPT_OUTPUT_DIR", "/workspace/out/cpt-lora")            # LoRA adapter 저장
+CKPT_DIR = os.environ.get("CPT_CKPT_DIR", "/workspace/out/cpt-ckpt")              # 중간 체크포인트
+LOG_FILE = os.environ.get("CPT_LOG_FILE", "/workspace/train_cpt.log")
 
 MAX_SEQ_LEN = 1024
 BATCH_SIZE = 1
 GRAD_ACCUM = 16          # effective batch = 16
 LR = 1e-4
 WARMUP_RATIO = 0.03
-NUM_EPOCHS = 1
+NUM_EPOCHS = int(os.environ.get("CPT_NUM_EPOCHS", "1"))
 SAVE_STEPS = 500
 LOGGING_STEPS = 20
 

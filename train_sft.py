@@ -49,20 +49,20 @@ except ImportError as e:
     sys.exit(1)
 
 # ── 설정 ──────────────────────────────────────────────────────────────────────
-BASE_MODEL = "upstage/SOLAR-10.7B-v1.0"
-CPT_LORA_DIR = "/workspace/out/cpt-lora"        # Phase 2 산출물 (CPT adapter)
-SFT_JSONL = "/workspace/data/sft_pairs_v2.jsonl"  # v2: post+comment 보강 pairs
-CAI_JSONL = "/workspace/data/cai_pairs.jsonl"   # 5K CAI triples (없으면 SFT만 사용)
-OUTPUT_DIR = "/workspace/out/sft-lora"
-CKPT_DIR = "/workspace/out/sft-ckpt"
-LOG_FILE = "/workspace/train_sft.log"
+BASE_MODEL = os.environ.get("BASE_MODEL", "upstage/SOLAR-10.7B-v1.0")
+CPT_LORA_DIR = os.environ.get("CPT_LORA_DIR", "/workspace/out/cpt-lora")        # Phase 2 산출물 (CPT adapter)
+SFT_JSONL = os.environ.get("SFT_JSONL", "/workspace/data/sft_pairs_v2.jsonl")  # v2: post+comment 보강 pairs
+CAI_JSONL = os.environ.get("CAI_JSONL", "/workspace/data/cai_pairs.jsonl")   # 5K CAI triples (없으면 SFT만 사용)
+OUTPUT_DIR = os.environ.get("SFT_OUTPUT_DIR", "/workspace/out/sft-lora")
+CKPT_DIR = os.environ.get("SFT_CKPT_DIR", "/workspace/out/sft-ckpt")
+LOG_FILE = os.environ.get("SFT_LOG_FILE", "/workspace/train_sft.log")
 
 MAX_SEQ_LEN = 1024
 BATCH_SIZE = 1
 GRAD_ACCUM = 16
 LR = 5e-5
 WARMUP_RATIO = 0.05
-NUM_EPOCHS = 3
+NUM_EPOCHS = int(os.environ.get("SFT_NUM_EPOCHS", "3"))
 SAVE_STEPS = 200
 LOGGING_STEPS = 10
 
