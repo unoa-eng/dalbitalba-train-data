@@ -97,6 +97,8 @@ persist_run_artifacts() {
     local branch
     local run_dir
     local repo_url
+    local source_ref
+    local latest_tmp
 
     if [ -z "${GITHUB_TOKEN:-}" ] || [ -z "${GITHUB_REPO:-}" ]; then
         log "[runs] GITHUB_TOKEN/GITHUB_REPO 미설정 — 원격 push skip"
@@ -110,6 +112,7 @@ persist_run_artifacts() {
     stamp="$(date -u '+%Y%m%d-%H%M%S')"
     branch="train-run-${stamp}"
     run_dir="${REPO_CLONE_DIR}/runs/${branch}"
+    latest_tmp="$(mktemp)"
     mkdir -p "${run_dir}"
 
     cp "${DONE_FILE}" "${run_dir}/DONE.txt"
@@ -131,8 +134,12 @@ persist_run_artifacts() {
 }
 EOF
 
+    source_ref="$(
+        cd "${REPO_CLONE_DIR}" && git rev-parse --abbrev-ref HEAD 2>/dev/null || true
+    )"
+
     mkdir -p "${REPO_CLONE_DIR}/runs"
-    cat > "${REPO_CLONE_DIR}/runs/latest-train.json" <<EOF
+    cat > "${latest_tmp}" <<EOF
 {
   "branch": "${branch}",
   "status": "${final_status}",
@@ -140,6 +147,7 @@ EOF
   "timestamp": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 }
 EOF
+    cp "${latest_tmp}" "${REPO_CLONE_DIR}/runs/latest-train.json"
 
     repo_url="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git"
     (
@@ -154,6 +162,24 @@ EOF
         log "[runs] 원격 branch push 완료: ${branch}"
         notify "dalbitalba train artifact push 완료: ${branch}"
         echo "${branch}" > "${OUT_DIR}/RUN_BRANCH.txt"
+        if [ -n "${source_ref}" ] && [ "${source_ref}" != "HEAD" ]; then
+            if (
+                cd "${REPO_CLONE_DIR}"
+                git checkout "${source_ref}" >/dev/null 2>&1
+                mkdir -p runs
+                cp "${latest_tmp}" "runs/latest-train.json"
+                git add "runs/latest-train.json"
+                git commit -m "train: update latest pointer" >/dev/null 2>&1 || exit 0
+                git push "${repo_url}" "${source_ref}" >/dev/null 2>&1
+            ); then
+                log "[runs] latest pointer updated on ${source_ref}"
+            else
+                log "[runs] latest pointer update failed on ${source_ref}"
+            fi
+        else
+            log "[runs] source ref unavailable; latest pointer push skipped"
+        fi
+        rm -f "${latest_tmp}"
     else
         log "[runs] 원격 branch push 실패: ${branch}"
     fi

@@ -43,11 +43,12 @@ stop_pod() {
 
 persist_eval_artifacts() {
   local status="$1"
-  local stamp branch run_dir repo_url
+  local stamp branch run_dir repo_url source_ref latest_tmp
 
   stamp="$(date -u '+%Y%m%d-%H%M%S')"
   branch="eval-run-${stamp}"
   run_dir="${REPO_DIR}/runs/${branch}"
+  latest_tmp="$(mktemp)"
   mkdir -p "${run_dir}"
 
   cp "${LOG_FILE}" "${run_dir}/eval.log"
@@ -69,7 +70,11 @@ persist_eval_artifacts() {
 }
 EOF
 
-  cat > "${REPO_DIR}/runs/latest-eval.json" <<EOF
+  source_ref="$(
+    cd "${REPO_DIR}" && git rev-parse --abbrev-ref HEAD 2>/dev/null || true
+  )"
+
+  cat > "${latest_tmp}" <<EOF
 {
   "branch": "${branch}",
   "status": "${status}",
@@ -77,6 +82,7 @@ EOF
   "timestamp": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 }
 EOF
+  cp "${latest_tmp}" "${REPO_DIR}/runs/latest-eval.json"
 
   repo_url="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git"
   if (
@@ -91,6 +97,26 @@ EOF
   else
     log "[push] failed to push ${branch}"
   fi
+
+  if [[ -n "${source_ref}" && "${source_ref}" != "HEAD" ]]; then
+    if (
+      cd "${REPO_DIR}"
+      git checkout "${source_ref}" >/dev/null 2>&1
+      mkdir -p runs
+      cp "${latest_tmp}" "runs/latest-eval.json"
+      git add "runs/latest-eval.json"
+      git commit -m "eval: update latest pointer" >/dev/null 2>&1 || exit 0
+      git push "${repo_url}" "${source_ref}" >/dev/null 2>&1
+    ); then
+      log "[push] latest pointer updated on ${source_ref}"
+    else
+      log "[push] failed to update latest pointer on ${source_ref}"
+    fi
+  else
+    log "[push] source ref unavailable; latest pointer update skipped"
+  fi
+
+  rm -f "${latest_tmp}"
 }
 
 log "=== dalbitalba eval chain start ==="
