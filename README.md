@@ -34,6 +34,34 @@ Training, evaluation, RunPod, and research repository for the dalbitalba writing
 3. Launch evaluation with `python scripts/launch_eval_pod.py`.
 4. Evaluation generates samples, runs judges, renders reports, and pushes `runs/latest-eval.json` plus `runs/eval-run-*` branches back to GitHub.
 
+## Service repo bridge
+
+`unoa-eng/dalbitalba` can manually dispatch these workflows through its `Train Data Bridge`
+workflow. The bridge keeps GPU and evaluation execution here while letting service-side
+operators start a train or eval run from the app repository.
+
+## Required GitHub configuration
+
+Repository secrets used here:
+
+- `RUNPOD_API_KEY`
+- `HF_TOKEN`
+- `HF_USERNAME` for training uploads
+- `ANTHROPIC_API_KEY` for eval judging
+- `OPENAI_API_KEY` for eval judging
+- `NTFY_TOPIC` optional notification topic
+
+Repository variables used here:
+
+- `BASE_MODEL`
+- `GPU_TYPE`
+- `CONTAINER_IMAGE`
+
+Additional service-repo secret:
+
+- `dalbitalba` needs `TRAIN_REPO_DISPATCH_TOKEN` so its bridge workflow can dispatch
+  these train-repo workflows.
+
 ## Research note
 
 `research/obsidian-export/` is preserved for manual analysis and board/community content review.
