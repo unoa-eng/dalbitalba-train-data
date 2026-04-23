@@ -19,7 +19,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 STATE_DIR = REPO_ROOT / ".state"
 STATE_FILE = STATE_DIR / "eval_pod_state.json"
-RUNPOD_GQL = "https://api.runpod.io/graphql"
+RUNPOD_REST = "https://rest.runpod.io/v1/pods"
 
 
 def load_env() -> None:
@@ -44,12 +44,16 @@ def require_env(key: str) -> str:
     return value
 
 
-def runpod_request(api_key: str, query: str, variables: dict) -> dict:
+def runpod_request(api_key: str, payload: dict) -> dict:
     req = urllib.request.Request(
-        f"{RUNPOD_GQL}?api_key={api_key}",
-        data=json.dumps({"query": query, "variables": variables}).encode(),
+        RUNPOD_REST,
+        data=json.dumps(payload).encode(),
         method="POST",
-        headers={"Content-Type": "application/json"},
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "User-Agent": "dalbitalba-train-data/1.0",
+        },
     )
     try:
         with urllib.request.urlopen(req, timeout=60) as response:
@@ -75,18 +79,26 @@ def save_state(pod_id: str, metadata: dict) -> None:
     )
 
 
+def redact_string(value: str) -> str:
+    if "x-access-token:" not in value:
+        return value
+    prefix, _, rest = value.partition("x-access-token:")
+    _, sep, tail = rest.partition("@github.com/")
+    if not sep:
+        return value
+    return f"{prefix}x-access-token:***REDACTED***@github.com/{tail}"
+
+
 def redact_payload(payload: dict) -> dict:
     redacted = json.loads(json.dumps(payload))
-    for item in redacted.get("input", {}).get("env", []):
-        if "value" in item:
-            item["value"] = "***REDACTED***"
+    for key in list(redacted.get("env", {}).keys()):
+        redacted["env"][key] = "***REDACTED***"
 
-    start_cmd = redacted.get("input", {}).get("dockerStartCmd")
-    if isinstance(start_cmd, str) and "x-access-token:" in start_cmd:
-        prefix, _, rest = start_cmd.partition("x-access-token:")
-        _, sep, tail = rest.partition("@github.com/")
-        if sep:
-            redacted["input"]["dockerStartCmd"] = f"{prefix}x-access-token:***REDACTED***@github.com/{tail}"
+    start_cmd = redacted.get("dockerStartCmd")
+    if isinstance(start_cmd, list):
+        redacted["dockerStartCmd"] = [redact_string(item) if isinstance(item, str) else item for item in start_cmd]
+    elif isinstance(start_cmd, str):
+        redacted["dockerStartCmd"] = redact_string(start_cmd)
     return redacted
 
 
@@ -118,67 +130,54 @@ def main() -> None:
 
     clone_url = f"https://x-access-token:{github_token}@github.com/{github_repo}.git"
     startup_cmd = (
-        "bash -lc "
-        "\"mkdir -p /workspace/logs && "
+        "mkdir -p /workspace/logs && "
         f"git clone --branch {github_ref} --single-branch {clone_url} /workspace/repo && "
         "chmod +x /workspace/repo/scripts/run_eval.sh && "
-        "nohup bash /workspace/repo/scripts/run_eval.sh > /workspace/logs/eval.log 2>&1 &\""
+        "nohup bash /workspace/repo/scripts/run_eval.sh > /workspace/logs/eval.log 2>&1 &"
     )
 
-    env = [
-        {"key": "GITHUB_TOKEN", "value": github_token},
-        {"key": "GITHUB_REPO", "value": github_repo},
-        {"key": "HF_ADAPTER_REPO", "value": hf_adapter_repo},
-        {"key": "ANTHROPIC_API_KEY", "value": anthropic_api_key},
-        {"key": "RUNPOD_API_KEY", "value": api_key},
-        {"key": "BASE_MODEL", "value": base_model},
-        {"key": "RUNPOD_POD_ID", "value": "__SELF__"},
-    ]
+    env = {
+        "GITHUB_TOKEN": github_token,
+        "GITHUB_REPO": github_repo,
+        "HF_ADAPTER_REPO": hf_adapter_repo,
+        "ANTHROPIC_API_KEY": anthropic_api_key,
+        "RUNPOD_API_KEY": api_key,
+        "BASE_MODEL": base_model,
+        "RUNPOD_POD_ID": "__SELF__",
+    }
     if hf_token:
-        env.append({"key": "HF_TOKEN", "value": hf_token})
+        env["HF_TOKEN"] = hf_token
     if openai_api_key:
-        env.append({"key": "OPENAI_API_KEY", "value": openai_api_key})
+        env["OPENAI_API_KEY"] = openai_api_key
     if ntfy_topic:
-        env.append({"key": "NTFY_TOPIC", "value": ntfy_topic})
+        env["NTFY_TOPIC"] = ntfy_topic
 
     payload = {
-        "input": {
-            "cloudType": "COMMUNITY",
-            "gpuCount": 1,
-            "volumeInGb": 60,
-            "containerDiskInGb": 30,
-            "minVcpuCount": 8,
-            "minMemoryInGb": 48,
-            "gpuTypeId": args.gpu_type,
-            "name": f"dalbitalba-eval-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M')}",
-            "imageName": args.container_image,
-            "dockerArgs": "",
-            "ports": "",
-            "volumeMountPath": "/workspace",
-            "env": env,
-            "startSsh": False,
-            "startJupyter": False,
-            "dockerStartCmd": startup_cmd,
-        }
+        "name": f"dalbitalba-eval-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M')}",
+        "imageName": args.container_image,
+        "computeType": "GPU",
+        "cloudType": "COMMUNITY",
+        "gpuTypeIds": [args.gpu_type],
+        "gpuCount": 1,
+        "gpuTypePriority": "availability",
+        "volumeInGb": 60,
+        "containerDiskInGb": 30,
+        "minVCPUPerGPU": 8,
+        "minRAMPerGPU": 48,
+        "volumeMountPath": "/workspace",
+        "ports": [],
+        "interruptible": False,
+        "env": env,
+        "dockerEntrypoint": [],
+        "dockerStartCmd": ["bash", "-lc", startup_cmd],
     }
 
     if args.dry_run:
         print(json.dumps(redact_payload(payload), indent=2, ensure_ascii=False))
         return
 
-    mutation = """
-    mutation CreatePod($input: PodFindAndDeployOnDemandInput!) {
-      podFindAndDeployOnDemand(input: $input) {
-        id
-        desiredStatus
-      }
-    }
-    """
-    data = runpod_request(api_key, mutation, payload)
-    if "errors" in data:
-        raise SystemExit(json.dumps(data["errors"], ensure_ascii=False))
-
-    pod_id = data["data"]["podFindAndDeployOnDemand"]["id"]
+    data = runpod_request(api_key, payload)
+    pod_id = data["id"]
     save_state(
         pod_id,
         {
