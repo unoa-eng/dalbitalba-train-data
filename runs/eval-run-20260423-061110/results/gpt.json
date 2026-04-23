@@ -1,0 +1,429 @@
+{
+  "judge": "gpt",
+  "mode": "openai",
+  "model": "gpt-4.1",
+  "sample_count": 60,
+  "accuracy": 0.5667,
+  "predictions": [
+    {
+      "sample_id": 1,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=265"
+    },
+    {
+      "sample_id": 2,
+      "truth": "AI",
+      "prediction": "AI",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=164"
+    },
+    {
+      "sample_id": 3,
+      "truth": "HUMAN",
+      "prediction": "AI",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=69"
+    },
+    {
+      "sample_id": 4,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=124"
+    },
+    {
+      "sample_id": 5,
+      "truth": "AI",
+      "prediction": "AI",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=169"
+    },
+    {
+      "sample_id": 6,
+      "truth": "AI",
+      "prediction": "AI",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=152"
+    },
+    {
+      "sample_id": 7,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=53"
+    },
+    {
+      "sample_id": 8,
+      "truth": "AI",
+      "prediction": "AI",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=131"
+    },
+    {
+      "sample_id": 9,
+      "truth": "AI",
+      "prediction": "AI",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=188"
+    },
+    {
+      "sample_id": 10,
+      "truth": "AI",
+      "prediction": "AI",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=163"
+    },
+    {
+      "sample_id": 11,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=120"
+    },
+    {
+      "sample_id": 12,
+      "truth": "AI",
+      "prediction": "AI",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=159"
+    },
+    {
+      "sample_id": 13,
+      "truth": "AI",
+      "prediction": "AI",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=167"
+    },
+    {
+      "sample_id": 14,
+      "truth": "HUMAN",
+      "prediction": "AI",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=448"
+    },
+    {
+      "sample_id": 15,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=0 len=59"
+    },
+    {
+      "sample_id": 16,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=122"
+    },
+    {
+      "sample_id": 17,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=277"
+    },
+    {
+      "sample_id": 18,
+      "truth": "HUMAN",
+      "prediction": "AI",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=70"
+    },
+    {
+      "sample_id": 19,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=134"
+    },
+    {
+      "sample_id": 20,
+      "truth": "HUMAN",
+      "prediction": "AI",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=405"
+    },
+    {
+      "sample_id": 21,
+      "truth": "AI",
+      "prediction": "AI",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=127"
+    },
+    {
+      "sample_id": 22,
+      "truth": "HUMAN",
+      "prediction": "AI",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=302"
+    },
+    {
+      "sample_id": 23,
+      "truth": "HUMAN",
+      "prediction": "AI",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=2 len=59"
+    },
+    {
+      "sample_id": 24,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=133"
+    },
+    {
+      "sample_id": 25,
+      "truth": "AI",
+      "prediction": "AI",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=175"
+    },
+    {
+      "sample_id": 26,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=78"
+    },
+    {
+      "sample_id": 27,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=32"
+    },
+    {
+      "sample_id": 28,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=33"
+    },
+    {
+      "sample_id": 29,
+      "truth": "AI",
+      "prediction": "AI",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=175"
+    },
+    {
+      "sample_id": 30,
+      "truth": "HUMAN",
+      "prediction": "AI",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=96"
+    },
+    {
+      "sample_id": 31,
+      "truth": "HUMAN",
+      "prediction": "AI",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=326"
+    },
+    {
+      "sample_id": 32,
+      "truth": "HUMAN",
+      "prediction": "AI",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=82"
+    },
+    {
+      "sample_id": 33,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=0 len=89"
+    },
+    {
+      "sample_id": 34,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-2 len=40"
+    },
+    {
+      "sample_id": 35,
+      "truth": "AI",
+      "prediction": "AI",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=138"
+    },
+    {
+      "sample_id": 36,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=136"
+    },
+    {
+      "sample_id": 37,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-3 len=31"
+    },
+    {
+      "sample_id": 38,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=126"
+    },
+    {
+      "sample_id": 39,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=0 len=66"
+    },
+    {
+      "sample_id": 40,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=0 len=133"
+    },
+    {
+      "sample_id": 41,
+      "truth": "AI",
+      "prediction": "AI",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=170"
+    },
+    {
+      "sample_id": 42,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=183"
+    },
+    {
+      "sample_id": 43,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-2 len=137"
+    },
+    {
+      "sample_id": 44,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=49"
+    },
+    {
+      "sample_id": 45,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=43"
+    },
+    {
+      "sample_id": 46,
+      "truth": "HUMAN",
+      "prediction": "AI",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=83"
+    },
+    {
+      "sample_id": 47,
+      "truth": "AI",
+      "prediction": "AI",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=140"
+    },
+    {
+      "sample_id": 48,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=0 len=42"
+    },
+    {
+      "sample_id": 49,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=118"
+    },
+    {
+      "sample_id": 50,
+      "truth": "AI",
+      "prediction": "AI",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=132"
+    },
+    {
+      "sample_id": 51,
+      "truth": "HUMAN",
+      "prediction": "AI",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=274"
+    },
+    {
+      "sample_id": 52,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=139"
+    },
+    {
+      "sample_id": 53,
+      "truth": "HUMAN",
+      "prediction": "AI",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=286"
+    },
+    {
+      "sample_id": 54,
+      "truth": "AI",
+      "prediction": "AI",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=135"
+    },
+    {
+      "sample_id": 55,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-3 len=31"
+    },
+    {
+      "sample_id": 56,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=33"
+    },
+    {
+      "sample_id": 57,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=-1 len=30"
+    },
+    {
+      "sample_id": 58,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=0 len=149"
+    },
+    {
+      "sample_id": 59,
+      "truth": "HUMAN",
+      "prediction": "AI",
+      "is_correct": false,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=86"
+    },
+    {
+      "sample_id": 60,
+      "truth": "AI",
+      "prediction": "AI",
+      "is_correct": true,
+      "rationale": "fallback: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}; heuristic score=1 len=126"
+    }
+  ]
+}
