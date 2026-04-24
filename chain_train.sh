@@ -1,26 +1,25 @@
-#!/usr/bin/env bash
-# chain_train.sh — dalbitalba 무인 CPT→SFT→업로드→종료 파이프라인
+﻿#!/usr/bin/env bash
+# chain_train.sh ??dalbitalba 臾댁씤 CPT?뭆FT?믪뾽濡쒕뱶?믪쥌猷??뚯씠?꾨씪??#
+# ?ㅽ뻾 ?꾩튂: RunPod pod ?대? (nohup ?먮뒗 startup script 濡??ㅽ뻾)
+# 濡쒓렇: /workspace/logs/chain.log (tee 濡?stdout ?숈떆 異쒕젰)
 #
-# 실행 위치: RunPod pod 내부 (nohup 또는 startup script 로 실행)
-# 로그: /workspace/logs/chain.log (tee 로 stdout 동시 출력)
+# ?꾩닔 ?섍꼍蹂??(pod env ??二쇱엯):
+#   HF_TOKEN       ??HuggingFace write token
+#   HF_USERNAME    ??HuggingFace username (?? unoa-labs)
+#   RUNPOD_POD_ID  ??RunPod pod ID (RunPod ?먮룞 二쇱엯)
+#   NTFY_TOPIC     ??(?좏깮) ntfy.sh topic, 鍮꾩썙?먮㈃ ?뚮┝ skip
+#   GITHUB_TOKEN   ??(?좏깮) train repo branch push token
+#   GITHUB_REPO    ??(?좏깮) train repo name, 湲곕낯媛?unoa-eng/dalbitalba-train-data
 #
-# 필수 환경변수 (pod env 에 주입):
-#   HF_TOKEN       — HuggingFace write token
-#   HF_USERNAME    — HuggingFace username (예: unoa-labs)
-#   RUNPOD_POD_ID  — RunPod pod ID (RunPod 자동 주입)
-#   NTFY_TOPIC     — (선택) ntfy.sh topic, 비워두면 알림 skip
-#   GITHUB_TOKEN   — (선택) train repo branch push token
-#   GITHUB_REPO    — (선택) train repo name, 기본값 unoa-eng/dalbitalba-train-data
-#
-# 장애 전략: graceful degradation
-#   - CPT 실패 → DONE.txt 에 cpt_failed 기록, exit 1
-#   - SFT 실패 → CPT 결과만 HF 업로드, DONE.txt 에 sft_failed 기록
-#   - HF 업로드 실패 → 3회 재시도, 그래도 실패하면 volume 보존 후 종료
+# ?μ븷 ?꾨왂: graceful degradation
+#   - CPT ?ㅽ뙣 ??DONE.txt ??cpt_failed 湲곕줉, exit 1
+#   - SFT ?ㅽ뙣 ??CPT 寃곌낵留?HF ?낅줈?? DONE.txt ??sft_failed 湲곕줉
+#   - HF ?낅줈???ㅽ뙣 ??3???ъ떆?? 洹몃옒???ㅽ뙣?섎㈃ volume 蹂댁〈 ??醫낅즺
 
 set -uo pipefail
-# set -e 제거: 개별 단계별로 오류 처리하여 graceful degradation 구현
+# set -e ?쒓굅: 媛쒕퀎 ?④퀎蹂꾨줈 ?ㅻ쪟 泥섎━?섏뿬 graceful degradation 援ы쁽
 
-# ── 디렉토리 및 로그 설정 ─────────────────────────────────────────────────────
+# ?? ?붾젆?좊━ 諛?濡쒓렇 ?ㅼ젙 ?????????????????????????????????????????????????????
 WORKSPACE="/workspace"
 LOG_DIR="${WORKSPACE}/logs"
 LOG_FILE="${LOG_DIR}/chain.log"
@@ -31,10 +30,15 @@ SFT_OUT="${OUT_DIR}/sft-lora"
 DONE_FILE="${OUT_DIR}/DONE.txt"
 SCRIPTS_DIR="${WORKSPACE}/scripts"
 REPO_CLONE_DIR="${WORKSPACE}/repo"
+TRAIN_CPT_JSONL="${INPUT_JSONL:-${DATA_DIR}/cpt_corpus.jsonl}"
+TRAIN_SFT_JSONL="${SFT_JSONL:-${DATA_DIR}/sft_pairs_v2.jsonl}"
+TRAIN_CAI_JSONL="${CAI_JSONL:-${DATA_DIR}/cai_pairs.jsonl}"
+TRAIN_CPT_EPOCHS="${CPT_NUM_EPOCHS:-1}"
+TRAIN_SFT_EPOCHS="${SFT_NUM_EPOCHS:-3}"
 
 mkdir -p "${LOG_DIR}" "${OUT_DIR}" "${DATA_DIR}"
 
-# ── 로그 함수 (stdout + 파일 동시 기록, HF_TOKEN 마스킹) ─────────────────────
+# ?? 濡쒓렇 ?⑥닔 (stdout + ?뚯씪 ?숈떆 湲곕줉, HF_TOKEN 留덉뒪?? ?????????????????????
 log() {
     local msg="$1"
     local ts
@@ -42,15 +46,19 @@ log() {
     echo "${ts} ${msg}" | tee -a "${LOG_FILE}"
 }
 
-# HF_TOKEN 이 로그에 노출되지 않도록 env 출력 억제
+# HF_TOKEN ??濡쒓렇???몄텧?섏? ?딅룄濡?env 異쒕젰 ?듭젣
 log "=========================================="
-log "dalbitalba chain_train.sh 시작"
+log "dalbitalba chain_train.sh ?쒖옉"
 log "  POD_ID: ${RUNPOD_POD_ID:-unknown}"
 log "  HF_USERNAME: ${HF_USERNAME:-unset}"
-log "  NTFY_TOPIC: ${NTFY_TOPIC:-(없음, 알림 skip)}"
+log "  NTFY_TOPIC: ${NTFY_TOPIC:-(?놁쓬, ?뚮┝ skip)}"
+log "  CPT_DATA: ${TRAIN_CPT_JSONL}"
+log "  SFT_DATA: ${TRAIN_SFT_JSONL}"
+log "  CPT_EPOCHS: ${TRAIN_CPT_EPOCHS}"
+log "  SFT_EPOCHS: ${TRAIN_SFT_EPOCHS}"
 log "=========================================="
 
-# ── ntfy 알림 함수 ────────────────────────────────────────────────────────────
+# ?? ntfy ?뚮┝ ?⑥닔 ????????????????????????????????????????????????????????????
 notify() {
     local msg="$1"
     if [ -n "${NTFY_TOPIC:-}" ]; then
@@ -59,24 +67,24 @@ notify() {
             --data-binary "${msg}" \
             "https://ntfy.sh/${NTFY_TOPIC}" \
             >> "${LOG_FILE}" 2>&1 || true
-        log "[ntfy] 알림 전송: ${msg}"
+        log "[ntfy] ?뚮┝ ?꾩넚: ${msg}"
     fi
 }
 
-# ── 종료 처리: pod 중지 (볼륨 보존) ─────────────────────────────────────────
+# ?? 醫낅즺 泥섎━: pod 以묒? (蹂쇰ⅷ 蹂댁〈) ?????????????????????????????????????????
 stop_pod() {
     local reason="$1"
-    log "[종료] 이유: ${reason}"
-    notify "dalbitalba chain ${reason} — pod 중지"
+    log "[醫낅즺] ?댁쑀: ${reason}"
+    notify "dalbitalba chain ${reason} ??pod 以묒?"
     if command -v runpodctl &>/dev/null && [ -n "${RUNPOD_POD_ID:-}" ]; then
-        log "[종료] runpodctl stop pod ${RUNPOD_POD_ID}"
+        log "[醫낅즺] runpodctl stop pod ${RUNPOD_POD_ID}"
         runpodctl stop pod "${RUNPOD_POD_ID}" >> "${LOG_FILE}" 2>&1 || true
     else
-        log "[종료] runpodctl 없음 또는 RUNPOD_POD_ID 미설정 — 수동 종료 필요"
+        log "[醫낅즺] runpodctl ?놁쓬 ?먮뒗 RUNPOD_POD_ID 誘몄꽕?????섎룞 醫낅즺 ?꾩슂"
     fi
 }
 
-# ── DONE.txt 기록 함수 ───────────────────────────────────────────────────────
+# ?? DONE.txt 湲곕줉 ?⑥닔 ???????????????????????????????????????????????????????
 write_done() {
     local status="$1"
     local extra="${2:-}"
@@ -88,7 +96,7 @@ write_done() {
         echo "sft_out=${SFT_OUT}"
         echo "hf_repo=${HF_REPO:-not_uploaded}"
     } > "${DONE_FILE}"
-    log "[DONE] ${DONE_FILE} 기록 완료: status=${status}"
+    log "[DONE] ${DONE_FILE} 湲곕줉 ?꾨즺: status=${status}"
 }
 
 persist_run_artifacts() {
@@ -101,11 +109,11 @@ persist_run_artifacts() {
     local latest_tmp
 
     if [ -z "${GITHUB_TOKEN:-}" ] || [ -z "${GITHUB_REPO:-}" ]; then
-        log "[runs] GITHUB_TOKEN/GITHUB_REPO 미설정 — 원격 push skip"
+        log "[runs] GITHUB_TOKEN/GITHUB_REPO 誘몄꽕?????먭꺽 push skip"
         return 0
     fi
     if [ ! -d "${REPO_CLONE_DIR}/.git" ]; then
-        log "[runs] repo clone 미존재 — 원격 push skip"
+        log "[runs] repo clone 誘몄〈?????먭꺽 push skip"
         return 0
     fi
 
@@ -159,8 +167,8 @@ EOF
     )
 
     if [ $? -eq 0 ]; then
-        log "[runs] 원격 branch push 완료: ${branch}"
-        notify "dalbitalba train artifact push 완료: ${branch}"
+        log "[runs] ?먭꺽 branch push ?꾨즺: ${branch}"
+        notify "dalbitalba train artifact push ?꾨즺: ${branch}"
         echo "${branch}" > "${OUT_DIR}/RUN_BRANCH.txt"
         if [ -n "${source_ref}" ] && [ "${source_ref}" != "HEAD" ]; then
             if (
@@ -181,38 +189,38 @@ EOF
         fi
         rm -f "${latest_tmp}"
     else
-        log "[runs] 원격 branch push 실패: ${branch}"
+        log "[runs] ?먭꺽 branch push ?ㅽ뙣: ${branch}"
     fi
 }
 
-# ── STEP 0: 필수 환경변수 확인 ───────────────────────────────────────────────
-log "[0/5] 환경 변수 확인..."
+# ?? STEP 0: ?꾩닔 ?섍꼍蹂???뺤씤 ???????????????????????????????????????????????
+log "[0/5] ?섍꼍 蹂???뺤씤..."
 if [ -z "${HF_TOKEN:-}" ]; then
-    log "[ERROR] HF_TOKEN 이 설정되지 않았습니다. HF 업로드 불가."
+    log "[ERROR] HF_TOKEN ???ㅼ젙?섏? ?딆븯?듬땲?? HF ?낅줈??遺덇?."
     write_done "env_error" "HF_TOKEN missing"
     stop_pod "env_error"
     exit 1
 fi
 if [ -z "${HF_USERNAME:-}" ]; then
-    log "[ERROR] HF_USERNAME 이 설정되지 않았습니다."
+    log "[ERROR] HF_USERNAME ???ㅼ젙?섏? ?딆븯?듬땲??"
     write_done "env_error" "HF_USERNAME missing"
     stop_pod "env_error"
     exit 1
 fi
 
-# 데이터 파일 존재 확인
-for f in cpt_corpus.jsonl sft_pairs_v2.jsonl; do
-    if [ ! -f "${DATA_DIR}/${f}" ]; then
-        log "[ERROR] 필수 데이터 파일 없음: ${DATA_DIR}/${f}"
+# ?곗씠???뚯씪 議댁옱 ?뺤씤
+for f in "${TRAIN_CPT_JSONL}" "${TRAIN_SFT_JSONL}"; do
+    if [ ! -f "${f}" ]; then
+        log "[ERROR] ?꾩닔 ?곗씠???뚯씪 ?놁쓬: ${f}"
         write_done "data_missing" "${f}"
         stop_pod "data_missing"
         exit 1
     fi
 done
-log "[0/5] 환경 확인 완료. 데이터 파일 확인 완료."
+log "[0/5] ?섍꼍 ?뺤씤 ?꾨즺. ?곗씠???뚯씪 ?뺤씤 ?꾨즺."
 
-# ── STEP 1: 패키지 설치 ──────────────────────────────────────────────────────
-log "[1/5] 필수 패키지 설치..."
+# ?? STEP 1: ?⑦궎吏 ?ㅼ튂 ??????????????????????????????????????????????????????
+log "[1/5] ?꾩닔 ?⑦궎吏 ?ㅼ튂..."
 pip install -q --no-cache-dir --upgrade \
     "transformers==4.44.2" \
     "peft==0.12.0" \
@@ -227,16 +235,15 @@ pip install -q --no-cache-dir --upgrade \
     >> "${LOG_FILE}" 2>&1
 
 if [ $? -ne 0 ]; then
-    log "[ERROR] 패키지 설치 실패"
+    log "[ERROR] ?⑦궎吏 ?ㅼ튂 ?ㅽ뙣"
     write_done "install_failed"
     stop_pod "install_failed"
     exit 1
 fi
-log "[1/5] 패키지 설치 완료."
+log "[1/5] ?⑦궎吏 ?ㅼ튂 ?꾨즺."
 
-# ── train scripts 확인 및 복사 ───────────────────────────────────────────────
-# launch_chain.py 가 scripts/ 를 함께 업로드했다고 가정
-# 없으면 SCRIPTS_DIR 에서 찾아 WORKSPACE 루트로 복사
+# ?? train scripts ?뺤씤 諛?蹂듭궗 ???????????????????????????????????????????????
+# launch_chain.py 媛 scripts/ 瑜??④퍡 ?낅줈?쒗뻽?ㅺ퀬 媛??# ?놁쑝硫?SCRIPTS_DIR ?먯꽌 李얠븘 WORKSPACE 猷⑦듃濡?蹂듭궗
 python - <<'EOF' >> "${LOG_FILE}" 2>&1
 import torch
 import transformers
@@ -262,9 +269,9 @@ for script in train_cpt.py train_sft.py; do
     if [ ! -f "${WORKSPACE}/${script}" ]; then
         if [ -f "${SCRIPTS_DIR}/${script}" ]; then
             cp "${SCRIPTS_DIR}/${script}" "${WORKSPACE}/${script}"
-            log "  복사: ${SCRIPTS_DIR}/${script} → ${WORKSPACE}/${script}"
+            log "  蹂듭궗: ${SCRIPTS_DIR}/${script} ??${WORKSPACE}/${script}"
         else
-            log "[ERROR] ${script} 를 찾을 수 없습니다. (${WORKSPACE}/ 또는 ${SCRIPTS_DIR}/)"
+            log "[ERROR] ${script} 瑜?李얠쓣 ???놁뒿?덈떎. (${WORKSPACE}/ ?먮뒗 ${SCRIPTS_DIR}/)"
             write_done "script_missing" "${script}"
             stop_pod "script_missing"
             exit 1
@@ -272,42 +279,54 @@ for script in train_cpt.py train_sft.py; do
     fi
 done
 
-# CAI 파일은 선택적 (없으면 SFT 전용으로 진행)
+# CAI ?뚯씪? ?좏깮??(?놁쑝硫?SFT ?꾩슜?쇰줈 吏꾪뻾)
 if [ ! -f "${DATA_DIR}/cai_pairs.filtered.jsonl" ]; then
-    log "[WARN] cai_pairs.filtered.jsonl 없음 — SFT 전용으로 진행"
-    # train_sft.py 는 CAI 파일 없으면 SFT만 사용 (graceful)
+    log "[WARN] cai_pairs.filtered.jsonl ?놁쓬 ??SFT ?꾩슜?쇰줈 吏꾪뻾"
+    # train_sft.py ??CAI ?뚯씪 ?놁쑝硫?SFT留??ъ슜 (graceful)
 else
-    # train_sft.py 가 cai_pairs.jsonl 을 찾으므로 symlink 생성
-    ln -sf "${DATA_DIR}/cai_pairs.filtered.jsonl" "${DATA_DIR}/cai_pairs.jsonl" 2>/dev/null || true
+    # train_sft.py 媛 cai_pairs.jsonl ??李얠쑝誘濡?symlink ?앹꽦
+    ln -sf "${DATA_DIR}/cai_pairs.filtered.jsonl" "${TRAIN_CAI_JSONL}" 2>/dev/null || true
 fi
 
-# ── STEP 2: CPT 학습 ─────────────────────────────────────────────────────────
-log "[2/5] CPT 학습 시작 (예상 ~18시간)..."
-notify "dalbitalba CPT 학습 시작 — pod ${RUNPOD_POD_ID:-unknown}"
+# ?? STEP 2: CPT ?숈뒿 ?????????????????????????????????????????????????????????
+log "[2/5] CPT ?숈뒿 ?쒖옉 (?덉긽 ~18?쒓컙)..."
+notify "dalbitalba CPT ?숈뒿 ?쒖옉 ??pod ${RUNPOD_POD_ID:-unknown}"
 
 CPT_START=$(date +%s)
+INPUT_JSONL="${TRAIN_CPT_JSONL}" \
+CPT_NUM_EPOCHS="${TRAIN_CPT_EPOCHS}" \
+CPT_OUTPUT_DIR="${CPT_OUT}" \
+CPT_CKPT_DIR="${OUT_DIR}/cpt-ckpt" \
+CPT_LOG_FILE="${WORKSPACE}/train_cpt.log" \
 python "${WORKSPACE}/train_cpt.py" >> "${LOG_FILE}" 2>&1
 CPT_EXIT=$?
 CPT_END=$(date +%s)
 CPT_ELAPSED=$(( (CPT_END - CPT_START) / 60 ))
 
 if [ ${CPT_EXIT} -ne 0 ]; then
-    log "[ERROR] CPT 학습 실패 (exit ${CPT_EXIT}, ${CPT_ELAPSED}분 경과)"
+    log "[ERROR] CPT ?숈뒿 ?ㅽ뙣 (exit ${CPT_EXIT}, ${CPT_ELAPSED}遺?寃쎄낵)"
     write_done "cpt_failed" "exit_code=${CPT_EXIT} elapsed_min=${CPT_ELAPSED}"
-    notify "dalbitalba CPT 실패 — exit ${CPT_EXIT}"
+    notify "dalbitalba CPT ?ㅽ뙣 ??exit ${CPT_EXIT}"
     stop_pod "cpt_failed"
     exit 1
 fi
 
-# CPT 최종 loss 추출 (train_cpt.log 에서 마지막 loss 행)
+# CPT 理쒖쥌 loss 異붿텧 (train_cpt.log ?먯꽌 留덉?留?loss ??
 CPT_LOSS=$(grep -E "loss" "${WORKSPACE}/train_cpt.log" 2>/dev/null | tail -1 || echo "loss=N/A")
-log "[2/5] CPT 완료: ${CPT_ELAPSED}분 소요 | ${CPT_LOSS}"
-notify "dalbitalba CPT 완료 (${CPT_ELAPSED}min) — SFT 시작"
+log "[2/5] CPT ?꾨즺: ${CPT_ELAPSED}遺??뚯슂 | ${CPT_LOSS}"
+notify "dalbitalba CPT ?꾨즺 (${CPT_ELAPSED}min) ??SFT ?쒖옉"
 
-# ── STEP 3: SFT 학습 ─────────────────────────────────────────────────────────
-log "[3/5] SFT 학습 시작 (예상 ~5시간)..."
+# ?? STEP 3: SFT ?숈뒿 ?????????????????????????????????????????????????????????
+log "[3/5] SFT ?숈뒿 ?쒖옉 (?덉긽 ~5?쒓컙)..."
 
 SFT_START=$(date +%s)
+SFT_JSONL="${TRAIN_SFT_JSONL}" \
+CAI_JSONL="${TRAIN_CAI_JSONL}" \
+CPT_LORA_DIR="${CPT_OUT}" \
+SFT_NUM_EPOCHS="${TRAIN_SFT_EPOCHS}" \
+SFT_OUTPUT_DIR="${SFT_OUT}" \
+SFT_CKPT_DIR="${OUT_DIR}/sft-ckpt" \
+SFT_LOG_FILE="${WORKSPACE}/train_sft.log" \
 python "${WORKSPACE}/train_sft.py" >> "${LOG_FILE}" 2>&1
 SFT_EXIT=$?
 SFT_END=$(date +%s)
@@ -316,24 +335,24 @@ SFT_ELAPSED=$(( (SFT_END - SFT_START) / 60 ))
 SFT_LOSS=$(grep -E "loss" "${WORKSPACE}/train_sft.log" 2>/dev/null | tail -1 || echo "loss=N/A")
 
 if [ ${SFT_EXIT} -ne 0 ]; then
-    log "[WARN] SFT 학습 실패 (exit ${SFT_EXIT}, ${SFT_ELAPSED}분 경과). CPT 결과만 업로드 진행."
+    log "[WARN] SFT ?숈뒿 ?ㅽ뙣 (exit ${SFT_EXIT}, ${SFT_ELAPSED}遺?寃쎄낵). CPT 寃곌낵留??낅줈??吏꾪뻾."
     SFT_STATUS="sft_failed"
-    notify "dalbitalba SFT 실패 — CPT adapter 만 업로드"
+    notify "dalbitalba SFT failed, upload CPT adapter only"
 else
-    log "[3/5] SFT 완료: ${SFT_ELAPSED}분 소요 | ${SFT_LOSS}"
+    log "[3/5] SFT ?꾨즺: ${SFT_ELAPSED}遺??뚯슂 | ${SFT_LOSS}"
     SFT_STATUS="ok"
-    notify "dalbitalba SFT 완료 (${SFT_ELAPSED}min) — HF 업로드 시작"
+    notify "dalbitalba SFT ?꾨즺 (${SFT_ELAPSED}min) ??HF ?낅줈???쒖옉"
 fi
 
-# ── STEP 4: HuggingFace Hub 업로드 ──────────────────────────────────────────
-log "[4/5] HuggingFace Hub 업로드..."
+# ?? STEP 4: HuggingFace Hub ?낅줈????????????????????????????????????????????
+log "[4/5] HuggingFace Hub ?낅줈??.."
 
 TIMESTAMP=$(date -u '+%Y%m%d-%H%M')
 HF_REPO="${HF_USERNAME}/dalbitalba-solar-cpt-sft-${TIMESTAMP}"
 export HF_REPO
 
-# 업로드 Python 스크립트 (인라인)
-# HF_TOKEN 은 환경변수로 전달 — 로그에 직접 출력하지 않음
+# ?낅줈??Python ?ㅽ겕由쏀듃 (?몃씪??
+# HF_TOKEN ? ?섍꼍蹂?섎줈 ?꾨떖 ??濡쒓렇??吏곸젒 異쒕젰?섏? ?딆쓬
 HF_UPLOAD_SCRIPT=$(cat << 'PYEOF'
 import os
 import sys
@@ -349,12 +368,12 @@ sft_status = os.environ.get("SFT_STATUS", "ok")
 
 print(f"[hf_upload] repo: {repo_id}")
 
-# repo 생성 (private)
+# repo ?앹꽦 (private)
 try:
     create_repo(repo_id=repo_id, token=token, private=True, exist_ok=True)
-    print(f"[hf_upload] repo 생성/확인 완료")
+    print(f"[hf_upload] repo ?앹꽦/?뺤씤 ?꾨즺")
 except Exception as e:
-    print(f"[hf_upload] repo 생성 오류: {e}")
+    print(f"[hf_upload] repo ?앹꽦 ?ㅻ쪟: {e}")
     sys.exit(1)
 
 def upload_folder_with_retry(local_path, path_in_repo, retries=3):
@@ -367,34 +386,33 @@ def upload_folder_with_retry(local_path, path_in_repo, retries=3):
                 token=token,
                 repo_type="model",
             )
-            print(f"[hf_upload] 업로드 완료: {local_path} → {path_in_repo}")
+            print(f"[hf_upload] ?낅줈???꾨즺: {local_path} ??{path_in_repo}")
             return True
         except Exception as e:
-            print(f"[hf_upload] attempt {attempt}/{retries} 실패: {e}")
+            print(f"[hf_upload] attempt {attempt}/{retries} ?ㅽ뙣: {e}")
             if attempt < retries:
                 time.sleep(30 * attempt)
     return False
 
-# CPT adapter 업로드
-if os.path.isdir(cpt_out):
+# CPT adapter ?낅줈??if os.path.isdir(cpt_out):
     ok = upload_folder_with_retry(cpt_out, "cpt-lora")
     if not ok:
-        print("[hf_upload] CPT 업로드 최종 실패")
+        print("[hf_upload] CPT ?낅줈??理쒖쥌 ?ㅽ뙣")
         sys.exit(2)
 else:
-    print(f"[hf_upload] CPT 디렉토리 없음: {cpt_out}")
+    print(f"[hf_upload] CPT ?붾젆?좊━ ?놁쓬: {cpt_out}")
     sys.exit(2)
 
-# SFT adapter 업로드 (sft 성공 시만)
+# SFT adapter ?낅줈??(sft ?깃났 ?쒕쭔)
 if sft_status == "ok" and os.path.isdir(sft_out):
     ok = upload_folder_with_retry(sft_out, "sft-lora")
     if not ok:
-        print("[hf_upload] SFT 업로드 최종 실패 (CPT 는 업로드됨)")
+        print("[hf_upload] SFT ?낅줈??理쒖쥌 ?ㅽ뙣 (CPT ???낅줈?쒕맖)")
         sys.exit(3)
 else:
     print(f"[hf_upload] SFT skip (status={sft_status})")
 
-print(f"[hf_upload] 전체 완료: https://huggingface.co/{repo_id}")
+print(f"[hf_upload] ?꾩껜 ?꾨즺: https://huggingface.co/{repo_id}")
 PYEOF
 )
 
@@ -405,30 +423,30 @@ ${HF_UPLOAD_SCRIPT}
 EOF
 HF_UPLOAD_EXIT=$?
 
-# 업로드 결과 처리
+# ?낅줈??寃곌낵 泥섎━
 case ${HF_UPLOAD_EXIT} in
     0)
-        log "[4/5] HF 업로드 완료: https://huggingface.co/${HF_REPO}"
-        notify "dalbitalba HF 업로드 완료 — https://huggingface.co/${HF_REPO}"
+        log "[4/5] HF ?낅줈???꾨즺: https://huggingface.co/${HF_REPO}"
+        notify "dalbitalba HF ?낅줈???꾨즺 ??https://huggingface.co/${HF_REPO}"
         HF_STATUS="uploaded"
         ;;
     2)
-        log "[ERROR] HF CPT 업로드 실패 (3회 시도). adapter 는 volume 에 보존됨."
-        notify "dalbitalba HF 업로드 실패 — volume 보존"
+        log "[ERROR] HF CPT ?낅줈???ㅽ뙣 (3???쒕룄). adapter ??volume ??蹂댁〈??"
+        notify "dalbitalba HF ?낅줈???ㅽ뙣 ??volume 蹂댁〈"
         HF_STATUS="upload_failed"
         ;;
     3)
-        log "[WARN] HF SFT 업로드 실패. CPT 는 업로드됨."
+        log "[WARN] HF SFT ?낅줈???ㅽ뙣. CPT ???낅줈?쒕맖."
         HF_STATUS="sft_upload_failed"
         ;;
     *)
-        log "[ERROR] HF 업로드 알 수 없는 오류 (exit ${HF_UPLOAD_EXIT})"
+        log "[ERROR] HF ?낅줈???????녿뒗 ?ㅻ쪟 (exit ${HF_UPLOAD_EXIT})"
         HF_STATUS="upload_error"
         ;;
 esac
 
-# ── STEP 5: DONE.txt 기록 ────────────────────────────────────────────────────
-log "[5/5] 완료 기록..."
+# ?? STEP 5: DONE.txt 湲곕줉 ????????????????????????????????????????????????????
+log "[5/5] ?꾨즺 湲곕줉..."
 
 CHAIN_END=$(date +%s)
 CHAIN_TOTAL=$(( (CHAIN_END - CPT_START) / 60 ))
@@ -450,7 +468,7 @@ CHAIN_TOTAL=$(( (CHAIN_END - CPT_START) / 60 ))
 log "[DONE] ${DONE_FILE}"
 cat "${DONE_FILE}" | tee -a "${LOG_FILE}"
 
-# ── 최종 종료 ─────────────────────────────────────────────────────────────────
+# ?? 理쒖쥌 醫낅즺 ?????????????????????????????????????????????????????????????????
 FINAL_STATUS="done_ok"
 if [ "${SFT_STATUS}" = "sft_failed" ]; then
     FINAL_STATUS="done_cpt_only"
@@ -460,10 +478,11 @@ if [ "${HF_STATUS}" = "upload_failed" ]; then
 fi
 
 log "=========================================="
-log "chain_train.sh 완료: ${FINAL_STATUS} (총 ${CHAIN_TOTAL}분)"
+log "chain_train.sh ?꾨즺: ${FINAL_STATUS} (珥?${CHAIN_TOTAL}遺?"
 log "=========================================="
 
-notify "dalbitalba chain 완료: ${FINAL_STATUS} (${CHAIN_TOTAL}min) | HF: ${HF_REPO}"
+notify "dalbitalba chain ?꾨즺: ${FINAL_STATUS} (${CHAIN_TOTAL}min) | HF: ${HF_REPO}"
 persist_run_artifacts "${FINAL_STATUS}"
 
 stop_pod "${FINAL_STATUS}"
+

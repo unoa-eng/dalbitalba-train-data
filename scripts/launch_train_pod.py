@@ -124,6 +124,10 @@ def main() -> None:
     github_repo = os.environ.get("GITHUB_REPO", "unoa-eng/dalbitalba-train-data").strip()
     github_ref = os.environ.get("GITHUB_REF", "main").strip() or "main"
     ntfy_topic = os.environ.get("NTFY_TOPIC", "").strip()
+    train_cpt_jsonl = os.environ.get("TRAIN_CPT_JSONL", "/workspace/data/cpt_corpus.jsonl").strip() or "/workspace/data/cpt_corpus.jsonl"
+    train_sft_jsonl = os.environ.get("TRAIN_SFT_JSONL", "/workspace/data/sft_pairs_v2.jsonl").strip() or "/workspace/data/sft_pairs_v2.jsonl"
+    cpt_num_epochs = os.environ.get("CPT_NUM_EPOCHS", "1").strip() or "1"
+    sft_num_epochs = os.environ.get("SFT_NUM_EPOCHS", "2").strip() or "2"
 
     clone_url = f"https://x-access-token:{github_token}@github.com/{github_repo}.git"
     startup_cmd = (
@@ -142,6 +146,10 @@ def main() -> None:
         "GITHUB_TOKEN": github_token,
         "GITHUB_REPO": github_repo,
         "RUNPOD_API_KEY": api_key,
+        "INPUT_JSONL": train_cpt_jsonl,
+        "SFT_JSONL": train_sft_jsonl,
+        "CPT_NUM_EPOCHS": cpt_num_epochs,
+        "SFT_NUM_EPOCHS": sft_num_epochs,
     }
     if ntfy_topic:
         env["NTFY_TOPIC"] = ntfy_topic
@@ -179,6 +187,10 @@ def main() -> None:
             "github_ref": github_ref,
             "hf_username": hf_username,
             "gpu_type": args.gpu_type,
+            "train_cpt_jsonl": train_cpt_jsonl,
+            "train_sft_jsonl": train_sft_jsonl,
+            "cpt_num_epochs": cpt_num_epochs,
+            "sft_num_epochs": sft_num_epochs,
         },
     )
     print(f"[done] pod_id={pod_id}")
