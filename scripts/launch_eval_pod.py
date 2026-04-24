@@ -80,6 +80,11 @@ def save_state(pod_id: str, metadata: dict) -> None:
     )
 
 
+def parse_gpu_types(raw_value: str) -> list[str]:
+    values = [item.strip() for item in raw_value.split(",") if item.strip()]
+    return values or ["NVIDIA A100 80GB PCIe"]
+
+
 def redact_string(value: str) -> str:
     if "x-access-token:" not in value:
         return value
@@ -123,7 +128,14 @@ def detect_git_ref() -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Launch dalbitalba-train-data RunPod eval pod")
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--gpu-type", default=os.environ.get("GPU_TYPE", "NVIDIA A100 80GB PCIe"))
+    parser.add_argument(
+        "--gpu-type",
+        default=os.environ.get(
+            "GPU_TYPE",
+            "NVIDIA A100 80GB PCIe,NVIDIA L40S,NVIDIA RTX 6000 Ada Generation",
+        ),
+        help="Comma-separated GPU preference list (tried in order)",
+    )
     parser.add_argument(
         "--container-image",
         default=os.environ.get(
@@ -175,12 +187,13 @@ def main() -> None:
     if ntfy_topic:
         env["NTFY_TOPIC"] = ntfy_topic
 
+    gpu_types = parse_gpu_types(args.gpu_type)
+
     payload = {
         "name": f"dalbitalba-eval-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M')}",
         "imageName": args.container_image,
         "computeType": "GPU",
         "cloudType": "COMMUNITY",
-        "gpuTypeIds": [args.gpu_type],
         "gpuCount": 1,
         "gpuTypePriority": "availability",
         "volumeInGb": 60,
@@ -196,10 +209,28 @@ def main() -> None:
     }
 
     if args.dry_run:
-        print(json.dumps(redact_payload(payload), indent=2, ensure_ascii=False))
+        dry_run_payload = dict(payload)
+        dry_run_payload["gpuTypeIds"] = gpu_types
+        print(json.dumps(redact_payload(dry_run_payload), indent=2, ensure_ascii=False))
         return
 
-    data = runpod_request(api_key, payload)
+    last_error: RuntimeError | None = None
+    chosen_gpu: str | None = None
+    data: dict | None = None
+    for gpu_type in gpu_types:
+        candidate_payload = dict(payload)
+        candidate_payload["gpuTypeIds"] = [gpu_type]
+        try:
+            data = runpod_request(api_key, candidate_payload)
+            chosen_gpu = gpu_type
+            break
+        except RuntimeError as exc:
+            last_error = exc
+            print(f"[warn] gpu launch failed for {gpu_type}: {exc}")
+
+    if data is None or chosen_gpu is None:
+        raise SystemExit(str(last_error or RuntimeError("RunPod eval launch failed")))
+
     pod_id = data["id"]
     save_state(
         pod_id,
@@ -207,7 +238,8 @@ def main() -> None:
             "github_repo": github_repo,
             "github_ref": github_ref,
             "hf_adapter_repo": hf_adapter_repo,
-            "gpu_type": args.gpu_type,
+            "gpu_type": chosen_gpu,
+            "gpu_type_candidates": gpu_types,
             "base_model": base_model,
         },
     )
