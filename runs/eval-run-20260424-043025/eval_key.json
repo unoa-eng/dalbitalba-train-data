@@ -1,0 +1,422 @@
+[
+  {
+    "id": 1,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 19,
+    "kind": "comment"
+  },
+  {
+    "id": 2,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 86,
+    "kind": "comment"
+  },
+  {
+    "id": 3,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1199613",
+    "kind": "comment"
+  },
+  {
+    "id": 4,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 25,
+    "kind": "post"
+  },
+  {
+    "id": 5,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1189350",
+    "kind": "post"
+  },
+  {
+    "id": 6,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1193404",
+    "kind": "comment"
+  },
+  {
+    "id": 7,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1197335",
+    "kind": "post"
+  },
+  {
+    "id": 8,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1199909",
+    "kind": "post"
+  },
+  {
+    "id": 9,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 37,
+    "kind": "comment"
+  },
+  {
+    "id": 10,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 64,
+    "kind": "comment"
+  },
+  {
+    "id": 11,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 5,
+    "kind": "post"
+  },
+  {
+    "id": 12,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1194191",
+    "kind": "comment"
+  },
+  {
+    "id": 13,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 83,
+    "kind": "post"
+  },
+  {
+    "id": 14,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1186138",
+    "kind": "comment"
+  },
+  {
+    "id": 15,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 42,
+    "kind": "post"
+  },
+  {
+    "id": 16,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1196165",
+    "kind": "post"
+  },
+  {
+    "id": 17,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 9,
+    "kind": "post"
+  },
+  {
+    "id": 18,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 51,
+    "kind": "post"
+  },
+  {
+    "id": 19,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1186632",
+    "kind": "comment"
+  },
+  {
+    "id": 20,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1197897",
+    "kind": "post"
+  },
+  {
+    "id": 21,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1194689",
+    "kind": "post"
+  },
+  {
+    "id": 22,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 4,
+    "kind": "comment"
+  },
+  {
+    "id": 23,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 73,
+    "kind": "comment"
+  },
+  {
+    "id": 24,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 13,
+    "kind": "comment"
+  },
+  {
+    "id": 25,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 91,
+    "kind": "post"
+  },
+  {
+    "id": 26,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1192227",
+    "kind": "comment"
+  },
+  {
+    "id": 27,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 24,
+    "kind": "comment"
+  },
+  {
+    "id": 28,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 26,
+    "kind": "comment"
+  },
+  {
+    "id": 29,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 20,
+    "kind": "post"
+  },
+  {
+    "id": 30,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1189007",
+    "kind": "post"
+  },
+  {
+    "id": 31,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1187872",
+    "kind": "comment"
+  },
+  {
+    "id": 32,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1188277",
+    "kind": "comment"
+  },
+  {
+    "id": 33,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1188392",
+    "kind": "post"
+  },
+  {
+    "id": 34,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 23,
+    "kind": "post"
+  },
+  {
+    "id": 35,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1187591",
+    "kind": "post"
+  },
+  {
+    "id": 36,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1192430",
+    "kind": "post"
+  },
+  {
+    "id": 37,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 48,
+    "kind": "post"
+  },
+  {
+    "id": 38,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1193622",
+    "kind": "comment"
+  },
+  {
+    "id": 39,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 12,
+    "kind": "post"
+  },
+  {
+    "id": 40,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1190465",
+    "kind": "post"
+  },
+  {
+    "id": 41,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 8,
+    "kind": "post"
+  },
+  {
+    "id": 42,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 34,
+    "kind": "comment"
+  },
+  {
+    "id": 43,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 43,
+    "kind": "post"
+  },
+  {
+    "id": 44,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1187325",
+    "kind": "post"
+  },
+  {
+    "id": 45,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 74,
+    "kind": "post"
+  },
+  {
+    "id": 46,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 97,
+    "kind": "comment"
+  },
+  {
+    "id": 47,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1188687",
+    "kind": "comment"
+  },
+  {
+    "id": 48,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1193803",
+    "kind": "post"
+  },
+  {
+    "id": 49,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 79,
+    "kind": "comment"
+  },
+  {
+    "id": 50,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1200121",
+    "kind": "comment"
+  },
+  {
+    "id": 51,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 81,
+    "kind": "post"
+  },
+  {
+    "id": 52,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1194999",
+    "kind": "comment"
+  },
+  {
+    "id": 53,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1189504",
+    "kind": "comment"
+  },
+  {
+    "id": 54,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1193575",
+    "kind": "comment"
+  },
+  {
+    "id": 55,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 27,
+    "kind": "comment"
+  },
+  {
+    "id": 56,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 100,
+    "kind": "comment"
+  },
+  {
+    "id": 57,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1190893",
+    "kind": "post"
+  },
+  {
+    "id": 58,
+    "truth": "AI",
+    "source": "generated",
+    "source_id": 33,
+    "kind": "comment"
+  },
+  {
+    "id": 59,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1187592",
+    "kind": "comment"
+  },
+  {
+    "id": 60,
+    "truth": "HUMAN",
+    "source": "crawl",
+    "source_id": "1197112",
+    "kind": "post"
+  }
+]

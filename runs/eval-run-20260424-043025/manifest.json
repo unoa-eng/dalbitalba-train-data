@@ -1,0 +1,8 @@
+{
+  "timestamp": "2026-04-24T04:30:25Z",
+  "status": "done_ok",
+  "github_repo": "unoa-eng/dalbitalba-train-data",
+  "hf_adapter_repo": "UNOA/dalbitalba-solar-adapters-staging",
+  "base_model": "upstage/SOLAR-10.7B-v1.0",
+  "pod_id": "s6gcx0k4dm5k7s"
+}

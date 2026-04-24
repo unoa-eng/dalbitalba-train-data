@@ -1,0 +1,667 @@
+{
+  "judge": "consensus",
+  "sample_count": 60,
+  "accuracy": 0.65,
+  "predictions": [
+    {
+      "sample_id": 1,
+      "truth": "AI",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 2,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 3,
+      "truth": "HUMAN",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 4,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 5,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 6,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 7,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 8,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 9,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 10,
+      "truth": "AI",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 11,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 12,
+      "truth": "HUMAN",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 13,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 14,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 15,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 16,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 17,
+      "truth": "AI",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 18,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 19,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 20,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 21,
+      "truth": "HUMAN",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 22,
+      "truth": "AI",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 23,
+      "truth": "AI",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 24,
+      "truth": "AI",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 25,
+      "truth": "AI",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 26,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 27,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 28,
+      "truth": "AI",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 29,
+      "truth": "AI",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 30,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 31,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 32,
+      "truth": "HUMAN",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 33,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 34,
+      "truth": "AI",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 35,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 36,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 37,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 38,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 39,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 40,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 41,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 42,
+      "truth": "AI",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 43,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 44,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 45,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 46,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 47,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 48,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 49,
+      "truth": "AI",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 50,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 51,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 52,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 53,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 54,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 55,
+      "truth": "AI",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 56,
+      "truth": "AI",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 57,
+      "truth": "HUMAN",
+      "prediction": "AI",
+      "votes": [
+        "AI",
+        "AI",
+        "AI"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 58,
+      "truth": "AI",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": false
+    },
+    {
+      "sample_id": 59,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    },
+    {
+      "sample_id": 60,
+      "truth": "HUMAN",
+      "prediction": "HUMAN",
+      "votes": [
+        "HUMAN",
+        "HUMAN",
+        "HUMAN"
+      ],
+      "is_correct": true
+    }
+  ]
+}
