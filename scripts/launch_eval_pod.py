@@ -126,13 +126,15 @@ def detect_git_ref() -> str:
 
 
 def main() -> None:
+    load_env()
+
     parser = argparse.ArgumentParser(description="Launch dalbitalba-train-data RunPod eval pod")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument(
         "--gpu-type",
         default=os.environ.get(
             "GPU_TYPE",
-            "NVIDIA A100 80GB PCIe,NVIDIA L40S,NVIDIA RTX 6000 Ada Generation",
+            "NVIDIA L40S,NVIDIA A100 80GB PCIe,NVIDIA RTX 6000 Ada Generation",
         ),
         help="Comma-separated GPU preference list (tried in order)",
     )
@@ -140,12 +142,10 @@ def main() -> None:
         "--container-image",
         default=os.environ.get(
             "CONTAINER_IMAGE",
-            "runpod/pytorch:2.2.0-py3.10-cuda12.1.1-devel-ubuntu22.04",
+            "runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04",
         ),
     )
     args = parser.parse_args()
-
-    load_env()
 
     api_key = require_env("RUNPOD_API_KEY")
     github_token = require_env("GITHUB_TOKEN")
@@ -156,7 +156,7 @@ def main() -> None:
     hf_token = os.environ.get("HF_TOKEN", "").strip()
     openai_api_key = os.environ.get("OPENAI_API_KEY", "").strip()
     ntfy_topic = os.environ.get("NTFY_TOPIC", "").strip()
-    base_model = os.environ.get("BASE_MODEL", "upstage/SOLAR-10.7B-v1.0").strip()
+    base_model = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base").strip()
 
     # SECURITY: never embed the PAT in dockerStartCmd — RunPod persists the
     # pod spec including this field. Use env.GITHUB_TOKEN via shell expansion
@@ -178,6 +178,7 @@ def main() -> None:
         "ANTHROPIC_API_KEY": anthropic_api_key,
         "RUNPOD_API_KEY": api_key,
         "BASE_MODEL": base_model,
+        "HF_HUB_ENABLE_HF_TRANSFER": "1",
         "RUNPOD_POD_ID": "__SELF__",
     }
     if hf_token:
