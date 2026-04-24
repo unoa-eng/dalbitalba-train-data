@@ -155,28 +155,51 @@ def main() -> None:
     github_ref = os.environ.get("GITHUB_REF", "").strip() or detect_git_ref()
     ntfy_topic = os.environ.get("NTFY_TOPIC", "").strip()
     cloud_type = os.environ.get("RUNPOD_CLOUD_TYPE", "COMMUNITY").strip().upper() or "COMMUNITY"
-    train_cpt_jsonl = os.environ.get("TRAIN_CPT_JSONL", "/workspace/data/cpt_corpus.jsonl").strip() or "/workspace/data/cpt_corpus.jsonl"
-    train_sft_jsonl = os.environ.get("TRAIN_SFT_JSONL", "/workspace/data/sft_pairs_v2.jsonl").strip() or "/workspace/data/sft_pairs_v2.jsonl"
+    base_model = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base").strip() or "Qwen/Qwen3-8B-Base"
+    train_cpt_jsonl = os.environ.get(
+        "TRAIN_CPT_JSONL", "/workspace/data/cpt_corpus.v2.jsonl"
+    ).strip() or "/workspace/data/cpt_corpus.v2.jsonl"
+    train_sft_pair_jsonl = os.environ.get(
+        "TRAIN_SFT_PAIR_JSONL", "/workspace/data/sft_pairs.v2.jsonl"
+    ).strip() or "/workspace/data/sft_pairs.v2.jsonl"
+    train_val_jsonl = os.environ.get(
+        "TRAIN_VAL_JSONL", "/workspace/data/val_set.v2.jsonl"
+    ).strip() or "/workspace/data/val_set.v2.jsonl"
     cpt_num_epochs = os.environ.get("CPT_NUM_EPOCHS", "1").strip() or "1"
     sft_num_epochs = os.environ.get("SFT_NUM_EPOCHS", "2").strip() or "2"
-    cpt_lr = os.environ.get("CPT_LR", "1e-4").strip() or "1e-4"
-    sft_lr = os.environ.get("SFT_LR", "1e-4").strip() or "1e-4"
+    cpt_lr = os.environ.get("CPT_LR", "2e-4").strip() or "2e-4"
+    sft_lr = os.environ.get("SFT_LR", "5e-5").strip() or "5e-5"
+    wandb_api_key = os.environ.get("WANDB_API_KEY", "").strip()
+    wandb_project = os.environ.get("WANDB_PROJECT", "dalbitalba-v2").strip() or "dalbitalba-v2"
+    sentry_dsn = os.environ.get("SENTRY_DSN", "").strip()
     gpu_types = parse_gpu_types(args.gpu_type)
 
     # SECURITY: never embed the PAT in dockerStartCmd — RunPod stores the pod
     # spec (including this command) and exposes it in pod detail API responses.
     # The token is injected via env.GITHUB_TOKEN below; we reference it only
     # through shell variable expansion, which the RunPod API does not persist.
+    #
+    # Also: logs tee'd to /workspace/logs/chain.log so they survive pod EXIT
+    # (network volume at /workspace persists across pod lifecycle).
     startup_cmd = (
-        "mkdir -p /workspace/logs /workspace/data /workspace/scripts /workspace/out && "
+        "mkdir -p /workspace/logs /workspace/data /workspace/scripts "
+        "/workspace/out /workspace/hf_cache && "
+        "export HF_HOME=/workspace/hf_cache && "
+        "export TOKENIZERS_PARALLELISM=false && "
         "rm -rf /workspace/repo && "
         f"git clone --branch {github_ref} --single-branch "
         f"\"https://x-access-token:${{GITHUB_TOKEN}}@github.com/{github_repo}.git\" "
         "/workspace/repo && "
+        # copy v2 data + train scripts + merge script
         "cp /workspace/repo/*.jsonl /workspace/data/ 2>/dev/null || true && "
         "cp /workspace/repo/train_*.py /workspace/ 2>/dev/null || true && "
+        "mkdir -p /workspace/scripts && "
+        "cp /workspace/repo/scripts/merge_cpt_to_fp16.py /workspace/scripts/ 2>/dev/null || true && "
         "cp /workspace/repo/chain_train.sh /workspace/chain_train.sh && "
-        "exec bash /workspace/chain_train.sh"
+        "chmod +x /workspace/chain_train.sh && "
+        # tee all logs to network volume — survives pod EXIT
+        "exec bash /workspace/chain_train.sh 2>&1 | tee -a "
+        "/workspace/logs/chain_$(date -u '+%Y%m%dT%H%M%SZ').log"
     )
 
     env = {
@@ -185,13 +208,21 @@ def main() -> None:
         "GITHUB_TOKEN": github_token,
         "GITHUB_REPO": github_repo,
         "RUNPOD_API_KEY": api_key,
+        "BASE_MODEL": base_model,
         "INPUT_JSONL": train_cpt_jsonl,
-        "SFT_JSONL": train_sft_jsonl,
+        "SFT_PAIR_JSONL": train_sft_pair_jsonl,
+        "CPT_VAL_JSONL": train_val_jsonl,
         "CPT_NUM_EPOCHS": cpt_num_epochs,
         "SFT_NUM_EPOCHS": sft_num_epochs,
         "CPT_LR": cpt_lr,
         "SFT_LR": sft_lr,
+        "WANDB_PROJECT": wandb_project,
     }
+    if wandb_api_key:
+        env["WANDB_API_KEY"] = wandb_api_key
+        env["TRAIN_REPORT_TO"] = "wandb"
+    if sentry_dsn:
+        env["SENTRY_DSN"] = sentry_dsn
     if ntfy_topic:
         env["NTFY_TOPIC"] = ntfy_topic
 
@@ -244,11 +275,13 @@ def main() -> None:
             "github_repo": github_repo,
             "github_ref": github_ref,
             "hf_username": hf_username,
+            "base_model": base_model,
             "gpu_type": chosen_gpu,
             "cloud_type": cloud_type,
             "gpu_type_candidates": gpu_types,
             "train_cpt_jsonl": train_cpt_jsonl,
-            "train_sft_jsonl": train_sft_jsonl,
+            "train_sft_pair_jsonl": train_sft_pair_jsonl,
+            "train_val_jsonl": train_val_jsonl,
             "cpt_num_epochs": cpt_num_epochs,
             "sft_num_epochs": sft_num_epochs,
             "cpt_lr": cpt_lr,

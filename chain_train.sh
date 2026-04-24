@@ -1,90 +1,79 @@
-﻿#!/usr/bin/env bash
-# chain_train.sh ??dalbitalba 臾댁씤 CPT?뭆FT?믪뾽濡쒕뱶?믪쥌猷??뚯씠?꾨씪??#
-# ?ㅽ뻾 ?꾩튂: RunPod pod ?대? (nohup ?먮뒗 startup script 濡??ㅽ뻾)
-# 濡쒓렇: /workspace/logs/chain.log (tee 濡?stdout ?숈떆 異쒕젰)
+#!/usr/bin/env bash
+# chain_train.sh v2 — CPT -> merge -> SFT -> HF upload -> stop_pod
+# Runs inside a RunPod pod. Host orchestration is launch_train_pod.py.
 #
-# ?꾩닔 ?섍꼍蹂??(pod env ??二쇱엯):
-#   HF_TOKEN       ??HuggingFace write token
-#   HF_USERNAME    ??HuggingFace username (?? unoa-labs)
-#   RUNPOD_POD_ID  ??RunPod pod ID (RunPod ?먮룞 二쇱엯)
-#   NTFY_TOPIC     ??(?좏깮) ntfy.sh topic, 鍮꾩썙?먮㈃ ?뚮┝ skip
-#   GITHUB_TOKEN   ??(?좏깮) train repo branch push token
-#   GITHUB_REPO    ??(?좏깮) train repo name, 湲곕낯媛?unoa-eng/dalbitalba-train-data
+# Required env (injected by launch_train_pod.py):
+#   HF_TOKEN          HuggingFace write token
+#   HF_USERNAME       HuggingFace user/org
+#   RUNPOD_POD_ID     auto-injected by RunPod
+#   GITHUB_TOKEN      (optional) to push run manifests back to repo
+#   GITHUB_REPO       (optional)
+#   NTFY_TOPIC        (optional) ntfy.sh push channel
+#   SENTRY_DSN        (optional)
+#   WANDB_API_KEY     (optional)
+#   WANDB_PROJECT     (optional)
 #
-# ?μ븷 ?꾨왂: graceful degradation
-#   - CPT ?ㅽ뙣 ??DONE.txt ??cpt_failed 湲곕줉, exit 1
-#   - SFT ?ㅽ뙣 ??CPT 寃곌낵留?HF ?낅줈?? DONE.txt ??sft_failed 湲곕줉
-#   - HF ?낅줈???ㅽ뙣 ??3???ъ떆?? 洹몃옒???ㅽ뙣?섎㈃ volume 蹂댁〈 ??醫낅즺
+# Graceful degradation: every failure writes DONE.txt with the stage, then
+# stop_pod. All stdout/stderr tee'd to /workspace/logs/chain.log which is
+# preserved on the network volume after pod EXIT.
 
 set -uo pipefail
-# set -e ?쒓굅: 媛쒕퀎 ?④퀎蹂꾨줈 ?ㅻ쪟 泥섎━?섏뿬 graceful degradation 援ы쁽
 
-# ?? ?붾젆?좊━ 諛?濡쒓렇 ?ㅼ젙 ?????????????????????????????????????????????????????
 WORKSPACE="/workspace"
 LOG_DIR="${WORKSPACE}/logs"
 LOG_FILE="${LOG_DIR}/chain.log"
 OUT_DIR="${WORKSPACE}/out"
 DATA_DIR="${WORKSPACE}/data"
-CPT_OUT="${OUT_DIR}/cpt-lora"
-SFT_OUT="${OUT_DIR}/sft-lora"
-DONE_FILE="${OUT_DIR}/DONE.txt"
+HF_CACHE_DIR="${WORKSPACE}/hf_cache"
 SCRIPTS_DIR="${WORKSPACE}/scripts"
 REPO_CLONE_DIR="${WORKSPACE}/repo"
-TRAIN_CPT_JSONL="${INPUT_JSONL:-${DATA_DIR}/cpt_corpus.jsonl}"
-TRAIN_SFT_JSONL="${SFT_JSONL:-${DATA_DIR}/sft_pairs_v2.jsonl}"
-TRAIN_CAI_JSONL="${CAI_JSONL:-${DATA_DIR}/cai_pairs.jsonl}"
-TRAIN_CPT_EPOCHS="${CPT_NUM_EPOCHS:-1}"
-TRAIN_SFT_EPOCHS="${SFT_NUM_EPOCHS:-3}"
 
-mkdir -p "${LOG_DIR}" "${OUT_DIR}" "${DATA_DIR}"
+CPT_OUT="${OUT_DIR}/cpt-lora"
+CPT_MERGED="${OUT_DIR}/cpt-merged-fp16"
+SFT_OUT="${OUT_DIR}/sft-lora"
+DONE_FILE="${OUT_DIR}/DONE.txt"
 
-# ?? 濡쒓렇 ?⑥닔 (stdout + ?뚯씪 ?숈떆 湲곕줉, HF_TOKEN 留덉뒪?? ?????????????????????
+TRAIN_CPT_JSONL="${INPUT_JSONL:-${DATA_DIR}/cpt_corpus.v2.jsonl}"
+TRAIN_SFT_PAIR_JSONL="${SFT_PAIR_JSONL:-${DATA_DIR}/sft_pairs.v2.jsonl}"
+TRAIN_VAL_JSONL="${CPT_VAL_JSONL:-${DATA_DIR}/val_set.v2.jsonl}"
+CPT_EPOCHS="${CPT_NUM_EPOCHS:-1}"
+SFT_EPOCHS="${SFT_NUM_EPOCHS:-2}"
+BASE_MODEL_CPT="${BASE_MODEL:-Qwen/Qwen3-8B-Base}"
+TIMESTAMP="$(date -u '+%Y%m%d-%H%M')"
+HF_REPO_SFT="${HF_USERNAME:-unoa}/dalbitalba-qwen3-sft-${TIMESTAMP}"
+HF_REPO_CPT="${HF_USERNAME:-unoa}/dalbitalba-qwen3-cpt-${TIMESTAMP}"
+export HF_HOME="${HF_CACHE_DIR}"
+export HF_REPO_SFT HF_REPO_CPT
+
+mkdir -p "${LOG_DIR}" "${OUT_DIR}" "${DATA_DIR}" "${HF_CACHE_DIR}"
+
 log() {
     local msg="$1"
     local ts
-    ts="$(date '+%Y-%m-%d %H:%M:%S')"
+    ts="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
     echo "${ts} ${msg}" | tee -a "${LOG_FILE}"
 }
 
-# HF_TOKEN ??濡쒓렇???몄텧?섏? ?딅룄濡?env 異쒕젰 ?듭젣
-log "=========================================="
-log "dalbitalba chain_train.sh ?쒖옉"
-log "  POD_ID: ${RUNPOD_POD_ID:-unknown}"
-log "  HF_USERNAME: ${HF_USERNAME:-unset}"
-log "  NTFY_TOPIC: ${NTFY_TOPIC:-(?놁쓬, ?뚮┝ skip)}"
-log "  CPT_DATA: ${TRAIN_CPT_JSONL}"
-log "  SFT_DATA: ${TRAIN_SFT_JSONL}"
-log "  CPT_EPOCHS: ${TRAIN_CPT_EPOCHS}"
-log "  SFT_EPOCHS: ${TRAIN_SFT_EPOCHS}"
-log "=========================================="
-
-# ?? ntfy ?뚮┝ ?⑥닔 ????????????????????????????????????????????????????????????
 notify() {
     local msg="$1"
     if [ -n "${NTFY_TOPIC:-}" ]; then
-        curl -s -X POST \
+        curl -fsS -m 10 \
             -H "Content-Type: text/plain; charset=utf-8" \
             --data-binary "${msg}" \
             "https://ntfy.sh/${NTFY_TOPIC}" \
             >> "${LOG_FILE}" 2>&1 || true
-        log "[ntfy] ?뚮┝ ?꾩넚: ${msg}"
     fi
 }
 
-# ?? 醫낅즺 泥섎━: pod 以묒? (蹂쇰ⅷ 蹂댁〈) ?????????????????????????????????????????
 stop_pod() {
     local reason="$1"
-    log "[醫낅즺] ?댁쑀: ${reason}"
-    notify "dalbitalba chain ${reason} ??pod 以묒?"
+    log "[stop] reason=${reason}"
+    notify "dalbitalba chain ${reason}"
     if command -v runpodctl &>/dev/null && [ -n "${RUNPOD_POD_ID:-}" ]; then
-        log "[醫낅즺] runpodctl stop pod ${RUNPOD_POD_ID}"
         runpodctl stop pod "${RUNPOD_POD_ID}" >> "${LOG_FILE}" 2>&1 || true
-    else
-        log "[醫낅즺] runpodctl ?놁쓬 ?먮뒗 RUNPOD_POD_ID 誘몄꽕?????섎룞 醫낅즺 ?꾩슂"
     fi
 }
 
-# ?? DONE.txt 湲곕줉 ?⑥닔 ???????????????????????????????????????????????????????
 write_done() {
     local status="$1"
     local extra="${2:-}"
@@ -92,38 +81,35 @@ write_done() {
         echo "timestamp=$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
         echo "status=${status}"
         [ -n "${extra}" ] && echo "detail=${extra}"
+        echo "base_model=${BASE_MODEL_CPT}"
         echo "cpt_out=${CPT_OUT}"
+        echo "cpt_merged=${CPT_MERGED}"
         echo "sft_out=${SFT_OUT}"
-        echo "hf_repo=${HF_REPO:-not_uploaded}"
+        echo "hf_repo_cpt=${HF_REPO_CPT:-}"
+        echo "hf_repo_sft=${HF_REPO_SFT:-}"
+        echo "pod_id=${RUNPOD_POD_ID:-unknown}"
     } > "${DONE_FILE}"
-    log "[DONE] ${DONE_FILE} 湲곕줉 ?꾨즺: status=${status}"
+    log "[DONE] ${DONE_FILE}"
 }
 
 persist_run_artifacts() {
     local final_status="$1"
-    local stamp
-    local branch
-    local run_dir
-    local repo_url
-    local source_ref
-    local latest_tmp
-
     if [ -z "${GITHUB_TOKEN:-}" ] || [ -z "${GITHUB_REPO:-}" ]; then
-        log "[runs] GITHUB_TOKEN/GITHUB_REPO 誘몄꽕?????먭꺽 push skip"
+        log "[runs] GITHUB_TOKEN/GITHUB_REPO 미설정 → push skip"
         return 0
     fi
     if [ ! -d "${REPO_CLONE_DIR}/.git" ]; then
-        log "[runs] repo clone 誘몄〈?????먭꺽 push skip"
+        log "[runs] repo clone 없음 → push skip"
         return 0
     fi
-
+    local stamp branch run_dir latest_tmp source_ref repo_url
     stamp="$(date -u '+%Y%m%d-%H%M%S')"
     branch="train-run-${stamp}"
     run_dir="${REPO_CLONE_DIR}/runs/${branch}"
     latest_tmp="$(mktemp)"
     mkdir -p "${run_dir}"
 
-    cp "${DONE_FILE}" "${run_dir}/DONE.txt"
+    cp "${DONE_FILE}" "${run_dir}/DONE.txt" 2>/dev/null || true
     [ -f "${LOG_FILE}" ] && cp "${LOG_FILE}" "${run_dir}/chain.log"
     [ -f "${WORKSPACE}/train_cpt.log" ] && cp "${WORKSPACE}/train_cpt.log" "${run_dir}/train_cpt.log"
     [ -f "${WORKSPACE}/train_sft.log" ] && cp "${WORKSPACE}/train_sft.log" "${run_dir}/train_sft.log"
@@ -132,26 +118,24 @@ persist_run_artifacts() {
 {
   "timestamp": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')",
   "status": "${final_status}",
-  "hf_repo": "${HF_REPO:-}",
-  "hf_status": "${HF_STATUS:-}",
+  "base_model": "${BASE_MODEL_CPT}",
   "pod_id": "${RUNPOD_POD_ID:-unknown}",
-  "cpt_elapsed_min": "${CPT_ELAPSED:-}",
-  "sft_elapsed_min": "${SFT_ELAPSED:-}",
-  "total_elapsed_min": "${CHAIN_TOTAL:-}",
+  "hf_repo_cpt": "${HF_REPO_CPT:-}",
+  "hf_repo_sft": "${HF_REPO_SFT:-}",
+  "cpt_epochs": ${CPT_EPOCHS},
+  "sft_epochs": ${SFT_EPOCHS},
   "source_repo": "${GITHUB_REPO}"
 }
 EOF
 
-    source_ref="$(
-        cd "${REPO_CLONE_DIR}" && git rev-parse --abbrev-ref HEAD 2>/dev/null || true
-    )"
-
+    source_ref="$(cd "${REPO_CLONE_DIR}" && git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
     mkdir -p "${REPO_CLONE_DIR}/runs"
     cat > "${latest_tmp}" <<EOF
 {
   "branch": "${branch}",
   "status": "${final_status}",
-  "hf_repo": "${HF_REPO:-}",
+  "hf_repo_cpt": "${HF_REPO_CPT:-}",
+  "hf_repo_sft": "${HF_REPO_SFT:-}",
   "timestamp": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 }
 EOF
@@ -160,329 +144,265 @@ EOF
     repo_url="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git"
     (
         cd "${REPO_CLONE_DIR}"
-        git checkout -b "${branch}" >/dev/null 2>&1
-        git add "runs/${branch}" "runs/latest-train.json"
+        git checkout -b "${branch}" >/dev/null 2>&1 || true
+        git add "runs/${branch}" "runs/latest-train.json" >/dev/null 2>&1 || true
         git commit -m "train: ${branch}" >/dev/null 2>&1 || exit 0
         git push "${repo_url}" "${branch}" >/dev/null 2>&1
-    )
+    ) && log "[runs] push branch ${branch}" || log "[runs] push 실패 ${branch}"
 
-    if [ $? -eq 0 ]; then
-        log "[runs] ?먭꺽 branch push ?꾨즺: ${branch}"
-        notify "dalbitalba train artifact push ?꾨즺: ${branch}"
-        echo "${branch}" > "${OUT_DIR}/RUN_BRANCH.txt"
-        if [ -n "${source_ref}" ] && [ "${source_ref}" != "HEAD" ]; then
-            if (
-                cd "${REPO_CLONE_DIR}"
-                git checkout "${source_ref}" >/dev/null 2>&1
-                mkdir -p runs
-                cp "${latest_tmp}" "runs/latest-train.json"
-                git add "runs/latest-train.json"
-                git commit -m "train: update latest pointer" >/dev/null 2>&1 || exit 0
-                git push "${repo_url}" "${source_ref}" >/dev/null 2>&1
-            ); then
-                log "[runs] latest pointer updated on ${source_ref}"
-            else
-                log "[runs] latest pointer update failed on ${source_ref}"
-            fi
-        else
-            log "[runs] source ref unavailable; latest pointer push skipped"
-        fi
-        rm -f "${latest_tmp}"
-    else
-        log "[runs] ?먭꺽 branch push ?ㅽ뙣: ${branch}"
+    if [ -n "${source_ref}" ] && [ "${source_ref}" != "HEAD" ]; then
+        (
+            cd "${REPO_CLONE_DIR}"
+            git checkout "${source_ref}" >/dev/null 2>&1
+            mkdir -p runs
+            cp "${latest_tmp}" "runs/latest-train.json"
+            git add "runs/latest-train.json"
+            git commit -m "train: update latest pointer" >/dev/null 2>&1 || exit 0
+            git push "${repo_url}" "${source_ref}" >/dev/null 2>&1
+        ) && log "[runs] latest pointer pushed to ${source_ref}" || true
     fi
+    rm -f "${latest_tmp}"
 }
 
-# ?? STEP 0: ?꾩닔 ?섍꼍蹂???뺤씤 ???????????????????????????????????????????????
-log "[0/5] ?섍꼍 蹂???뺤씤..."
+# ── Trap: on SIGTERM / SIGINT make sure DONE.txt reflects the state ──
+on_exit() {
+    local rc=$?
+    if [ "${rc}" -ne 0 ] && [ ! -f "${DONE_FILE}" ]; then
+        write_done "unexpected_exit" "rc=${rc}"
+    fi
+}
+trap on_exit EXIT
+
+# ── STEP 0 env check ────────────────────────────────────────────────
+log "=========================================="
+log "dalbitalba chain_train.sh v2 시작"
+log "  pod          : ${RUNPOD_POD_ID:-unknown}"
+log "  base         : ${BASE_MODEL_CPT}"
+log "  hf_repo_cpt  : ${HF_REPO_CPT}"
+log "  hf_repo_sft  : ${HF_REPO_SFT}"
+log "  cpt_epochs   : ${CPT_EPOCHS}"
+log "  sft_epochs   : ${SFT_EPOCHS}"
+log "=========================================="
+
 if [ -z "${HF_TOKEN:-}" ]; then
-    log "[ERROR] HF_TOKEN ???ㅼ젙?섏? ?딆븯?듬땲?? HF ?낅줈??遺덇?."
-    write_done "env_error" "HF_TOKEN missing"
+    log "[ERROR] HF_TOKEN 미설정"
+    write_done "env_error" "HF_TOKEN"
     stop_pod "env_error"
     exit 1
 fi
 if [ -z "${HF_USERNAME:-}" ]; then
-    log "[ERROR] HF_USERNAME ???ㅼ젙?섏? ?딆븯?듬땲??"
-    write_done "env_error" "HF_USERNAME missing"
+    log "[ERROR] HF_USERNAME 미설정"
+    write_done "env_error" "HF_USERNAME"
     stop_pod "env_error"
     exit 1
 fi
 
-# ?곗씠???뚯씪 議댁옱 ?뺤씤
-for f in "${TRAIN_CPT_JSONL}" "${TRAIN_SFT_JSONL}"; do
+for f in "${TRAIN_CPT_JSONL}" "${TRAIN_SFT_PAIR_JSONL}"; do
     if [ ! -f "${f}" ]; then
-        log "[ERROR] ?꾩닔 ?곗씠???뚯씪 ?놁쓬: ${f}"
+        log "[ERROR] 데이터 파일 없음: ${f}"
         write_done "data_missing" "${f}"
         stop_pod "data_missing"
         exit 1
     fi
 done
-log "[0/5] ?섍꼍 ?뺤씤 ?꾨즺. ?곗씠???뚯씪 ?뺤씤 ?꾨즺."
 
-# ?? STEP 1: ?⑦궎吏 ?ㅼ튂 ??????????????????????????????????????????????????????
-log "[1/5] ?꾩닔 ?⑦궎吏 ?ㅼ튂..."
-pip install -q --no-cache-dir --upgrade \
-    "transformers==4.44.2" \
-    "peft==0.12.0" \
-    "bitsandbytes==0.43.3" \
-    "datasets==2.21.0" \
+# ── STEP 1 pip install ──────────────────────────────────────────────
+log "[1/6] pip install (pinned)"
+pip install -q --no-cache-dir --upgrade pip >> "${LOG_FILE}" 2>&1
+pip install -q --no-cache-dir \
+    "transformers==4.51.3" \
+    "peft==0.13.2" \
+    "bitsandbytes==0.49.2" \
+    "trl==0.12.1" \
     "accelerate==0.33.0" \
+    "datasets==2.21.0" \
     "huggingface_hub>=0.24.0" \
     "safetensors>=0.4.3" \
     "sentencepiece" \
-    "tokenizers>=0.19" \
+    "tokenizers>=0.21" \
     "protobuf" \
+    "wandb" \
+    "sentry-sdk" \
+    "numpy<2.0" \
     >> "${LOG_FILE}" 2>&1
+PIP_RC=$?
 
-if [ $? -ne 0 ]; then
-    log "[ERROR] ?⑦궎吏 ?ㅼ튂 ?ㅽ뙣"
+# flash-attn은 빌드 오래 걸려서 별도 + 실패해도 계속 진행 (eager fallback)
+pip install -q --no-cache-dir --no-build-isolation \
+    "flash-attn==2.6.3" >> "${LOG_FILE}" 2>&1 || \
+    log "[WARN] flash-attn 설치 실패 — eager attention fallback"
+
+if [ ${PIP_RC} -ne 0 ]; then
+    log "[ERROR] pip 필수 패키지 설치 실패"
     write_done "install_failed"
     stop_pod "install_failed"
     exit 1
 fi
-log "[1/5] ?⑦궎吏 ?ㅼ튂 ?꾨즺."
 
-# ?? train scripts ?뺤씤 諛?蹂듭궗 ???????????????????????????????????????????????
-# launch_chain.py 媛 scripts/ 瑜??④퍡 ?낅줈?쒗뻽?ㅺ퀬 媛??# ?놁쑝硫?SCRIPTS_DIR ?먯꽌 李얠븘 WORKSPACE 猷⑦듃濡?蹂듭궗
-python - <<'EOF' >> "${LOG_FILE}" 2>&1
-import torch
-import transformers
-import peft
-import bitsandbytes
-import datasets
-
-print("torch", torch.__version__, "cuda", torch.cuda.is_available(), torch.cuda.device_count())
+python - <<'PY' >> "${LOG_FILE}" 2>&1
+import torch, transformers, peft, bitsandbytes, datasets, trl, accelerate
+print("torch", torch.__version__, "cuda", torch.cuda.is_available())
 print("transformers", transformers.__version__)
 print("peft", peft.__version__)
 print("bitsandbytes", bitsandbytes.__version__)
+print("trl", trl.__version__)
 print("datasets", datasets.__version__)
-EOF
+print("accelerate", accelerate.__version__)
+PY
 
-if [ $? -ne 0 ]; then
-    log "[ERROR] import smoke test failed"
-    write_done "import_failed"
-    stop_pod "import_failed"
-    exit 1
-fi
-
+# ── copy train scripts from repo to workspace if needed ─────────────
 for script in train_cpt.py train_sft.py; do
     if [ ! -f "${WORKSPACE}/${script}" ]; then
-        if [ -f "${SCRIPTS_DIR}/${script}" ]; then
-            cp "${SCRIPTS_DIR}/${script}" "${WORKSPACE}/${script}"
-            log "  蹂듭궗: ${SCRIPTS_DIR}/${script} ??${WORKSPACE}/${script}"
-        else
-            log "[ERROR] ${script} 瑜?李얠쓣 ???놁뒿?덈떎. (${WORKSPACE}/ ?먮뒗 ${SCRIPTS_DIR}/)"
-            write_done "script_missing" "${script}"
-            stop_pod "script_missing"
-            exit 1
+        if [ -f "${REPO_CLONE_DIR}/${script}" ]; then
+            cp "${REPO_CLONE_DIR}/${script}" "${WORKSPACE}/${script}"
         fi
     fi
 done
-
-# CAI ?뚯씪? ?좏깮??(?놁쑝硫?SFT ?꾩슜?쇰줈 吏꾪뻾)
-if [ ! -f "${DATA_DIR}/cai_pairs.filtered.jsonl" ]; then
-    log "[WARN] cai_pairs.filtered.jsonl ?놁쓬 ??SFT ?꾩슜?쇰줈 吏꾪뻾"
-    # train_sft.py ??CAI ?뚯씪 ?놁쑝硫?SFT留??ъ슜 (graceful)
-else
-    # train_sft.py 媛 cai_pairs.jsonl ??李얠쑝誘濡?symlink ?앹꽦
-    ln -sf "${DATA_DIR}/cai_pairs.filtered.jsonl" "${TRAIN_CAI_JSONL}" 2>/dev/null || true
+if [ ! -f "${WORKSPACE}/scripts/merge_cpt_to_fp16.py" ]; then
+    mkdir -p "${WORKSPACE}/scripts"
+    cp "${REPO_CLONE_DIR}/scripts/merge_cpt_to_fp16.py" "${WORKSPACE}/scripts/merge_cpt_to_fp16.py" 2>/dev/null || true
 fi
 
-# ?? STEP 2: CPT ?숈뒿 ?????????????????????????????????????????????????????????
-log "[2/5] CPT ?숈뒿 ?쒖옉 (?덉긽 ~18?쒓컙)..."
-notify "dalbitalba CPT ?숈뒿 ?쒖옉 ??pod ${RUNPOD_POD_ID:-unknown}"
+# ── STEP 2 CPT ──────────────────────────────────────────────────────
+log "[2/6] CPT 학습 시작 (base=${BASE_MODEL_CPT})"
+notify "dalbitalba CPT 시작 — ${RUNPOD_POD_ID:-unknown}"
 
 CPT_START=$(date +%s)
+BASE_MODEL="${BASE_MODEL_CPT}" \
 INPUT_JSONL="${TRAIN_CPT_JSONL}" \
-CPT_NUM_EPOCHS="${TRAIN_CPT_EPOCHS}" \
+CPT_VAL_JSONL="${TRAIN_VAL_JSONL}" \
+CPT_NUM_EPOCHS="${CPT_EPOCHS}" \
 CPT_OUTPUT_DIR="${CPT_OUT}" \
 CPT_CKPT_DIR="${OUT_DIR}/cpt-ckpt" \
 CPT_LOG_FILE="${WORKSPACE}/train_cpt.log" \
+CPT_HUB_MODEL_ID="${HF_REPO_CPT}" \
 python "${WORKSPACE}/train_cpt.py" >> "${LOG_FILE}" 2>&1
 CPT_EXIT=$?
 CPT_END=$(date +%s)
 CPT_ELAPSED=$(( (CPT_END - CPT_START) / 60 ))
 
 if [ ${CPT_EXIT} -ne 0 ]; then
-    log "[ERROR] CPT ?숈뒿 ?ㅽ뙣 (exit ${CPT_EXIT}, ${CPT_ELAPSED}遺?寃쎄낵)"
-    write_done "cpt_failed" "exit_code=${CPT_EXIT} elapsed_min=${CPT_ELAPSED}"
-    notify "dalbitalba CPT ?ㅽ뙣 ??exit ${CPT_EXIT}"
+    log "[ERROR] CPT 실패 exit=${CPT_EXIT} elapsed=${CPT_ELAPSED}m"
+    write_done "cpt_failed" "exit=${CPT_EXIT} min=${CPT_ELAPSED}"
+    notify "dalbitalba CPT 실패 — exit ${CPT_EXIT}"
+    persist_run_artifacts "cpt_failed"
     stop_pod "cpt_failed"
     exit 1
 fi
+log "[2/6] CPT 완료 (${CPT_ELAPSED}m)"
+notify "dalbitalba CPT 완료 (${CPT_ELAPSED}m)"
 
-# CPT 理쒖쥌 loss 異붿텧 (train_cpt.log ?먯꽌 留덉?留?loss ??
-CPT_LOSS=$(grep -E "loss" "${WORKSPACE}/train_cpt.log" 2>/dev/null | tail -1 || echo "loss=N/A")
-log "[2/5] CPT ?꾨즺: ${CPT_ELAPSED}遺??뚯슂 | ${CPT_LOSS}"
-notify "dalbitalba CPT ?꾨즺 (${CPT_ELAPSED}min) ??SFT ?쒖옉"
-
-# ?? STEP 3: SFT ?숈뒿 ?????????????????????????????????????????????????????????
-log "[3/5] SFT ?숈뒿 ?쒖옉 (?덉긽 ~5?쒓컙)..."
-
-SFT_START=$(date +%s)
-SFT_JSONL="${TRAIN_SFT_JSONL}" \
-CAI_JSONL="${TRAIN_CAI_JSONL}" \
+# ── STEP 3 merge ────────────────────────────────────────────────────
+log "[3/6] CPT adapter → fp16 merge"
+BASE_MODEL="${BASE_MODEL_CPT}" \
 CPT_LORA_DIR="${CPT_OUT}" \
-SFT_NUM_EPOCHS="${TRAIN_SFT_EPOCHS}" \
+CPT_MERGED_DIR="${CPT_MERGED}" \
+python "${WORKSPACE}/scripts/merge_cpt_to_fp16.py" >> "${LOG_FILE}" 2>&1
+MERGE_EXIT=$?
+if [ ${MERGE_EXIT} -ne 0 ]; then
+    log "[ERROR] merge 실패 exit=${MERGE_EXIT}"
+    write_done "merge_failed" "exit=${MERGE_EXIT}"
+    notify "dalbitalba merge 실패"
+    persist_run_artifacts "merge_failed"
+    stop_pod "merge_failed"
+    exit 1
+fi
+log "[3/6] merge 완료"
+
+# ── STEP 4 SFT ──────────────────────────────────────────────────────
+log "[4/6] SFT 학습 시작 (base=${CPT_MERGED})"
+notify "dalbitalba SFT 시작"
+SFT_START=$(date +%s)
+BASE_MODEL="${CPT_MERGED}" \
+SFT_RAW_JSONL="${TRAIN_CPT_JSONL}" \
+SFT_PAIR_JSONL="${TRAIN_SFT_PAIR_JSONL}" \
+SFT_VAL_JSONL="${TRAIN_VAL_JSONL}" \
+SFT_NUM_EPOCHS="${SFT_EPOCHS}" \
 SFT_OUTPUT_DIR="${SFT_OUT}" \
 SFT_CKPT_DIR="${OUT_DIR}/sft-ckpt" \
 SFT_LOG_FILE="${WORKSPACE}/train_sft.log" \
+SFT_HUB_MODEL_ID="${HF_REPO_SFT}" \
 python "${WORKSPACE}/train_sft.py" >> "${LOG_FILE}" 2>&1
 SFT_EXIT=$?
 SFT_END=$(date +%s)
 SFT_ELAPSED=$(( (SFT_END - SFT_START) / 60 ))
 
-SFT_LOSS=$(grep -E "loss" "${WORKSPACE}/train_sft.log" 2>/dev/null | tail -1 || echo "loss=N/A")
-
+SFT_STATUS="ok"
 if [ ${SFT_EXIT} -ne 0 ]; then
-    log "[WARN] SFT ?숈뒿 ?ㅽ뙣 (exit ${SFT_EXIT}, ${SFT_ELAPSED}遺?寃쎄낵). CPT 寃곌낵留??낅줈??吏꾪뻾."
+    log "[WARN] SFT 실패 exit=${SFT_EXIT} — CPT merged만 배포"
     SFT_STATUS="sft_failed"
-    notify "dalbitalba SFT failed, upload CPT adapter only"
-else
-    log "[3/5] SFT ?꾨즺: ${SFT_ELAPSED}遺??뚯슂 | ${SFT_LOSS}"
-    SFT_STATUS="ok"
-    notify "dalbitalba SFT ?꾨즺 (${SFT_ELAPSED}min) ??HF ?낅줈???쒖옉"
 fi
 
-# ?? STEP 4: HuggingFace Hub ?낅줈????????????????????????????????????????????
-log "[4/5] HuggingFace Hub ?낅줈??.."
-
-TIMESTAMP=$(date -u '+%Y%m%d-%H%M')
-HF_REPO="${HF_USERNAME}/dalbitalba-solar-cpt-sft-${TIMESTAMP}"
-export HF_REPO
-
-# ?낅줈??Python ?ㅽ겕由쏀듃 (?몃씪??
-# HF_TOKEN ? ?섍꼍蹂?섎줈 ?꾨떖 ??濡쒓렇??吏곸젒 異쒕젰?섏? ?딆쓬
-HF_UPLOAD_SCRIPT=$(cat << 'PYEOF'
-import os
-import sys
-import time
+# ── STEP 5 HF upload (both CPT lora and SFT lora already pushed via hub_strategy)
+log "[5/6] HF 최종 upload (adapter dirs)"
+python - <<PYEOF >> "${LOG_FILE}" 2>&1
+import os, sys, time
 from huggingface_hub import HfApi, create_repo
-
 api = HfApi()
-token = os.environ["HF_TOKEN"]
-repo_id = os.environ["HF_REPO"]
+tok = os.environ["HF_TOKEN"]
+cpt_repo = os.environ["HF_REPO_CPT"]
+sft_repo = os.environ["HF_REPO_SFT"]
 cpt_out = os.environ.get("CPT_OUT", "/workspace/out/cpt-lora")
 sft_out = os.environ.get("SFT_OUT", "/workspace/out/sft-lora")
 sft_status = os.environ.get("SFT_STATUS", "ok")
 
-print(f"[hf_upload] repo: {repo_id}")
-
-# repo ?앹꽦 (private)
-try:
-    create_repo(repo_id=repo_id, token=token, private=True, exist_ok=True)
-    print(f"[hf_upload] repo ?앹꽦/?뺤씤 ?꾨즺")
-except Exception as e:
-    print(f"[hf_upload] repo ?앹꽦 ?ㅻ쪟: {e}")
-    sys.exit(1)
-
-def upload_folder_with_retry(local_path, path_in_repo, retries=3):
-    for attempt in range(1, retries + 1):
+def push(repo_id, folder, path_in_repo="adapter"):
+    try:
+        create_repo(repo_id=repo_id, token=tok, private=True, exist_ok=True)
+    except Exception as e:
+        print("create_repo err", repo_id, e)
+        return False
+    for attempt in range(1, 4):
         try:
             api.upload_folder(
-                folder_path=local_path,
-                repo_id=repo_id,
-                path_in_repo=path_in_repo,
-                token=token,
-                repo_type="model",
+                folder_path=folder, repo_id=repo_id,
+                path_in_repo=path_in_repo, token=tok, repo_type="model",
             )
-            print(f"[hf_upload] ?낅줈???꾨즺: {local_path} ??{path_in_repo}")
+            print(f"[push] {folder} -> {repo_id}/{path_in_repo}")
             return True
         except Exception as e:
-            print(f"[hf_upload] attempt {attempt}/{retries} ?ㅽ뙣: {e}")
-            if attempt < retries:
-                time.sleep(30 * attempt)
+            print(f"[push] attempt {attempt} fail: {e}")
+            time.sleep(20 * attempt)
     return False
 
-# CPT adapter ?낅줈??if os.path.isdir(cpt_out):
-    ok = upload_folder_with_retry(cpt_out, "cpt-lora")
-    if not ok:
-        print("[hf_upload] CPT ?낅줈??理쒖쥌 ?ㅽ뙣")
-        sys.exit(2)
-else:
-    print(f"[hf_upload] CPT ?붾젆?좊━ ?놁쓬: {cpt_out}")
-    sys.exit(2)
-
-# SFT adapter ?낅줈??(sft ?깃났 ?쒕쭔)
-if sft_status == "ok" and os.path.isdir(sft_out):
-    ok = upload_folder_with_retry(sft_out, "sft-lora")
-    if not ok:
-        print("[hf_upload] SFT ?낅줈??理쒖쥌 ?ㅽ뙣 (CPT ???낅줈?쒕맖)")
-        sys.exit(3)
-else:
-    print(f"[hf_upload] SFT skip (status={sft_status})")
-
-print(f"[hf_upload] ?꾩껜 ?꾨즺: https://huggingface.co/{repo_id}")
+ok1 = push(cpt_repo, cpt_out, "cpt-lora") if os.path.isdir(cpt_out) else False
+ok2 = push(sft_repo, sft_out, "sft-lora") if (sft_status == "ok" and os.path.isdir(sft_out)) else False
+print(f"[hf] cpt_push={ok1} sft_push={ok2}")
+sys.exit(0 if (ok1 and (ok2 or sft_status != "ok")) else 3)
 PYEOF
-)
-
-HF_UPLOAD_EXIT=0
-CPT_OUT="${CPT_OUT}" SFT_OUT="${SFT_OUT}" SFT_STATUS="${SFT_STATUS}" \
-    python - << EOF >> "${LOG_FILE}" 2>&1
-${HF_UPLOAD_SCRIPT}
-EOF
 HF_UPLOAD_EXIT=$?
-
-# ?낅줈??寃곌낵 泥섎━
-case ${HF_UPLOAD_EXIT} in
-    0)
-        log "[4/5] HF ?낅줈???꾨즺: https://huggingface.co/${HF_REPO}"
-        notify "dalbitalba HF ?낅줈???꾨즺 ??https://huggingface.co/${HF_REPO}"
-        HF_STATUS="uploaded"
-        ;;
-    2)
-        log "[ERROR] HF CPT ?낅줈???ㅽ뙣 (3???쒕룄). adapter ??volume ??蹂댁〈??"
-        notify "dalbitalba HF ?낅줈???ㅽ뙣 ??volume 蹂댁〈"
-        HF_STATUS="upload_failed"
-        ;;
-    3)
-        log "[WARN] HF SFT ?낅줈???ㅽ뙣. CPT ???낅줈?쒕맖."
-        HF_STATUS="sft_upload_failed"
-        ;;
-    *)
-        log "[ERROR] HF ?낅줈???????녿뒗 ?ㅻ쪟 (exit ${HF_UPLOAD_EXIT})"
-        HF_STATUS="upload_error"
-        ;;
+case "${HF_UPLOAD_EXIT}" in
+    0) log "[5/6] HF upload 완료"; HF_STATUS="uploaded" ;;
+    3) log "[WARN] HF upload 일부 실패"; HF_STATUS="upload_partial" ;;
+    *) log "[ERROR] HF upload 오류 ${HF_UPLOAD_EXIT}"; HF_STATUS="upload_failed" ;;
 esac
 
-# ?? STEP 5: DONE.txt 湲곕줉 ????????????????????????????????????????????????????
-log "[5/5] ?꾨즺 湲곕줉..."
-
+# ── STEP 6 wrap up ──────────────────────────────────────────────────
 CHAIN_END=$(date +%s)
-CHAIN_TOTAL=$(( (CHAIN_END - CPT_START) / 60 ))
+TOTAL_MIN=$(( (CHAIN_END - CPT_START) / 60 ))
+
+FINAL_STATUS="done_ok"
+[ "${SFT_STATUS}" = "sft_failed" ] && FINAL_STATUS="done_cpt_only"
+[ "${HF_STATUS}" = "upload_failed" ] && FINAL_STATUS="done_no_upload"
 
 {
     echo "timestamp=$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
-    echo "total_elapsed_min=${CHAIN_TOTAL}"
+    echo "status=${FINAL_STATUS}"
+    echo "base_model=${BASE_MODEL_CPT}"
     echo "cpt_elapsed_min=${CPT_ELAPSED}"
-    echo "cpt_loss=${CPT_LOSS}"
-    echo "sft_status=${SFT_STATUS}"
-    echo "sft_elapsed_min=${SFT_ELAPSED}"
-    echo "sft_loss=${SFT_LOSS}"
-    echo "hf_status=${HF_STATUS}"
-    echo "hf_repo=${HF_REPO}"
+    echo "sft_elapsed_min=${SFT_ELAPSED:-0}"
+    echo "total_elapsed_min=${TOTAL_MIN}"
     echo "cpt_out=${CPT_OUT}"
+    echo "cpt_merged=${CPT_MERGED}"
     echo "sft_out=${SFT_OUT}"
+    echo "hf_status=${HF_STATUS}"
+    echo "hf_repo_cpt=${HF_REPO_CPT}"
+    echo "hf_repo_sft=${HF_REPO_SFT}"
     echo "pod_id=${RUNPOD_POD_ID:-unknown}"
 } > "${DONE_FILE}"
-log "[DONE] ${DONE_FILE}"
+log "[DONE] ${FINAL_STATUS} (total ${TOTAL_MIN}m)"
 cat "${DONE_FILE}" | tee -a "${LOG_FILE}"
 
-# ?? 理쒖쥌 醫낅즺 ?????????????????????????????????????????????????????????????????
-FINAL_STATUS="done_ok"
-if [ "${SFT_STATUS}" = "sft_failed" ]; then
-    FINAL_STATUS="done_cpt_only"
-fi
-if [ "${HF_STATUS}" = "upload_failed" ]; then
-    FINAL_STATUS="done_no_upload"
-fi
-
-log "=========================================="
-log "chain_train.sh ?꾨즺: ${FINAL_STATUS} (珥?${CHAIN_TOTAL}遺?"
-log "=========================================="
-
-notify "dalbitalba chain ?꾨즺: ${FINAL_STATUS} (${CHAIN_TOTAL}min) | HF: ${HF_REPO}"
+notify "dalbitalba chain ${FINAL_STATUS} (${TOTAL_MIN}m) cpt=${HF_REPO_CPT} sft=${HF_REPO_SFT}"
 persist_run_artifacts "${FINAL_STATUS}"
-
 stop_pod "${FINAL_STATUS}"
-
