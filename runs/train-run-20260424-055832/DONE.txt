@@ -1,0 +1,10 @@
+timestamp=2026-04-24T05:58:32Z
+status=preflight_failed
+detail=rc=2 log=/workspace/preflight.log
+base_model=Qwen/Qwen3-8B-Base
+cpt_out=/workspace/out/cpt-lora
+cpt_merged=/workspace/out/cpt-merged-fp16
+sft_out=/workspace/out/sft-lora
+hf_repo_cpt=UNOA/dalbitalba-qwen3-cpt-20260424-0557
+hf_repo_sft=UNOA/dalbitalba-qwen3-sft-20260424-0557
+pod_id=ioca57stb7g24c
