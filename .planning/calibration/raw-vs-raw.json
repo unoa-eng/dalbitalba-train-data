@@ -1,0 +1,83 @@
+{
+  "meta": {
+    "raw_dir": "/mnt/c/Users/mapdr/Desktop/queenalba-crawler/crawled-data-v2",
+    "seed": 42,
+    "total_records": 67136,
+    "unique_threads": 11287,
+    "unique_authors": 2453
+  },
+  "side_a": {
+    "n_records": 33663,
+    "total_chars": 2824439,
+    "avg_chars": 83.90336571309747,
+    "length_hist": {
+      "sm": 0.35674182336690136,
+      "xs": 0.22621275584469597,
+      "lg": 0.09696105516442385,
+      "md": 0.1941300537682322,
+      "xl": 0.11680480052282922,
+      "xxl": 0.009149511332917446
+    },
+    "char_class_density": {
+      "hangul": 0.5811125678409057,
+      "jamo": 0.019795435482940153,
+      "digit": 0.07867792506759749,
+      "english": 0.021817429939184382,
+      "ws": 0.21615442925126016,
+      "other": 0.08244221241811206
+    },
+    "jamo_runs_per_record": 0.2866351780887027,
+    "repeat_punct_per_record": 0.3991028725900841,
+    "unigram_total": 2824439,
+    "bigram_total": 2790776
+  },
+  "side_b": {
+    "n_records": 33473,
+    "total_chars": 2770291,
+    "avg_chars": 82.76195739850029,
+    "length_hist": {
+      "md": 0.2002808233501628,
+      "xs": 0.2240611836405461,
+      "xl": 0.11232934006512711,
+      "sm": 0.3563170316374391,
+      "lg": 0.09894541869566516,
+      "xxl": 0.00806620261105966
+    },
+    "char_class_density": {
+      "hangul": 0.5815096681178981,
+      "jamo": 0.02013218105967929,
+      "digit": 0.07856394869708634,
+      "english": 0.02134468905974138,
+      "ws": 0.21631409841060018,
+      "other": 0.08213541465499473
+    },
+    "jamo_runs_per_record": 0.2854240731335703,
+    "repeat_punct_per_record": 0.4007408956472381,
+    "unigram_total": 2770291,
+    "bigram_total": 2736818
+  },
+  "baseline": {
+    "char_unigram_jsd_bits": 0.0006154274492504848,
+    "char_bigram_jsd_bits": 0.018983236827359702,
+    "length_hist_kl_a_b_bits": 0.0004092771797000092,
+    "length_hist_kl_b_a_bits": 0.0004050875114464808,
+    "length_hist_kl_symmetric": 0.000407182345573245,
+    "deltas": {
+      "avg_chars_delta": 1.1414083145971858,
+      "digit_density_delta": 0.00011397637051115128,
+      "english_density_delta": 0.0004727408794430038,
+      "hangul_density_delta": -0.00039710027699235706,
+      "jamo_runs_delta": 0.0012111049551323805,
+      "repeat_punct_delta": -0.0016380230571539922
+    }
+  },
+  "interpretation": {
+    "note": "These numbers are the achievability ceiling. No AI generator can beat raw-vs-raw self-similarity. Model pass targets should be defined as multiples of these baselines.",
+    "recommended_targets": {
+      "ai_bigram_jsd_primary": 0.08,
+      "ai_bigram_jsd_stretch": 0.05,
+      "ai_unigram_jsd_primary": 0.04,
+      "ai_length_kl_primary": 0.1
+    }
+  }
+}
