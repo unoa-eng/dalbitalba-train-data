@@ -144,7 +144,10 @@ def main() -> None:
         "--container-image",
         default=os.environ.get(
             "CONTAINER_IMAGE",
-            "runpod/pytorch:2.2.0-py3.10-cuda12.1.1-devel-ubuntu22.04",
+            # torch 2.4 + CUDA 12.4 matches the L40S driver version (12040)
+            # that pod4 preflight surfaced. Earlier 2.2.0-cuda12.1.1 image was
+            # internally updated to a newer CUDA build than the pod drivers.
+            "runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04",
         ),
     )
     args = parser.parse_args()
