@@ -208,8 +208,26 @@ done
 
 # ── STEP 1 pip install ──────────────────────────────────────────────
 log "[1/6] pip install (pinned)"
-pip install -q --no-cache-dir --upgrade pip >> "${LOG_FILE}" 2>&1
-pip install -q --no-cache-dir \
+
+# Diagnostic — which python interpreter are we using?
+{
+    echo "--- python env diagnostic ---"
+    command -v python3 || echo "python3 NOT in PATH"
+    command -v python  || echo "python NOT in PATH"
+    command -v pip     || echo "pip NOT in PATH"
+    command -v pip3    || echo "pip3 NOT in PATH"
+    python3 --version 2>&1 || true
+    python3 -m pip --version 2>&1 || true
+    echo "PATH=$PATH"
+    echo "---"
+} >> "${LOG_FILE}" 2>&1
+
+# Use `python3 -m pip` to avoid PATH issues on runpod/pytorch images
+# where `pip` may not be exposed in non-interactive login shells.
+python3 -m pip install -q --no-cache-dir --upgrade pip >> "${LOG_FILE}" 2>&1 || \
+    log "[WARN] pip self-upgrade 실패 — 기존 버전으로 계속"
+
+python3 -m pip install -q --no-cache-dir \
     "transformers==4.51.3" \
     "peft==0.13.2" \
     "bitsandbytes==0.49.2" \
@@ -228,13 +246,16 @@ pip install -q --no-cache-dir \
 PIP_RC=$?
 
 # flash-attn은 빌드 오래 걸려서 별도 + 실패해도 계속 진행 (eager fallback)
-pip install -q --no-cache-dir --no-build-isolation \
+python3 -m pip install -q --no-cache-dir --no-build-isolation \
     "flash-attn==2.6.3" >> "${LOG_FILE}" 2>&1 || \
     log "[WARN] flash-attn 설치 실패 — eager attention fallback"
 
 if [ ${PIP_RC} -ne 0 ]; then
-    log "[ERROR] pip 필수 패키지 설치 실패"
-    write_done "install_failed"
+    log "[ERROR] pip 필수 패키지 설치 실패 (rc=${PIP_RC})"
+    # include last 20 log lines in the ntfy so we know why without ssh-ing
+    TAIL_BLOB="$(tail -n 20 "${LOG_FILE}" 2>/dev/null | tr '\n' '|' | cut -c1-900)"
+    write_done "install_failed" "rc=${PIP_RC}"
+    notify "dalbitalba install_failed rc=${PIP_RC} | ${TAIL_BLOB}"
     stop_pod "install_failed"
     exit 1
 fi
