@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
@@ -63,6 +64,28 @@ def runpod_request(api_key: str, payload: dict) -> dict:
         raise RuntimeError(f"RunPod API HTTP {exc.code}: {body[:600]}") from None
 
 
+def parse_gpu_types(raw_value: str) -> list[str]:
+    values = [item.strip() for item in raw_value.split(",") if item.strip()]
+    return values or ["NVIDIA A100 80GB PCIe"]
+
+
+def detect_git_ref() -> str:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        ref = result.stdout.strip()
+        if ref and ref != "HEAD":
+            return ref
+    except Exception:
+        pass
+    return "main"
+
+
 def save_state(pod_id: str, metadata: dict) -> None:
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     STATE_FILE.write_text(
@@ -105,7 +128,14 @@ def redact_payload(payload: dict) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Launch dalbitalba-train-data RunPod training pod")
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--gpu-type", default=os.environ.get("GPU_TYPE", "NVIDIA A100 80GB PCIe"))
+    parser.add_argument(
+        "--gpu-type",
+        default=os.environ.get(
+            "GPU_TYPE",
+            "NVIDIA A100 80GB PCIe,NVIDIA L40S,NVIDIA RTX 6000 Ada Generation",
+        ),
+        help="Comma-separated GPU preference list",
+    )
     parser.add_argument(
         "--container-image",
         default=os.environ.get(
@@ -122,12 +152,16 @@ def main() -> None:
     hf_username = require_env("HF_USERNAME")
     github_token = require_env("GITHUB_TOKEN")
     github_repo = os.environ.get("GITHUB_REPO", "unoa-eng/dalbitalba-train-data").strip()
-    github_ref = os.environ.get("GITHUB_REF", "main").strip() or "main"
+    github_ref = os.environ.get("GITHUB_REF", "").strip() or detect_git_ref()
     ntfy_topic = os.environ.get("NTFY_TOPIC", "").strip()
+    cloud_type = os.environ.get("RUNPOD_CLOUD_TYPE", "COMMUNITY").strip().upper() or "COMMUNITY"
     train_cpt_jsonl = os.environ.get("TRAIN_CPT_JSONL", "/workspace/data/cpt_corpus.jsonl").strip() or "/workspace/data/cpt_corpus.jsonl"
     train_sft_jsonl = os.environ.get("TRAIN_SFT_JSONL", "/workspace/data/sft_pairs_v2.jsonl").strip() or "/workspace/data/sft_pairs_v2.jsonl"
     cpt_num_epochs = os.environ.get("CPT_NUM_EPOCHS", "1").strip() or "1"
     sft_num_epochs = os.environ.get("SFT_NUM_EPOCHS", "2").strip() or "2"
+    cpt_lr = os.environ.get("CPT_LR", "1e-4").strip() or "1e-4"
+    sft_lr = os.environ.get("SFT_LR", "1e-4").strip() or "1e-4"
+    gpu_types = parse_gpu_types(args.gpu_type)
 
     clone_url = f"https://x-access-token:{github_token}@github.com/{github_repo}.git"
     startup_cmd = (
@@ -150,6 +184,8 @@ def main() -> None:
         "SFT_JSONL": train_sft_jsonl,
         "CPT_NUM_EPOCHS": cpt_num_epochs,
         "SFT_NUM_EPOCHS": sft_num_epochs,
+        "CPT_LR": cpt_lr,
+        "SFT_LR": sft_lr,
     }
     if ntfy_topic:
         env["NTFY_TOPIC"] = ntfy_topic
@@ -158,8 +194,7 @@ def main() -> None:
         "name": f"dalbitalba-train-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M')}",
         "imageName": args.container_image,
         "computeType": "GPU",
-        "cloudType": "COMMUNITY",
-        "gpuTypeIds": [args.gpu_type],
+        "cloudType": cloud_type,
         "gpuCount": 1,
         "gpuTypePriority": "availability",
         "volumeInGb": 80,
@@ -175,10 +210,28 @@ def main() -> None:
     }
 
     if args.dry_run:
-        print(json.dumps(redact_payload(payload), indent=2, ensure_ascii=False))
+        dry_run_payload = dict(payload)
+        dry_run_payload["gpuTypeIds"] = gpu_types
+        print(json.dumps(redact_payload(dry_run_payload), indent=2, ensure_ascii=False))
         return
 
-    data = runpod_request(api_key, payload)
+    last_error: RuntimeError | None = None
+    chosen_gpu: str | None = None
+    data: dict | None = None
+    for gpu_type in gpu_types:
+        candidate_payload = dict(payload)
+        candidate_payload["gpuTypeIds"] = [gpu_type]
+        try:
+            data = runpod_request(api_key, candidate_payload)
+            chosen_gpu = gpu_type
+            break
+        except RuntimeError as exc:
+            last_error = exc
+            print(f"[warn] gpu launch failed for {gpu_type}: {exc}")
+
+    if data is None or chosen_gpu is None:
+        raise SystemExit(str(last_error or RuntimeError("RunPod launch failed")))
+
     pod_id = data["id"]
     save_state(
         pod_id,
@@ -186,11 +239,15 @@ def main() -> None:
             "github_repo": github_repo,
             "github_ref": github_ref,
             "hf_username": hf_username,
-            "gpu_type": args.gpu_type,
+            "gpu_type": chosen_gpu,
+            "cloud_type": cloud_type,
+            "gpu_type_candidates": gpu_types,
             "train_cpt_jsonl": train_cpt_jsonl,
             "train_sft_jsonl": train_sft_jsonl,
             "cpt_num_epochs": cpt_num_epochs,
             "sft_num_epochs": sft_num_epochs,
+            "cpt_lr": cpt_lr,
+            "sft_lr": sft_lr,
         },
     )
     print(f"[done] pod_id={pod_id}")

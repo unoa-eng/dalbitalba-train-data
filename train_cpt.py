@@ -55,7 +55,7 @@ LOG_FILE = os.environ.get("CPT_LOG_FILE", "/workspace/train_cpt.log")
 MAX_SEQ_LEN = 1024
 BATCH_SIZE = 1
 GRAD_ACCUM = 16          # effective batch = 16
-LR = 1e-4
+LR = float(os.environ.get("CPT_LR", "1e-4"))
 WARMUP_RATIO = 0.03
 NUM_EPOCHS = int(os.environ.get("CPT_NUM_EPOCHS", "1"))
 SAVE_STEPS = 500
@@ -168,7 +168,6 @@ def main() -> None:
     model = AutoModelForCausalLM.from_pretrained(
         BASE_MODEL,
         quantization_config=bnb_config,
-        device_map="auto",                  # GPU 자동 배치
         trust_remote_code=True,
         torch_dtype=torch.bfloat16,
     )

@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
@@ -102,6 +103,23 @@ def redact_payload(payload: dict) -> dict:
     return redacted
 
 
+def detect_git_ref() -> str:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        ref = result.stdout.strip()
+        if ref and ref != "HEAD":
+            return ref
+    except Exception:
+        pass
+    return "main"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Launch dalbitalba-train-data RunPod eval pod")
     parser.add_argument("--dry-run", action="store_true")
@@ -120,7 +138,7 @@ def main() -> None:
     api_key = require_env("RUNPOD_API_KEY")
     github_token = require_env("GITHUB_TOKEN")
     github_repo = os.environ.get("GITHUB_REPO", "unoa-eng/dalbitalba-train-data").strip()
-    github_ref = os.environ.get("GITHUB_REF", "main").strip() or "main"
+    github_ref = os.environ.get("GITHUB_REF", "").strip() or detect_git_ref()
     hf_adapter_repo = require_env("HF_ADAPTER_REPO")
     anthropic_api_key = require_env("ANTHROPIC_API_KEY")
     hf_token = os.environ.get("HF_TOKEN", "").strip()

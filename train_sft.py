@@ -60,7 +60,7 @@ LOG_FILE = os.environ.get("SFT_LOG_FILE", "/workspace/train_sft.log")
 MAX_SEQ_LEN = 1024
 BATCH_SIZE = 1
 GRAD_ACCUM = 16
-LR = 5e-5
+LR = float(os.environ.get("SFT_LR", "1e-4"))
 WARMUP_RATIO = 0.05
 NUM_EPOCHS = int(os.environ.get("SFT_NUM_EPOCHS", "3"))
 SAVE_STEPS = 200
@@ -269,7 +269,6 @@ def main() -> None:
     base_model = AutoModelForCausalLM.from_pretrained(
         BASE_MODEL,
         quantization_config=bnb_config,
-        device_map="auto",
         trust_remote_code=True,
         torch_dtype=torch.bfloat16,
     )
