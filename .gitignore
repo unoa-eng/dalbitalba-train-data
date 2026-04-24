@@ -9,6 +9,15 @@ __pycache__/
 eval/results/
 eval/*.html
 eval/*.md
+
+# Top-level transient workspace copies stay ignored.
 ai_generated.jsonl
 eval_samples.jsonl
 eval_key.json
+
+# But the run_dir copies under runs/eval-run-*/ MUST be committed so
+# offline native-speaker review has access to the actual generated texts
+# (pod volumes are lost on EXIT, and judge JSONs don't carry text).
+!runs/**/ai_generated.jsonl
+!runs/**/eval_samples.jsonl
+!runs/**/eval_key.json
