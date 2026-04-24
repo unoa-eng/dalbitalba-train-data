@@ -146,11 +146,15 @@ def main() -> None:
     ntfy_topic = os.environ.get("NTFY_TOPIC", "").strip()
     base_model = os.environ.get("BASE_MODEL", "upstage/SOLAR-10.7B-v1.0").strip()
 
-    clone_url = f"https://x-access-token:{github_token}@github.com/{github_repo}.git"
+    # SECURITY: never embed the PAT in dockerStartCmd — RunPod persists the
+    # pod spec including this field. Use env.GITHUB_TOKEN via shell expansion
+    # so the PAT only lives inside the running container, not in the spec.
     startup_cmd = (
         "mkdir -p /workspace/logs && "
         "rm -rf /workspace/repo && "
-        f"git clone --branch {github_ref} --single-branch {clone_url} /workspace/repo && "
+        f"git clone --branch {github_ref} --single-branch "
+        f"\"https://x-access-token:${{GITHUB_TOKEN}}@github.com/{github_repo}.git\" "
+        "/workspace/repo && "
         "chmod +x /workspace/repo/scripts/run_eval.sh && "
         "exec bash /workspace/repo/scripts/run_eval.sh"
     )

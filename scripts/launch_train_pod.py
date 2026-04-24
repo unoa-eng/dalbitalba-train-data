@@ -163,11 +163,16 @@ def main() -> None:
     sft_lr = os.environ.get("SFT_LR", "1e-4").strip() or "1e-4"
     gpu_types = parse_gpu_types(args.gpu_type)
 
-    clone_url = f"https://x-access-token:{github_token}@github.com/{github_repo}.git"
+    # SECURITY: never embed the PAT in dockerStartCmd — RunPod stores the pod
+    # spec (including this command) and exposes it in pod detail API responses.
+    # The token is injected via env.GITHUB_TOKEN below; we reference it only
+    # through shell variable expansion, which the RunPod API does not persist.
     startup_cmd = (
         "mkdir -p /workspace/logs /workspace/data /workspace/scripts /workspace/out && "
         "rm -rf /workspace/repo && "
-        f"git clone --branch {github_ref} --single-branch {clone_url} /workspace/repo && "
+        f"git clone --branch {github_ref} --single-branch "
+        f"\"https://x-access-token:${{GITHUB_TOKEN}}@github.com/{github_repo}.git\" "
+        "/workspace/repo && "
         "cp /workspace/repo/*.jsonl /workspace/data/ 2>/dev/null || true && "
         "cp /workspace/repo/train_*.py /workspace/ 2>/dev/null || true && "
         "cp /workspace/repo/chain_train.sh /workspace/chain_train.sh && "
