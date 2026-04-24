@@ -333,7 +333,9 @@ def main() -> None:
         weight_decay=WEIGHT_DECAY,
         ddp_find_unused_parameters=False,
         seed=SEED,
-        data_seed=SEED,
+        # data_seed omitted — see train_cpt.py for rationale
+        # (transformers 4.51 requires accelerate>=1.1 for data_seed;
+        # we pin accelerate==0.34.2 for trl 0.12.1 compat).
     )
     if eval_ds is not None:
         kwargs.update(

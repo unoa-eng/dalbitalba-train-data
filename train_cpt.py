@@ -288,7 +288,11 @@ def main() -> None:
         weight_decay=WEIGHT_DECAY,
         ddp_find_unused_parameters=False,
         seed=SEED,
-        data_seed=SEED,
+        # data_seed intentionally omitted — transformers 4.51 requires
+        # accelerate>=1.1 for it, but our pinned accelerate is 0.34.2
+        # (required by trl 0.12.1). When data_seed is unset, transformers
+        # falls back to `seed` for the data sampler, so reproducibility
+        # is preserved.
     )
     if eval_ds is not None:
         training_args_kwargs.update(
