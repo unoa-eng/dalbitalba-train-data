@@ -1,0 +1,21 @@
+2026-04-24 06:12:36,981 [INFO] ============================================================
+2026-04-24 06:12:36,982 [INFO] CPT v2 시작
+2026-04-24 06:12:36,982 [INFO]   base         : Qwen/Qwen3-8B-Base
+2026-04-24 06:12:36,982 [INFO]   input        : /workspace/data/cpt_corpus.v2.jsonl
+2026-04-24 06:12:36,982 [INFO]   val          : /workspace/data/val_set.v2.jsonl
+2026-04-24 06:12:36,982 [INFO]   output       : /workspace/out/cpt-lora
+2026-04-24 06:12:36,982 [INFO]   hub_model_id : UNOA/dalbitalba-qwen3-cpt-20260424-0611
+2026-04-24 06:12:36,982 [INFO]   LoRA r=64 α=64 rsLoRA=True DoRA=False
+2026-04-24 06:12:36,982 [INFO]   seq_len=1024 eff_batch=16 lr=0.0002 epochs=1
+2026-04-24 06:12:36,982 [INFO]   seed         : 42
+2026-04-24 06:12:36,982 [INFO] ============================================================
+2026-04-24 06:12:37,003 [INFO] GPU: NVIDIA L40S (47.8GB)
+2026-04-24 06:12:37,454 [INFO] tokenizer vocab size: 151643
+2026-04-24 06:13:33,389 [INFO] load_corpus(/workspace/data/cpt_corpus.v2.jsonl) -> 92,407 rows (skipped 0)
+2026-04-24 06:13:33,640 [INFO] load_corpus(/workspace/data/val_set.v2.jsonl) -> 3,101 rows (skipped 0)
+2026-04-24 06:13:47,068 [INFO] tokenize 완료: train 92,407 rows / ~6,636,680 tokens, val 3,101 rows
+2026-04-24 06:13:47,069 [INFO] steps_per_epoch=5776 total_steps=5776 warmup=173
+2026-04-24 06:13:47,069 [INFO] [step] DataCollatorForLanguageModeling build
+2026-04-24 06:13:47,069 [INFO] [step] DataCollator OK
+2026-04-24 06:13:47,069 [INFO] [step] building training_args_kwargs
+2026-04-24 06:13:47,069 [INFO] [step] instantiate TrainingArguments (report_to=wandb, push_to_hub=True, optim=paged_adamw_32bit)

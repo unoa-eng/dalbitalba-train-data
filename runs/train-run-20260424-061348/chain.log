@@ -1,0 +1,162 @@
+2026-04-24T06:11:53Z ==========================================
+2026-04-24T06:11:53Z dalbitalba chain_train.sh v3 시작
+2026-04-24T06:11:53Z   pod          : 7juc4yw8kx2p3u
+2026-04-24T06:11:53Z   base         : Qwen/Qwen3-8B-Base
+2026-04-24T06:11:53Z   hf_repo_cpt  : UNOA/dalbitalba-qwen3-cpt-20260424-0611
+2026-04-24T06:11:53Z   hf_repo_sft  : UNOA/dalbitalba-qwen3-sft-20260424-0611
+2026-04-24T06:11:53Z   cpt_epochs   : 1
+2026-04-24T06:11:53Z   sft_epochs   : 2
+2026-04-24T06:11:53Z ==========================================
+--- system snapshot ---
+Fri Apr 24 06:11:53 UTC 2026
+Linux e1e89593b44a 6.8.0-52-generic #53~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Wed Jan 15 19:18:46 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+--- nvidia-smi ---
+Fri Apr 24 06:11:53 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 550.144.03             Driver Version: 550.144.03     CUDA Version: 12.4     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    On  |   00000000:41:00.0 Off |                    0 |
+| N/A   43C    P8             37W /  350W |       1MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI        PID   Type   Process name                              GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+--- disk ---
+Filesystem           Size  Used Avail Use% Mounted on
+/dev/mapper/vg0-lv0   80G  203M   80G   1% /workspace
+overlay               40G   16M   40G   1% /
+--- mem ---
+               total        used        free      shared  buff/cache   available
+Mem:           503Gi        12Gi       219Gi        46Mi       272Gi       488Gi
+Swap:             0B          0B          0B
+--- python ---
+/usr/bin/python3
+Python 3.11.10
+pip 24.2 from /usr/local/lib/python3.11/dist-packages/pip (python 3.11)
+--- /workspace ---
+total 64
+drwxr-xr-x  8 root root   186 Apr 24 06:11 .
+drwxr-xr-x  1 root root    70 Apr 24 06:11 ..
+-rwxr-xr-x  1 root root 21045 Apr 24 06:11 chain_train.sh
+drwxr-xr-x  2 root root  4096 Apr 24 06:11 data
+drwxr-xr-x  2 root root     6 Apr 24 06:11 hf_cache
+drwxr-xr-x  2 root root    69 Apr 24 06:11 logs
+drwxr-xr-x  2 root root     6 Apr 24 06:11 out
+drwxr-xr-x 11 root root  4096 Apr 24 06:11 repo
+drwxr-xr-x  2 root root    42 Apr 24 06:11 scripts
+-rw-r--r--  1 root root 12767 Apr 24 06:11 train_cpt.py
+-rw-r--r--  1 root root 13312 Apr 24 06:11 train_sft.py
+------
+2026-04-24T06:11:53Z [1/6] pip install
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+--- pip list (training deps) ---
+accelerate                        0.34.2
+bitsandbytes                      0.49.2
+datasets                          2.21.0
+numpy                             1.26.3
+peft                              0.13.2
+protobuf                          7.34.1
+PyYAML                            6.0.2
+safetensors                       0.7.0
+sentencepiece                     0.2.1
+tiktoken                          0.12.0
+tokenizers                        0.21.4
+torch                             2.4.1+cu124
+transformers                      4.51.3
+trl                               0.12.1
+wandb                             0.26.1
+2026-04-24T06:12:24Z [1.5/6] pre-flight smoke test
+[OK ] import torch: 2.4.1+cu124
+[OK ] torch.cuda.is_available: True
+[OK ] torch.version.cuda: 12.4
+[OK ] device_name: NVIDIA L40S
+[OK ] device_capability: (8, 9)
+[OK ] import transformers: 4.51.3
+[OK ] import peft: 0.13.2
+[OK ] import bitsandbytes: 0.49.2
+[OK ] import trl: 0.12.1
+[OK ] import accelerate: 0.34.2
+[OK ] import datasets: 2.21.0
+[OK ] import huggingface_hub: 0.36.2
+[OK ] import safetensors: 0.7.0
+[OK ] import flash_attn: 2.6.3
+[OK ] bnb quantize 4bit: q.shape=(8192, 1) y.shape=(128, 128) mae=0.0737
+[OK ] qwen3 in CONFIG_MAPPING: qwen3 in MAPPING: True
+[OK ] HF whoami: UNOA
+[OK ] load Qwen3-8B-Base config: arch=['Qwen3ForCausalLM'] vocab=151936 hidden=4096
+[OK ] load Qwen3-8B-Base tokenizer: vocab=151643 sample_ids=[126246, 144370, 91145, 11, 124685, 37087, 129413, 131793]...
+============================================================
+preflight result: 19 steps, 0 FAIL
+  [OK  ] import torch: 2.4.1+cu124
+  [OK  ] torch.cuda.is_available: True
+  [OK  ] torch.version.cuda: 12.4
+  [OK  ] device_name: NVIDIA L40S
+  [OK  ] device_capability: (8, 9)
+  [OK  ] import transformers: 4.51.3
+  [OK  ] import peft: 0.13.2
+  [OK  ] import bitsandbytes: 0.49.2
+  [OK  ] import trl: 0.12.1
+  [OK  ] import accelerate: 0.34.2
+  [OK  ] import datasets: 2.21.0
+  [OK  ] import huggingface_hub: 0.36.2
+  [OK  ] import safetensors: 0.7.0
+  [OK  ] import flash_attn: 2.6.3
+  [OK  ] bnb quantize 4bit: q.shape=(8192, 1) y.shape=(128, 128) mae=0.0737
+  [OK  ] qwen3 in CONFIG_MAPPING: qwen3 in MAPPING: True
+  [OK  ] HF whoami: UNOA
+  [OK  ] load Qwen3-8B-Base config: arch=['Qwen3ForCausalLM'] vocab=151936 hidden=4096
+  [OK  ] load Qwen3-8B-Base tokenizer: vocab=151643 sample_ids=[126246, 144370, 91145, 11, 124685, 37087, 129413, 131793]...
+2026-04-24T06:12:32Z [1.5/6] pre-flight OK
+{"id":"4XqacKZmBNmq","time":1777011153,"expires":1777054353,"event":"message","topic":"dalbit_ai_alert","message":"dalbit preflight OK — starting CPT on 7juc4yw8kx2p3u"}
+2026-04-24T06:12:33Z [2/6] CPT 학습 시작 (base=Qwen/Qwen3-8B-Base)
+{"id":"Y3eo28TuRpF6","time":1777011153,"expires":1777054353,"event":"message","topic":"dalbit_ai_alert","message":"dalbit CPT start — 7juc4yw8kx2p3u"}
+2026-04-24 06:12:36,981 [INFO] ============================================================
+2026-04-24 06:12:36,982 [INFO] CPT v2 시작
+2026-04-24 06:12:36,982 [INFO]   base         : Qwen/Qwen3-8B-Base
+2026-04-24 06:12:36,982 [INFO]   input        : /workspace/data/cpt_corpus.v2.jsonl
+2026-04-24 06:12:36,982 [INFO]   val          : /workspace/data/val_set.v2.jsonl
+2026-04-24 06:12:36,982 [INFO]   output       : /workspace/out/cpt-lora
+2026-04-24 06:12:36,982 [INFO]   hub_model_id : UNOA/dalbitalba-qwen3-cpt-20260424-0611
+2026-04-24 06:12:36,982 [INFO]   LoRA r=64 α=64 rsLoRA=True DoRA=False
+2026-04-24 06:12:36,982 [INFO]   seq_len=1024 eff_batch=16 lr=0.0002 epochs=1
+2026-04-24 06:12:36,982 [INFO]   seed         : 42
+2026-04-24 06:12:36,982 [INFO] ============================================================
+2026-04-24 06:12:37,003 [INFO] GPU: NVIDIA L40S (47.8GB)
+2026-04-24 06:12:37,454 [INFO] tokenizer vocab size: 151643
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:03<00:13,  3.34s/it]Loading checkpoint shards:  40%|████      | 2/5 [00:06<00:08,  2.95s/it]Loading checkpoint shards:  60%|██████    | 3/5 [00:10<00:07,  3.62s/it]Loading checkpoint shards:  80%|████████  | 4/5 [00:12<00:03,  3.07s/it]Loading checkpoint shards: 100%|██████████| 5/5 [00:12<00:00,  2.07s/it]Loading checkpoint shards: 100%|██████████| 5/5 [00:12<00:00,  2.59s/it]
+trainable params: 174,587,904 || all params: 8,365,323,264 || trainable%: 2.0870
+2026-04-24 06:13:33,389 [INFO] load_corpus(/workspace/data/cpt_corpus.v2.jsonl) -> 92,407 rows (skipped 0)
+2026-04-24 06:13:33,640 [INFO] load_corpus(/workspace/data/val_set.v2.jsonl) -> 3,101 rows (skipped 0)
+tokenize train:   0%|          | 0/92407 [00:00<?, ? examples/s]tokenize train:   1%|          | 1000/92407 [00:00<00:10, 8678.20 examples/s]tokenize train:   2%|▏         | 2000/92407 [00:00<00:10, 8718.36 examples/s]tokenize train:   3%|▎         | 3000/92407 [00:00<00:10, 8677.26 examples/s]tokenize train:   4%|▍         | 4000/92407 [00:00<00:10, 8825.77 examples/s]tokenize train:   5%|▌         | 5000/92407 [00:00<00:09, 8798.90 examples/s]tokenize train:   6%|▋         | 6000/92407 [00:00<00:09, 8777.84 examples/s]tokenize train:   8%|▊         | 7000/92407 [00:00<00:09, 8608.54 examples/s]tokenize train:   9%|▊         | 8000/92407 [00:00<00:09, 8717.30 examples/s]tokenize train:  10%|▉         | 9000/92407 [00:01<00:09, 8535.17 examples/s]tokenize train:  11%|█         | 10000/92407 [00:01<00:09, 8489.34 examples/s]tokenize train:  12%|█▏        | 11000/92407 [00:01<00:09, 8494.98 examples/s]tokenize train:  13%|█▎        | 12000/92407 [00:01<00:09, 8639.00 examples/s]tokenize train:  14%|█▍        | 13000/92407 [00:01<00:09, 8696.24 examples/s]tokenize train:  15%|█▌        | 14000/92407 [00:01<00:08, 8755.02 examples/s]tokenize train:  16%|█▌        | 15000/92407 [00:01<00:08, 8790.15 examples/s]tokenize train:  17%|█▋        | 16000/92407 [00:01<00:08, 8560.74 examples/s]tokenize train:  18%|█▊        | 17000/92407 [00:01<00:08, 8480.59 examples/s]tokenize train:  19%|█▉        | 18000/92407 [00:02<00:08, 8428.44 examples/s]tokenize train:  21%|██        | 19000/92407 [00:02<00:08, 8485.85 examples/s]tokenize train:  22%|██▏       | 20000/92407 [00:02<00:08, 8572.92 examples/s]tokenize train:  23%|██▎       | 21000/92407 [00:02<00:08, 8732.10 examples/s]tokenize train:  24%|██▍       | 22000/92407 [00:02<00:12, 5849.81 examples/s]tokenize train:  25%|██▍       | 23000/92407 [00:02<00:10, 6502.35 examples/s]tokenize train:  26%|██▌       | 24000/92407 [00:02<00:09, 6986.90 examples/s]tokenize train:  27%|██▋       | 25000/92407 [00:03<00:09, 7487.41 examples/s]tokenize train:  28%|██▊       | 26000/92407 [00:03<00:08, 8016.59 examples/s]tokenize train:  29%|██▉       | 27000/92407 [00:03<00:07, 8366.93 examples/s]tokenize train:  30%|███       | 28000/92407 [00:03<00:07, 8648.10 examples/s]tokenize train:  31%|███▏      | 29000/92407 [00:03<00:07, 8919.23 examples/s]tokenize train:  32%|███▏      | 30000/92407 [00:03<00:07, 8853.71 examples/s]tokenize train:  34%|███▎      | 31000/92407 [00:03<00:06, 8822.07 examples/s]tokenize train:  35%|███▍      | 32000/92407 [00:03<00:06, 8847.05 examples/s]tokenize train:  36%|███▌      | 33000/92407 [00:03<00:06, 8951.80 examples/s]tokenize train:  37%|███▋      | 34000/92407 [00:04<00:06, 8960.51 examples/s]tokenize train:  38%|███▊      | 35000/92407 [00:04<00:06, 8827.96 examples/s]tokenize train:  39%|███▉      | 36000/92407 [00:04<00:06, 8321.77 examples/s]tokenize train:  40%|████      | 37000/92407 [00:04<00:06, 8445.55 examples/s]tokenize train:  41%|████      | 38000/92407 [00:04<00:06, 8489.82 examples/s]tokenize train:  42%|████▏     | 39000/92407 [00:04<00:06, 8597.28 examples/s]tokenize train:  43%|████▎     | 40000/92407 [00:04<00:05, 8816.72 examples/s]tokenize train:  44%|████▍     | 41000/92407 [00:04<00:05, 8734.77 examples/s]tokenize train:  45%|████▌     | 42000/92407 [00:04<00:05, 8967.11 examples/s]tokenize train:  47%|████▋     | 43000/92407 [00:05<00:05, 9052.26 examples/s]tokenize train:  48%|████▊     | 44000/92407 [00:05<00:05, 8836.74 examples/s]tokenize train:  49%|████▊     | 45000/92407 [00:05<00:05, 8964.09 examples/s]tokenize train:  50%|████▉     | 46000/92407 [00:05<00:05, 8875.69 examples/s]tokenize train:  51%|█████     | 47000/92407 [00:05<00:05, 9004.58 examples/s]tokenize train:  52%|█████▏    | 48000/92407 [00:05<00:04, 9131.26 examples/s]tokenize train:  53%|█████▎    | 49000/92407 [00:05<00:04, 9195.18 examples/s]tokenize train:  54%|█████▍    | 50000/92407 [00:05<00:04, 8998.08 examples/s]tokenize train:  55%|█████▌    | 51000/92407 [00:05<00:04, 9071.65 examples/s]tokenize train:  56%|█████▋    | 52000/92407 [00:06<00:04, 9107.14 examples/s]tokenize train:  57%|█████▋    | 53000/92407 [00:06<00:04, 9000.12 examples/s]tokenize train:  58%|█████▊    | 54000/92407 [00:06<00:04, 9061.68 examples/s]tokenize train:  60%|█████▉    | 55000/92407 [00:06<00:04, 8840.94 examples/s]tokenize train:  61%|██████    | 56000/92407 [00:06<00:04, 8865.73 examples/s]tokenize train:  62%|██████▏   | 57000/92407 [00:06<00:03, 8885.67 examples/s]tokenize train:  63%|██████▎   | 58000/92407 [00:06<00:03, 8942.74 examples/s]tokenize train:  64%|██████▍   | 59000/92407 [00:06<00:03, 8987.23 examples/s]tokenize train:  65%|██████▍   | 60000/92407 [00:06<00:03, 8969.14 examples/s]tokenize train:  66%|██████▌   | 61000/92407 [00:07<00:03, 8868.12 examples/s]tokenize train:  67%|██████▋   | 62000/92407 [00:07<00:03, 8801.90 examples/s]tokenize train:  68%|██████▊   | 63000/92407 [00:07<00:03, 8758.97 examples/s]tokenize train:  69%|██████▉   | 64000/92407 [00:07<00:04, 6003.82 examples/s]tokenize train:  70%|███████   | 65000/92407 [00:07<00:04, 6702.73 examples/s]tokenize train:  71%|███████▏  | 66000/92407 [00:07<00:03, 7333.53 examples/s]tokenize train:  73%|███████▎  | 67000/92407 [00:07<00:03, 7855.60 examples/s]tokenize train:  74%|███████▎  | 68000/92407 [00:08<00:02, 8152.77 examples/s]tokenize train:  75%|███████▍  | 69000/92407 [00:08<00:02, 8356.84 examples/s]tokenize train:  76%|███████▌  | 70000/92407 [00:08<00:02, 8433.01 examples/s]tokenize train:  77%|███████▋  | 71000/92407 [00:08<00:02, 8385.34 examples/s]tokenize train:  78%|███████▊  | 72000/92407 [00:08<00:02, 7466.88 examples/s]tokenize train:  79%|███████▉  | 73000/92407 [00:08<00:02, 7746.94 examples/s]tokenize train:  80%|████████  | 74000/92407 [00:08<00:02, 8077.54 examples/s]tokenize train:  81%|████████  | 75000/92407 [00:08<00:02, 8363.72 examples/s]tokenize train:  82%|████████▏ | 76000/92407 [00:09<00:01, 8562.33 examples/s]tokenize train:  83%|████████▎ | 77000/92407 [00:09<00:01, 8434.39 examples/s]tokenize train:  84%|████████▍ | 78000/92407 [00:09<00:01, 8542.36 examples/s]tokenize train:  85%|████████▌ | 79000/92407 [00:09<00:01, 8232.59 examples/s]tokenize train:  87%|████████▋ | 80000/92407 [00:09<00:01, 8466.55 examples/s]tokenize train:  88%|████████▊ | 81000/92407 [00:09<00:01, 8599.19 examples/s]tokenize train:  89%|████████▊ | 82000/92407 [00:09<00:01, 8729.06 examples/s]tokenize train:  90%|████████▉ | 83000/92407 [00:09<00:01, 8734.10 examples/s]tokenize train:  91%|█████████ | 84000/92407 [00:09<00:00, 8770.16 examples/s]tokenize train:  92%|█████████▏| 85000/92407 [00:10<00:00, 8946.29 examples/s]tokenize train:  93%|█████████▎| 86000/92407 [00:10<00:00, 8992.94 examples/s]tokenize train:  94%|█████████▍| 87000/92407 [00:10<00:00, 9023.43 examples/s]tokenize train:  95%|█████████▌| 88000/92407 [00:10<00:00, 8696.01 examples/s]tokenize train:  96%|█████████▋| 89000/92407 [00:10<00:00, 8858.85 examples/s]tokenize train:  97%|█████████▋| 90000/92407 [00:10<00:00, 8981.80 examples/s]tokenize train:  98%|█████████▊| 91000/92407 [00:10<00:00, 8842.59 examples/s]tokenize train: 100%|█████████▉| 92000/92407 [00:10<00:00, 8774.29 examples/s]tokenize train: 100%|██████████| 92407/92407 [00:10<00:00, 8475.97 examples/s]
+tokenize val:   0%|          | 0/3101 [00:00<?, ? examples/s]tokenize val:  64%|██████▍   | 2000/3101 [00:00<00:00, 11335.33 examples/s]tokenize val: 100%|██████████| 3101/3101 [00:00<00:00, 11226.72 examples/s]
+2026-04-24 06:13:47,068 [INFO] tokenize 완료: train 92,407 rows / ~6,636,680 tokens, val 3,101 rows
+2026-04-24 06:13:47,069 [INFO] steps_per_epoch=5776 total_steps=5776 warmup=173
+2026-04-24 06:13:47,069 [INFO] [step] DataCollatorForLanguageModeling build
+2026-04-24 06:13:47,069 [INFO] [step] DataCollator OK
+2026-04-24 06:13:47,069 [INFO] [step] building training_args_kwargs
+2026-04-24 06:13:47,069 [INFO] [step] instantiate TrainingArguments (report_to=wandb, push_to_hub=True, optim=paged_adamw_32bit)
+Traceback (most recent call last):
+  File "/workspace/train_cpt.py", line 350, in <module>
+    main()
+  File "/workspace/train_cpt.py", line 316, in main
+    training_args = TrainingArguments(**training_args_kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 132, in __init__
+  File "/usr/local/lib/python3.11/dist-packages/transformers/training_args.py", line 2100, in __post_init__
+    raise NotImplementedError(
+NotImplementedError: data_seed requires Accelerate version `accelerate` >= 1.1.0. This is not supported and we recommend you to update your version.
+2026-04-24T06:13:48Z [ERROR] CPT 실패 exit=1 elapsed=1m
+2026-04-24T06:13:48Z [DONE] /workspace/out/DONE.txt
+{"id":"N4bZutPXklcS","time":1777011228,"expires":1777054428,"event":"message","topic":"dalbit_ai_alert","message":"dalbit cpt_failed rc=1 ====HEAD====|2026-04-24 06:12:36,981 [INFO] ============================================================|2026-04-24 06:12:36,982 [INFO] CPT v2 시작|2026-04-24 06:12:36,982 [INFO]   base         : Qwen/Qwen3-8B-Base|2026-04-24 06:12:36,982 [INFO]   input        : /workspace/data/cpt_corpus.v2.jsonl|2026-04-24 06:12:36,982 [INFO]   val          : /workspace/data/val_set.v2.jsonl|2026-04-24 06:12:36,982 [INFO]   output       : /workspace/out/cpt-lora|2026-04-24 06:12:36,982 [INFO]   hub_model_id : UNOA/dalbitalba-qwen3-cpt-20260424-0611|2026-04-24 06:12:36,982 [INFO]   LoRA r=64 α=64 rsLoRA=True DoRA=False|2026-04-24 06:12:36,982 [INFO]   seq_len=1024 eff_batch=16 lr=0.0002 epochs=1|2026-04-24 06:12:36,982 [INFO]   seed         : 42|2026-04-24 06:12:36,982 [INFO] ============================================================|2026-04-24 06:12:37,003 [INFO] GPU: NVIDIA L40S (47.8GB)|2026-04-24 06:12:37,454 [INFO] tokenizer vocab size: 151643|2026-04-24 06:13:33,389 [INFO] load_corpus(/workspace/data/cpt_corpus.v2.jsonl) -\u003e 92,407 rows (skipped 0)|2026-04-24 06:13:33,640 [INFO] load_corpus(/workspace/data/val_set.v2.jsonl) -\u003e 3,101 rows (skipped 0)|2026-04-24 06:13:47,068 [INFO] tokenize 완료: train 92,407 rows / ~6,636,680 tokens, val 3,101 rows|2026-04-24 06:13:47,069 [INFO] steps_per_epoch=5776 total_steps=5776 warmup=173|2026-04-24 06:13:47,069 [INFO] [step] DataCollatorForLanguageModeling build|2026-04-24 06:13:47,069 [INFO] [step] DataCollator OK|2026-04-24 06:13:47,069 [INFO] [step] building training_args_kwargs|2026-04-24 06:13:47,069 [INFO] [step] instantiate TrainingArguments (report_to=wandb, push_to_hub=True, optim=paged_adamw_32bit)|====TAIL====|2026-04-24 06:12:36,981 [INFO] ============================================================|2026-04-24 06:12:36,982 [INFO] CPT v2 시작|2026-04-24 06:12:36,982 [INFO]   base         : Qwen/Qwen3-8B-Base|2026-04-24 06:12:36,982 [INFO]   input        : /workspace/data/cpt_corpus.v2.jsonl|2026-04-24 06:12:36,982 [INFO]   val          : /workspace/data/val_set.v2.jsonl|2026-04-24 06:12:36,982 [INFO]   output       : /workspace/out/cpt-lora|2026-04-24 06:12:36,982 [INFO]   hub_model_id : UNOA/dalbitalba-qwen3-cpt-20260424-0611|2026-04-24 06:12:36,982 [INFO]   LoRA r=64 α=64 rsLoRA=True DoRA=False|2026-04-24 06:12:36,982 [INFO]   seq_len=1024 eff_batch=16 lr=0.0002 epochs=1|2026-04-24 06:12:36,982 [INFO]   seed         : 42|2026-04-24 06:12:36,982 [INFO] ============================================================|2026-04-24 06:12:37,003 [INFO] GPU: NVIDIA L40S (47.8GB)|2026-04-24 06:12:37,454 [INFO] tokenizer vocab size: 151643|2026-04-24 06:13:33,389 [INFO] load_corpus(/workspace/data/cpt_corpus.v2.jsonl) -\u003e 92,407 rows (skipped 0)|2026-04-24 06:13:33,640 [INFO] load_corpus(/workspace/data/val_set.v2.jsonl) -\u003e 3,101 rows (skipped 0)|2026-04-24 06:13:47,068 [INFO] tokenize 완료: train 92,407 rows / ~6,636,680 tokens, val 3,101 rows|2026-04-24 06:13:47,069 [INFO] steps_per_epoch=5776 total_steps=5776 warmup=173|2026-04-24 06:13:47,069 [INFO] [step] DataCollatorForLanguageModeling build|2026-04-24 06:13:47,069 [INFO] [step] DataCollator OK|2026-04-24 06:13:47,069 [INFO] [step] building training_args_kwargs|2026-04-24 06:13:47,069 [INFO] [step] instantiate TrainingArguments (report_to=wandb, push_to_hub=True, optim=paged_adamw_32bit)|"}
