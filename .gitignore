@@ -21,3 +21,8 @@ eval_key.json
 !runs/**/ai_generated.jsonl
 !runs/**/eval_samples.jsonl
 !runs/**/eval_key.json
+# Training run logs — persist_run_artifacts copies chain/CPT/SFT/merge
+# logs into runs/train-run-*/ for post-mortem. Without these negations
+# the *.log ignore above makes the commits empty.
+!runs/**/*.log
+!runs/**/preflight.log

@@ -256,10 +256,13 @@ def main() -> None:
         f"warmup={warmup_steps}"
     )
 
+    logger.info("[step] DataCollatorForLanguageModeling build")
     data_collator = DataCollatorForLanguageModeling(
         tokenizer=tokenizer, mlm=False, pad_to_multiple_of=8
     )
+    logger.info("[step] DataCollator OK")
 
+    logger.info("[step] building training_args_kwargs")
     training_args_kwargs = dict(
         output_dir=CKPT_DIR,
         num_train_epochs=NUM_EPOCHS,
@@ -304,8 +307,16 @@ def main() -> None:
                 hub_private_repo=True,
             )
         )
+    logger.info(
+        f"[step] instantiate TrainingArguments "
+        f"(report_to={training_args_kwargs.get('report_to')}, "
+        f"push_to_hub={training_args_kwargs.get('push_to_hub', False)}, "
+        f"optim={training_args_kwargs.get('optim')})"
+    )
     training_args = TrainingArguments(**training_args_kwargs)
+    logger.info("[step] TrainingArguments OK")
 
+    logger.info("[step] instantiate Trainer")
     trainer = Trainer(
         model=model,
         args=training_args,
@@ -314,6 +325,7 @@ def main() -> None:
         data_collator=data_collator,
         tokenizer=tokenizer,
     )
+    logger.info("[step] Trainer OK")
 
     # resume
     resume_from = None
@@ -323,7 +335,7 @@ def main() -> None:
         resume_from = str(existing[-1])
         logger.info(f"resume from {resume_from}")
 
-    logger.info("학습 시작")
+    logger.info("학습 시작 — trainer.train()")
     trainer.train(resume_from_checkpoint=resume_from)
 
     logger.info(f"LoRA adapter 저장 → {OUTPUT_DIR}")

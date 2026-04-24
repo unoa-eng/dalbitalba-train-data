@@ -75,18 +75,20 @@ notify() {
 # Compress a file into a single-line ntfy-friendly blob with head+tail.
 blob_head_tail() {
     local file="$1"
-    local nhead="${2:-25}"
-    local ntail="${3:-25}"
+    local nhead="${2:-15}"
+    local ntail="${3:-50}"
     if [ ! -f "${file}" ]; then
         echo "(no ${file})"
         return
     fi
+    # Favor the tail (where the actual error usually lives). Cap at 3500
+    # chars total — ntfy.sh supports up to 4KB per message body.
     {
         echo "====HEAD===="
         head -n "${nhead}" "${file}" 2>/dev/null || true
         echo "====TAIL===="
         tail -n "${ntail}" "${file}" 2>/dev/null || true
-    } | tr '\n' '|' | cut -c1-1800
+    } | tr '\n' '|' | cut -c1-3500
 }
 
 stop_pod() {
