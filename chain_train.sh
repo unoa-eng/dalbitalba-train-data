@@ -232,7 +232,7 @@ python3 -m pip install -q --no-cache-dir \
     "peft==0.13.2" \
     "bitsandbytes==0.49.2" \
     "trl==0.12.1" \
-    "accelerate==0.33.0" \
+    "accelerate==0.34.2" \
     "datasets==2.21.0" \
     "huggingface_hub>=0.24.0" \
     "safetensors>=0.4.3" \
