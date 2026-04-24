@@ -1,21 +1,22 @@
 #!/usr/bin/env bash
-# chain_train.sh v2 — CPT -> merge -> SFT -> HF upload -> stop_pod
-# Runs inside a RunPod pod. Host orchestration is launch_train_pod.py.
+# chain_train.sh v3 — CPT -> merge -> SFT -> HF upload -> stop_pod
+#
+# Design philosophy after 3 failed pilot launches (2026-04-24):
+#   1. NEVER rely on $PATH resolution of pip/python binaries (WSL and some
+#      runpod images differ). Always use `python3 -m pip` and `python3 X`.
+#   2. Pre-flight smoke test BEFORE training starts — verify imports, CUDA,
+#      bnb runtime, tokenizer/config load — and ntfy full telemetry on fail.
+#      A single pod run then reveals all env mismatches in one shot.
+#   3. Every failure path attaches head+tail of the relevant component log to
+#      ntfy so diagnosis is possible without SSH into ephemeral pods.
+#   4. Git identity is configured explicitly so persist_run_artifacts pushes
+#      run logs to a `runs/train-run-<stamp>` branch on origin.
+#   5. Use hf_transfer + HF_HUB_ENABLE_HF_TRANSFER for faster model download.
 #
 # Required env (injected by launch_train_pod.py):
-#   HF_TOKEN          HuggingFace write token
-#   HF_USERNAME       HuggingFace user/org
-#   RUNPOD_POD_ID     auto-injected by RunPod
-#   GITHUB_TOKEN      (optional) to push run manifests back to repo
-#   GITHUB_REPO       (optional)
-#   NTFY_TOPIC        (optional) ntfy.sh push channel
-#   SENTRY_DSN        (optional)
-#   WANDB_API_KEY     (optional)
-#   WANDB_PROJECT     (optional)
-#
-# Graceful degradation: every failure writes DONE.txt with the stage, then
-# stop_pod. All stdout/stderr tee'd to /workspace/logs/chain.log which is
-# preserved on the network volume after pod EXIT.
+#   HF_TOKEN, HF_USERNAME, GITHUB_TOKEN, GITHUB_REPO, RUNPOD_POD_ID
+# Optional:
+#   NTFY_TOPIC, SENTRY_DSN, WANDB_API_KEY, WANDB_PROJECT, TRAIN_REPORT_TO
 
 set -uo pipefail
 
@@ -32,6 +33,10 @@ CPT_OUT="${OUT_DIR}/cpt-lora"
 CPT_MERGED="${OUT_DIR}/cpt-merged-fp16"
 SFT_OUT="${OUT_DIR}/sft-lora"
 DONE_FILE="${OUT_DIR}/DONE.txt"
+CPT_PY_LOG="${WORKSPACE}/train_cpt.log"
+SFT_PY_LOG="${WORKSPACE}/train_sft.log"
+MERGE_PY_LOG="${WORKSPACE}/merge_cpt.log"
+PREFLIGHT_LOG="${WORKSPACE}/preflight.log"
 
 TRAIN_CPT_JSONL="${INPUT_JSONL:-${DATA_DIR}/cpt_corpus.v2.jsonl}"
 TRAIN_SFT_PAIR_JSONL="${SFT_PAIR_JSONL:-${DATA_DIR}/sft_pairs.v2.jsonl}"
@@ -43,6 +48,8 @@ TIMESTAMP="$(date -u '+%Y%m%d-%H%M')"
 HF_REPO_SFT="${HF_USERNAME:-unoa}/dalbitalba-qwen3-sft-${TIMESTAMP}"
 HF_REPO_CPT="${HF_USERNAME:-unoa}/dalbitalba-qwen3-cpt-${TIMESTAMP}"
 export HF_HOME="${HF_CACHE_DIR}"
+export HF_HUB_ENABLE_HF_TRANSFER=1
+export TOKENIZERS_PARALLELISM=false
 export HF_REPO_SFT HF_REPO_CPT
 
 mkdir -p "${LOG_DIR}" "${OUT_DIR}" "${DATA_DIR}" "${HF_CACHE_DIR}"
@@ -65,10 +72,26 @@ notify() {
     fi
 }
 
+# Compress a file into a single-line ntfy-friendly blob with head+tail.
+blob_head_tail() {
+    local file="$1"
+    local nhead="${2:-25}"
+    local ntail="${3:-25}"
+    if [ ! -f "${file}" ]; then
+        echo "(no ${file})"
+        return
+    fi
+    {
+        echo "====HEAD===="
+        head -n "${nhead}" "${file}" 2>/dev/null || true
+        echo "====TAIL===="
+        tail -n "${ntail}" "${file}" 2>/dev/null || true
+    } | tr '\n' '|' | cut -c1-1800
+}
+
 stop_pod() {
     local reason="$1"
     log "[stop] reason=${reason}"
-    notify "dalbitalba chain ${reason}"
     if command -v runpodctl &>/dev/null && [ -n "${RUNPOD_POD_ID:-}" ]; then
         runpodctl stop pod "${RUNPOD_POD_ID}" >> "${LOG_FILE}" 2>&1 || true
     fi
@@ -92,6 +115,21 @@ write_done() {
     log "[DONE] ${DONE_FILE}"
 }
 
+fail_with_logs() {
+    # fail_with_logs <status_tag> <component_log> <exit_code>
+    # Sends HEAD+TAIL of component_log to ntfy in a single message, then stops.
+    local status="$1"
+    local cfile="$2"
+    local rc="${3:-1}"
+    local blob
+    blob="$(blob_head_tail "${cfile}" 25 25)"
+    write_done "${status}" "rc=${rc} log=${cfile}"
+    notify "dalbit ${status} rc=${rc} ${blob}"
+    persist_run_artifacts "${status}"
+    stop_pod "${status}"
+    exit 1
+}
+
 persist_run_artifacts() {
     local final_status="$1"
     if [ -z "${GITHUB_TOKEN:-}" ] || [ -z "${GITHUB_REPO:-}" ]; then
@@ -102,6 +140,10 @@ persist_run_artifacts() {
         log "[runs] repo clone 없음 → push skip"
         return 0
     fi
+    # Configure git identity (required for commits in containers w/o default)
+    git -C "${REPO_CLONE_DIR}" config user.email "runpod-bot@dalbitalba.local" 2>/dev/null
+    git -C "${REPO_CLONE_DIR}" config user.name  "dalbitalba-runpod" 2>/dev/null
+
     local stamp branch run_dir latest_tmp source_ref repo_url
     stamp="$(date -u '+%Y%m%d-%H%M%S')"
     branch="train-run-${stamp}"
@@ -110,9 +152,11 @@ persist_run_artifacts() {
     mkdir -p "${run_dir}"
 
     cp "${DONE_FILE}" "${run_dir}/DONE.txt" 2>/dev/null || true
-    [ -f "${LOG_FILE}" ] && cp "${LOG_FILE}" "${run_dir}/chain.log"
-    [ -f "${WORKSPACE}/train_cpt.log" ] && cp "${WORKSPACE}/train_cpt.log" "${run_dir}/train_cpt.log"
-    [ -f "${WORKSPACE}/train_sft.log" ] && cp "${WORKSPACE}/train_sft.log" "${run_dir}/train_sft.log"
+    [ -f "${LOG_FILE}" ]     && cp "${LOG_FILE}" "${run_dir}/chain.log"
+    [ -f "${CPT_PY_LOG}" ]   && cp "${CPT_PY_LOG}"   "${run_dir}/train_cpt.log"
+    [ -f "${SFT_PY_LOG}" ]   && cp "${SFT_PY_LOG}"   "${run_dir}/train_sft.log"
+    [ -f "${MERGE_PY_LOG}" ] && cp "${MERGE_PY_LOG}" "${run_dir}/merge_cpt.log"
+    [ -f "${PREFLIGHT_LOG}" ] && cp "${PREFLIGHT_LOG}" "${run_dir}/preflight.log"
 
     cat > "${run_dir}/manifest.json" <<EOF
 {
@@ -146,25 +190,12 @@ EOF
         cd "${REPO_CLONE_DIR}"
         git checkout -b "${branch}" >/dev/null 2>&1 || true
         git add "runs/${branch}" "runs/latest-train.json" >/dev/null 2>&1 || true
-        git commit -m "train: ${branch}" >/dev/null 2>&1 || exit 0
+        git commit -m "train: ${branch} (${final_status})" >/dev/null 2>&1 || exit 0
         git push "${repo_url}" "${branch}" >/dev/null 2>&1
     ) && log "[runs] push branch ${branch}" || log "[runs] push 실패 ${branch}"
-
-    if [ -n "${source_ref}" ] && [ "${source_ref}" != "HEAD" ]; then
-        (
-            cd "${REPO_CLONE_DIR}"
-            git checkout "${source_ref}" >/dev/null 2>&1
-            mkdir -p runs
-            cp "${latest_tmp}" "runs/latest-train.json"
-            git add "runs/latest-train.json"
-            git commit -m "train: update latest pointer" >/dev/null 2>&1 || exit 0
-            git push "${repo_url}" "${source_ref}" >/dev/null 2>&1
-        ) && log "[runs] latest pointer pushed to ${source_ref}" || true
-    fi
     rm -f "${latest_tmp}"
 }
 
-# ── Trap: on SIGTERM / SIGINT make sure DONE.txt reflects the state ──
 on_exit() {
     local rc=$?
     if [ "${rc}" -ne 0 ] && [ ! -f "${DONE_FILE}" ]; then
@@ -173,9 +204,9 @@ on_exit() {
 }
 trap on_exit EXIT
 
-# ── STEP 0 env check ────────────────────────────────────────────────
+# ═══ STEP 0 env + data check ═══════════════════════════════════════════
 log "=========================================="
-log "dalbitalba chain_train.sh v2 시작"
+log "dalbitalba chain_train.sh v3 시작"
 log "  pod          : ${RUNPOD_POD_ID:-unknown}"
 log "  base         : ${BASE_MODEL_CPT}"
 log "  hf_repo_cpt  : ${HF_REPO_CPT}"
@@ -184,48 +215,41 @@ log "  cpt_epochs   : ${CPT_EPOCHS}"
 log "  sft_epochs   : ${SFT_EPOCHS}"
 log "=========================================="
 
-if [ -z "${HF_TOKEN:-}" ]; then
-    log "[ERROR] HF_TOKEN 미설정"
-    write_done "env_error" "HF_TOKEN"
-    stop_pod "env_error"
-    exit 1
-fi
-if [ -z "${HF_USERNAME:-}" ]; then
-    log "[ERROR] HF_USERNAME 미설정"
-    write_done "env_error" "HF_USERNAME"
-    stop_pod "env_error"
-    exit 1
-fi
+# System snapshot
+{
+    echo "--- system snapshot ---"
+    date -u
+    uname -a
+    echo "--- nvidia-smi ---"
+    nvidia-smi 2>&1 || echo "(nvidia-smi N/A)"
+    echo "--- disk ---"
+    df -h /workspace / 2>&1 || true
+    echo "--- mem ---"
+    free -h 2>&1 || true
+    echo "--- python ---"
+    command -v python3 || echo "python3 NOT found"
+    python3 --version 2>&1 || true
+    python3 -m pip --version 2>&1 || true
+    echo "--- /workspace ---"
+    ls -la /workspace 2>&1 | head -30
+    echo "------"
+} >> "${LOG_FILE}" 2>&1
+
+[ -z "${HF_TOKEN:-}" ] && { log "[ERROR] HF_TOKEN 미설정"; fail_with_logs "env_error" "${LOG_FILE}" 1; }
+[ -z "${HF_USERNAME:-}" ] && { log "[ERROR] HF_USERNAME 미설정"; fail_with_logs "env_error" "${LOG_FILE}" 1; }
 
 for f in "${TRAIN_CPT_JSONL}" "${TRAIN_SFT_PAIR_JSONL}"; do
     if [ ! -f "${f}" ]; then
         log "[ERROR] 데이터 파일 없음: ${f}"
-        write_done "data_missing" "${f}"
-        stop_pod "data_missing"
-        exit 1
+        fail_with_logs "data_missing" "${LOG_FILE}" 1
     fi
 done
 
-# ── STEP 1 pip install ──────────────────────────────────────────────
-log "[1/6] pip install (pinned)"
+# ═══ STEP 1 pip install (pinned, resolver-clean) ═══════════════════════
+log "[1/6] pip install"
 
-# Diagnostic — which python interpreter are we using?
-{
-    echo "--- python env diagnostic ---"
-    command -v python3 || echo "python3 NOT in PATH"
-    command -v python  || echo "python NOT in PATH"
-    command -v pip     || echo "pip NOT in PATH"
-    command -v pip3    || echo "pip3 NOT in PATH"
-    python3 --version 2>&1 || true
-    python3 -m pip --version 2>&1 || true
-    echo "PATH=$PATH"
-    echo "---"
-} >> "${LOG_FILE}" 2>&1
-
-# Use `python3 -m pip` to avoid PATH issues on runpod/pytorch images
-# where `pip` may not be exposed in non-interactive login shells.
 python3 -m pip install -q --no-cache-dir --upgrade pip >> "${LOG_FILE}" 2>&1 || \
-    log "[WARN] pip self-upgrade 실패 — 기존 버전으로 계속"
+    log "[WARN] pip self-upgrade 실패 — 기존 버전 유지"
 
 python3 -m pip install -q --no-cache-dir \
     "transformers==4.51.3" \
@@ -234,42 +258,133 @@ python3 -m pip install -q --no-cache-dir \
     "trl==0.12.1" \
     "accelerate==0.34.2" \
     "datasets==2.21.0" \
-    "huggingface_hub>=0.24.0" \
+    "huggingface_hub>=0.30.0,<1.0" \
+    "hf_transfer>=0.1.6" \
     "safetensors>=0.4.3" \
-    "sentencepiece" \
-    "tokenizers>=0.21" \
+    "sentencepiece>=0.2.0" \
+    "tokenizers>=0.21,<0.22" \
+    "tiktoken>=0.7.0" \
     "protobuf" \
-    "wandb" \
+    "wandb>=0.16" \
     "sentry-sdk" \
     "numpy<2.0" \
+    "pyyaml>=5.1" \
     >> "${LOG_FILE}" 2>&1
 PIP_RC=$?
 
-# flash-attn은 빌드 오래 걸려서 별도 + 실패해도 계속 진행 (eager fallback)
+if [ ${PIP_RC} -ne 0 ]; then
+    log "[ERROR] pip 필수 패키지 설치 실패 (rc=${PIP_RC})"
+    fail_with_logs "install_failed" "${LOG_FILE}" "${PIP_RC}"
+fi
+
+# flash-attn — heavy build, tolerant
 python3 -m pip install -q --no-cache-dir --no-build-isolation \
     "flash-attn==2.6.3" >> "${LOG_FILE}" 2>&1 || \
     log "[WARN] flash-attn 설치 실패 — eager attention fallback"
 
-if [ ${PIP_RC} -ne 0 ]; then
-    log "[ERROR] pip 필수 패키지 설치 실패 (rc=${PIP_RC})"
-    # include last 20 log lines in the ntfy so we know why without ssh-ing
-    TAIL_BLOB="$(tail -n 20 "${LOG_FILE}" 2>/dev/null | tr '\n' '|' | cut -c1-900)"
-    write_done "install_failed" "rc=${PIP_RC}"
-    notify "dalbitalba install_failed rc=${PIP_RC} | ${TAIL_BLOB}"
-    stop_pod "install_failed"
-    exit 1
-fi
+{
+    echo "--- pip list (training deps) ---"
+    python3 -m pip list 2>/dev/null | grep -iE '^(torch|transformers|peft|trl|accelerate|bitsandbytes|datasets|tokenizers|huggingface|safetensors|sentencepiece|tiktoken|wandb|flash|numpy|protobuf|pyyaml) ' || true
+} >> "${LOG_FILE}" 2>&1
 
-python - <<'PY' >> "${LOG_FILE}" 2>&1
-import torch, transformers, peft, bitsandbytes, datasets, trl, accelerate
-print("torch", torch.__version__, "cuda", torch.cuda.is_available())
-print("transformers", transformers.__version__)
-print("peft", peft.__version__)
-print("bitsandbytes", bitsandbytes.__version__)
-print("trl", trl.__version__)
-print("datasets", datasets.__version__)
-print("accelerate", accelerate.__version__)
-PY
+# ═══ STEP 1.5 pre-flight smoke test ════════════════════════════════════
+# Fails fast with full telemetry BEFORE CPT starts. Anything wrong with the
+# env — CUDA mismatch, bnb, flash-attn, transformers-qwen3, HF auth, model
+# access — is surfaced here in one shot instead of 5-second CPT crashes.
+log "[1.5/6] pre-flight smoke test"
+python3 - >> "${PREFLIGHT_LOG}" 2>&1 <<'PREFLIGHT'
+import os, sys, traceback, json
+steps = []
+def step(name, fn):
+    try:
+        rv = fn()
+        steps.append((name, "OK", str(rv)[:200]))
+        print(f"[OK ] {name}: {str(rv)[:200]}")
+    except Exception as e:
+        steps.append((name, "FAIL", repr(e)[:400]))
+        print(f"[ERR] {name}: {repr(e)}")
+        traceback.print_exc()
+
+step("import torch", lambda: __import__("torch").__version__)
+import torch
+step("torch.cuda.is_available", lambda: torch.cuda.is_available())
+step("torch.version.cuda", lambda: torch.version.cuda)
+if torch.cuda.is_available():
+    step("device_name", lambda: torch.cuda.get_device_name(0))
+    step("device_capability", lambda: torch.cuda.get_device_capability(0))
+step("import transformers", lambda: __import__("transformers").__version__)
+step("import peft", lambda: __import__("peft").__version__)
+step("import bitsandbytes", lambda: __import__("bitsandbytes").__version__)
+step("import trl", lambda: __import__("trl").__version__)
+step("import accelerate", lambda: __import__("accelerate").__version__)
+step("import datasets", lambda: __import__("datasets").__version__)
+step("import huggingface_hub", lambda: __import__("huggingface_hub").__version__)
+step("import safetensors", lambda: __import__("safetensors").__version__)
+try:
+    import flash_attn
+    step("import flash_attn", lambda: flash_attn.__version__)
+except Exception as e:
+    steps.append(("import flash_attn", "MISSING", repr(e)[:200]))
+    print(f"[MIS] flash_attn: will use eager fallback")
+
+# bnb 4bit quantize runtime check (requires GPU) — this is where many env
+# mismatches show up (CUDA vs bnb wheel)
+def bnb_op():
+    import torch, bitsandbytes as bnb
+    import bitsandbytes.functional as F
+    x = torch.randn(128, 128, device="cuda", dtype=torch.bfloat16)
+    q, state = F.quantize_4bit(x, blocksize=64, quant_type="nf4")
+    y = F.dequantize_4bit(q, state)
+    return f"q.shape={tuple(q.shape)} y.shape={tuple(y.shape)} mae={float((x-y).abs().mean()):.4f}"
+step("bnb quantize 4bit", bnb_op)
+
+# Transformers Qwen3 registration
+def qwen3_reg():
+    from transformers import AutoConfig, AutoModelForCausalLM
+    from transformers.models.auto.configuration_auto import CONFIG_MAPPING
+    return f"qwen3 in MAPPING: {'qwen3' in CONFIG_MAPPING}"
+step("qwen3 in CONFIG_MAPPING", qwen3_reg)
+
+# HF auth
+def hf_whoami():
+    from huggingface_hub import HfApi
+    api = HfApi()
+    return api.whoami(token=os.environ["HF_TOKEN"])["name"]
+step("HF whoami", hf_whoami)
+
+# Pull Qwen3-8B-Base config only (tiny, proves access)
+def qwen3_config():
+    from transformers import AutoConfig
+    cfg = AutoConfig.from_pretrained("Qwen/Qwen3-8B-Base", trust_remote_code=True)
+    return f"arch={cfg.architectures} vocab={cfg.vocab_size} hidden={cfg.hidden_size}"
+step("load Qwen3-8B-Base config", qwen3_config)
+
+# Pull Qwen3-8B-Base tokenizer (~7MB, proves BBPE tokenizer loads)
+def qwen3_tok():
+    from transformers import AutoTokenizer
+    tok = AutoTokenizer.from_pretrained("Qwen/Qwen3-8B-Base", trust_remote_code=True, use_fast=True)
+    ids = tok.encode("안녕하세요, 어제 강남 이태원에서 놀았어요.")
+    return f"vocab={tok.vocab_size} sample_ids={ids[:8]}..."
+step("load Qwen3-8B-Base tokenizer", qwen3_tok)
+
+# Summary
+fail = [s for s in steps if s[1] == "FAIL"]
+print("="*60)
+print(f"preflight result: {len(steps)} steps, {len(fail)} FAIL")
+for name, status, detail in steps:
+    print(f"  [{status:4}] {name}: {detail}")
+sys.exit(2 if fail else 0)
+PREFLIGHT
+PREFLIGHT_RC=$?
+
+cat "${PREFLIGHT_LOG}" >> "${LOG_FILE}"
+
+if [ ${PREFLIGHT_RC} -ne 0 ]; then
+    log "[ERROR] pre-flight smoke test FAIL rc=${PREFLIGHT_RC}"
+    fail_with_logs "preflight_failed" "${PREFLIGHT_LOG}" "${PREFLIGHT_RC}"
+fi
+log "[1.5/6] pre-flight OK"
+notify "dalbit preflight OK — starting CPT on ${RUNPOD_POD_ID:-unknown}"
 
 # ── copy train scripts from repo to workspace if needed ─────────────
 for script in train_cpt.py train_sft.py; do
@@ -284,9 +399,9 @@ if [ ! -f "${WORKSPACE}/scripts/merge_cpt_to_fp16.py" ]; then
     cp "${REPO_CLONE_DIR}/scripts/merge_cpt_to_fp16.py" "${WORKSPACE}/scripts/merge_cpt_to_fp16.py" 2>/dev/null || true
 fi
 
-# ── STEP 2 CPT ──────────────────────────────────────────────────────
+# ═══ STEP 2 CPT ════════════════════════════════════════════════════════
 log "[2/6] CPT 학습 시작 (base=${BASE_MODEL_CPT})"
-notify "dalbitalba CPT 시작 — ${RUNPOD_POD_ID:-unknown}"
+notify "dalbit CPT start — ${RUNPOD_POD_ID:-unknown}"
 
 CPT_START=$(date +%s)
 BASE_MODEL="${BASE_MODEL_CPT}" \
@@ -295,44 +410,37 @@ CPT_VAL_JSONL="${TRAIN_VAL_JSONL}" \
 CPT_NUM_EPOCHS="${CPT_EPOCHS}" \
 CPT_OUTPUT_DIR="${CPT_OUT}" \
 CPT_CKPT_DIR="${OUT_DIR}/cpt-ckpt" \
-CPT_LOG_FILE="${WORKSPACE}/train_cpt.log" \
+CPT_LOG_FILE="${CPT_PY_LOG}" \
 CPT_HUB_MODEL_ID="${HF_REPO_CPT}" \
-python "${WORKSPACE}/train_cpt.py" >> "${LOG_FILE}" 2>&1
+HF_HUB_ENABLE_HF_TRANSFER=1 \
+python3 "${WORKSPACE}/train_cpt.py" >> "${LOG_FILE}" 2>&1
 CPT_EXIT=$?
 CPT_END=$(date +%s)
 CPT_ELAPSED=$(( (CPT_END - CPT_START) / 60 ))
 
 if [ ${CPT_EXIT} -ne 0 ]; then
     log "[ERROR] CPT 실패 exit=${CPT_EXIT} elapsed=${CPT_ELAPSED}m"
-    write_done "cpt_failed" "exit=${CPT_EXIT} min=${CPT_ELAPSED}"
-    notify "dalbitalba CPT 실패 — exit ${CPT_EXIT}"
-    persist_run_artifacts "cpt_failed"
-    stop_pod "cpt_failed"
-    exit 1
+    fail_with_logs "cpt_failed" "${CPT_PY_LOG}" "${CPT_EXIT}"
 fi
 log "[2/6] CPT 완료 (${CPT_ELAPSED}m)"
-notify "dalbitalba CPT 완료 (${CPT_ELAPSED}m)"
+notify "dalbit CPT done (${CPT_ELAPSED}m)"
 
-# ── STEP 3 merge ────────────────────────────────────────────────────
+# ═══ STEP 3 merge ══════════════════════════════════════════════════════
 log "[3/6] CPT adapter → fp16 merge"
 BASE_MODEL="${BASE_MODEL_CPT}" \
 CPT_LORA_DIR="${CPT_OUT}" \
 CPT_MERGED_DIR="${CPT_MERGED}" \
-python "${WORKSPACE}/scripts/merge_cpt_to_fp16.py" >> "${LOG_FILE}" 2>&1
-MERGE_EXIT=$?
+python3 "${WORKSPACE}/scripts/merge_cpt_to_fp16.py" 2>&1 | tee "${MERGE_PY_LOG}" >> "${LOG_FILE}"
+MERGE_EXIT=${PIPESTATUS[0]}
 if [ ${MERGE_EXIT} -ne 0 ]; then
     log "[ERROR] merge 실패 exit=${MERGE_EXIT}"
-    write_done "merge_failed" "exit=${MERGE_EXIT}"
-    notify "dalbitalba merge 실패"
-    persist_run_artifacts "merge_failed"
-    stop_pod "merge_failed"
-    exit 1
+    fail_with_logs "merge_failed" "${MERGE_PY_LOG}" "${MERGE_EXIT}"
 fi
 log "[3/6] merge 완료"
 
-# ── STEP 4 SFT ──────────────────────────────────────────────────────
+# ═══ STEP 4 SFT ════════════════════════════════════════════════════════
 log "[4/6] SFT 학습 시작 (base=${CPT_MERGED})"
-notify "dalbitalba SFT 시작"
+notify "dalbit SFT start"
 SFT_START=$(date +%s)
 BASE_MODEL="${CPT_MERGED}" \
 SFT_RAW_JSONL="${TRAIN_CPT_JSONL}" \
@@ -341,9 +449,10 @@ SFT_VAL_JSONL="${TRAIN_VAL_JSONL}" \
 SFT_NUM_EPOCHS="${SFT_EPOCHS}" \
 SFT_OUTPUT_DIR="${SFT_OUT}" \
 SFT_CKPT_DIR="${OUT_DIR}/sft-ckpt" \
-SFT_LOG_FILE="${WORKSPACE}/train_sft.log" \
+SFT_LOG_FILE="${SFT_PY_LOG}" \
 SFT_HUB_MODEL_ID="${HF_REPO_SFT}" \
-python "${WORKSPACE}/train_sft.py" >> "${LOG_FILE}" 2>&1
+HF_HUB_ENABLE_HF_TRANSFER=1 \
+python3 "${WORKSPACE}/train_sft.py" >> "${LOG_FILE}" 2>&1
 SFT_EXIT=$?
 SFT_END=$(date +%s)
 SFT_ELAPSED=$(( (SFT_END - SFT_START) / 60 ))
@@ -352,19 +461,22 @@ SFT_STATUS="ok"
 if [ ${SFT_EXIT} -ne 0 ]; then
     log "[WARN] SFT 실패 exit=${SFT_EXIT} — CPT merged만 배포"
     SFT_STATUS="sft_failed"
+    # Non-fatal: include SFT log tail in ntfy but continue to upload CPT
+    TAIL_BLOB="$(blob_head_tail "${SFT_PY_LOG}" 15 25)"
+    notify "dalbit SFT failed rc=${SFT_EXIT} ${TAIL_BLOB}"
 fi
 
-# ── STEP 5 HF upload (both CPT lora and SFT lora already pushed via hub_strategy)
+# ═══ STEP 5 HF upload ══════════════════════════════════════════════════
 log "[5/6] HF 최종 upload (adapter dirs)"
-python - <<PYEOF >> "${LOG_FILE}" 2>&1
+SFT_STATUS="${SFT_STATUS}" python3 - >> "${LOG_FILE}" 2>&1 <<'PYEOF'
 import os, sys, time
 from huggingface_hub import HfApi, create_repo
 api = HfApi()
 tok = os.environ["HF_TOKEN"]
 cpt_repo = os.environ["HF_REPO_CPT"]
 sft_repo = os.environ["HF_REPO_SFT"]
-cpt_out = os.environ.get("CPT_OUT", "/workspace/out/cpt-lora")
-sft_out = os.environ.get("SFT_OUT", "/workspace/out/sft-lora")
+cpt_out = "/workspace/out/cpt-lora"
+sft_out = "/workspace/out/sft-lora"
 sft_status = os.environ.get("SFT_STATUS", "ok")
 
 def push(repo_id, folder, path_in_repo="adapter"):
@@ -398,7 +510,7 @@ case "${HF_UPLOAD_EXIT}" in
     *) log "[ERROR] HF upload 오류 ${HF_UPLOAD_EXIT}"; HF_STATUS="upload_failed" ;;
 esac
 
-# ── STEP 6 wrap up ──────────────────────────────────────────────────
+# ═══ STEP 6 wrap up ════════════════════════════════════════════════════
 CHAIN_END=$(date +%s)
 TOTAL_MIN=$(( (CHAIN_END - CPT_START) / 60 ))
 
@@ -424,6 +536,6 @@ FINAL_STATUS="done_ok"
 log "[DONE] ${FINAL_STATUS} (total ${TOTAL_MIN}m)"
 cat "${DONE_FILE}" | tee -a "${LOG_FILE}"
 
-notify "dalbitalba chain ${FINAL_STATUS} (${TOTAL_MIN}m) cpt=${HF_REPO_CPT} sft=${HF_REPO_SFT}"
+notify "dalbit chain ${FINAL_STATUS} (${TOTAL_MIN}m) cpt=${HF_REPO_CPT} sft=${HF_REPO_SFT}"
 persist_run_artifacts "${FINAL_STATUS}"
 stop_pod "${FINAL_STATUS}"

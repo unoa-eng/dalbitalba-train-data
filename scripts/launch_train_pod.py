@@ -126,15 +126,19 @@ def redact_payload(payload: dict) -> dict:
 
 
 def main() -> None:
+    # load_env MUST run before argparse defaults resolve, otherwise the
+    # .env.local values for GPU_TYPE / CONTAINER_IMAGE are silently ignored.
+    load_env()
+
     parser = argparse.ArgumentParser(description="Launch dalbitalba-train-data RunPod training pod")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument(
         "--gpu-type",
         default=os.environ.get(
             "GPU_TYPE",
-            "NVIDIA A100 80GB PCIe,NVIDIA L40S,NVIDIA RTX 6000 Ada Generation",
+            "NVIDIA L40S,NVIDIA A100 80GB PCIe,NVIDIA RTX 6000 Ada Generation",
         ),
-        help="Comma-separated GPU preference list",
+        help="Comma-separated GPU preference list (L40S first for cost)",
     )
     parser.add_argument(
         "--container-image",
@@ -144,8 +148,6 @@ def main() -> None:
         ),
     )
     args = parser.parse_args()
-
-    load_env()
 
     api_key = require_env("RUNPOD_API_KEY")
     hf_token = require_env("HF_TOKEN")
