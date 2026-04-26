@@ -137,6 +137,30 @@ def compact_stats(values: list[int]) -> dict[str, Any]:
     }
 
 
+def encoding_profile(texts: list[str]) -> dict[str, Any]:
+    total = sum(len(text) for text in texts)
+    hangul = 0
+    cjk = 0
+    replacement = 0
+    for text in texts:
+        for ch in text:
+            code = ord(ch)
+            if 0xAC00 <= code <= 0xD7A3:
+                hangul += 1
+            elif 0x4E00 <= code <= 0x9FFF:
+                cjk += 1
+            elif ch == "\ufffd":
+                replacement += 1
+    return {
+        "total_chars": total,
+        "hangul_chars": hangul,
+        "hangul_ratio": round(hangul / max(1, total), 4),
+        "cjk_chars": cjk,
+        "cjk_ratio": round(cjk / max(1, total), 4),
+        "replacement_chars": replacement,
+    }
+
+
 def load_jsonl(path: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     rows: list[dict[str, Any]] = []
     errors: list[dict[str, Any]] = []
@@ -212,6 +236,7 @@ def validate_dataset(kind: str, path: Path) -> dict[str, Any]:
             missing_required += 1
 
     duplicate_count = len(nonempty_texts) - len(set(nonempty_texts))
+    encoding = encoding_profile(nonempty_texts)
     pii = {
         "phone_like": sum(1 for text in nonempty_texts if PHONE_RE.search(text)),
         "email_like": sum(1 for text in nonempty_texts if EMAIL_RE.search(text)),
@@ -245,6 +270,10 @@ def validate_dataset(kind: str, path: Path) -> dict[str, Any]:
         severe.append(
             f"{path.name}: minor/sexual proximity rows={pii['minor_sexual_proximity']}"
         )
+    if encoding["replacement_chars"]:
+        severe.append(f"{path.name}: unicode replacement characters remain")
+    if nonempty_texts and encoding["hangul_ratio"] < 0.15 and encoding["cjk_ratio"] > 0.10:
+        severe.append(f"{path.name}: possible mojibake encoding corruption")
     if nonempty_texts and duplicate_count / len(nonempty_texts) > 0.35:
         warn.append(
             f"{path.name}: high duplicate rate={duplicate_count / len(nonempty_texts):.3f}"
@@ -265,6 +294,7 @@ def validate_dataset(kind: str, path: Path) -> dict[str, Any]:
         "approx_token_stats": compact_stats([max(1, round(x / 2.2)) for x in lengths]),
         "duplicates": duplicate_count,
         "duplicate_rate": round(duplicate_count / max(1, len(nonempty_texts)), 4),
+        "encoding_profile": encoding,
         "pii_signals": pii,
         "warnings": warn,
         "severe": severe,
@@ -502,14 +532,16 @@ def render_markdown(payload: dict[str, Any]) -> str:
     lines.extend(["", "## Warnings", ""])
     lines.extend(f"- {item}" for item in payload["warnings"] or ["None"])
     lines.extend(["", "## Datasets", ""])
-    lines.append("| Name | Rows | JSON Errors | Dup Rate | Avg Chars | P95 Chars | PII Signals |")
-    lines.append("| --- | ---: | ---: | ---: | ---: | ---: | --- |")
+    lines.append("| Name | Rows | JSON Errors | Dup Rate | Hangul % | Avg Chars | P95 Chars | PII Signals |")
+    lines.append("| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |")
     for name, item in payload["datasets"].items():
         pii_count = sum(int(v) for v in item["pii_signals"].values())
         stats = item["char_stats"]
+        encoding = item.get("encoding_profile") or {}
+        hangul_pct = round(float(encoding.get("hangul_ratio", 0.0)) * 100, 2)
         lines.append(
             f"| {name} | {item['rows']} | {item['json_error_count']} | "
-            f"{item['duplicate_rate']:.4f} | {stats.get('avg', 'N/A')} | "
+            f"{item['duplicate_rate']:.4f} | {hangul_pct} | {stats.get('avg', 'N/A')} | "
             f"{stats.get('p95', 'N/A')} | {pii_count} |"
         )
     if payload.get("cost_estimate"):
