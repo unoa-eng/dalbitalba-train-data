@@ -582,7 +582,7 @@ def main() -> int:
     parser.add_argument("--hf-token-env", default="HF_TOKEN")
     parser.add_argument("--sec-per-step", type=float, default=18.43)
     parser.add_argument("--hourly-usd", type=float, default=0.79)
-    parser.add_argument("--budget-usd", type=float, default=90.0)
+    parser.add_argument("--budget-usd", type=float, default=30.0)
     parser.add_argument("--strict", action="store_true")
     args = parser.parse_args()
 
@@ -609,7 +609,11 @@ def main() -> int:
         sec_per_step=args.sec_per_step,
         hourly_usd=args.hourly_usd,
     )
-    if cost["total_train_usd"] > args.budget_usd * 0.85:
+    if cost["total_train_usd"] > args.budget_usd:
+        warnings.append(
+            f"estimated full train cost ${cost['total_train_usd']} exceeds budget ${args.budget_usd}; use a smoke or CPT-only budget recipe"
+        )
+    elif cost["total_train_usd"] > args.budget_usd * 0.85:
         warnings.append(
             f"estimated train cost ${cost['total_train_usd']} is close to budget ${args.budget_usd}"
         )

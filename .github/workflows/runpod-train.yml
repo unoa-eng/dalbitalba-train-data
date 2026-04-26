@@ -11,6 +11,10 @@ on:
         description: Load recipes/smoke.env for a short end-to-end plumbing run
         required: false
         default: "false"
+      profile:
+        description: Optional recipe profile: budget30
+        required: false
+        default: ""
 
 jobs:
   launch-train:
@@ -40,6 +44,10 @@ jobs:
           if [ "${{ github.event.inputs.smoke }}" = "true" ]; then
             set -a
             . recipes/smoke.env
+            set +a
+          elif [ "${{ github.event.inputs.profile }}" = "budget30" ]; then
+            set -a
+            . recipes/budget30.env
             set +a
           fi
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then

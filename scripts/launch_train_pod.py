@@ -253,6 +253,7 @@ def main() -> None:
         "SFT_EVAL_STEPS",
         "CPT_LOGGING_STEPS",
         "SFT_LOGGING_STEPS",
+        "SKIP_SFT",
         "CPT_TIMEOUT_HOURS",
         "MERGE_TIMEOUT_HOURS",
         "SFT_TIMEOUT_HOURS",

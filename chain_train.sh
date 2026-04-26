@@ -44,6 +44,7 @@ TRAIN_VAL_JSONL="${CPT_VAL_JSONL:-${DATA_DIR}/val_set.v2.jsonl}"
 CPT_EPOCHS="${CPT_NUM_EPOCHS:-1}"
 SFT_EPOCHS="${SFT_NUM_EPOCHS:-2}"
 BASE_MODEL_CPT="${BASE_MODEL:-Qwen/Qwen3-8B-Base}"
+SKIP_SFT="${SKIP_SFT:-0}"
 CPT_TIMEOUT_HOURS="${CPT_TIMEOUT_HOURS:-36}"
 MERGE_TIMEOUT_HOURS="${MERGE_TIMEOUT_HOURS:-8}"
 SFT_TIMEOUT_HOURS="${SFT_TIMEOUT_HOURS:-96}"
@@ -250,6 +251,7 @@ log "  hf_repo_cpt  : ${HF_REPO_CPT}"
 log "  hf_repo_sft  : ${HF_REPO_SFT}"
 log "  cpt_epochs   : ${CPT_EPOCHS}"
 log "  sft_epochs   : ${SFT_EPOCHS}"
+log "  skip_sft     : ${SKIP_SFT}"
 log "  timeouts     : cpt=${CPT_TIMEOUT_HOURS}h merge=${MERGE_TIMEOUT_HOURS}h sft=${SFT_TIMEOUT_HOURS}h upload=${HF_UPLOAD_TIMEOUT_HOURS}h"
 log "=========================================="
 
@@ -482,10 +484,17 @@ fi
 log "[3/6] merge 완료"
 
 # ═══ STEP 4 SFT ════════════════════════════════════════════════════════
-log "[4/6] SFT 학습 시작 (base=${CPT_MERGED})"
-notify "dalbit SFT start"
-SFT_START=$(date +%s)
-run_timeout "${SFT_TIMEOUT_HOURS}" env \
+log "[4/6] SFT stage (base=${CPT_MERGED})"
+SFT_STATUS="ok"
+SFT_ELAPSED=0
+if [ "${SKIP_SFT}" = "1" ] || [ "${SKIP_SFT}" = "true" ]; then
+    log "[4/6] SFT skipped by SKIP_SFT=${SKIP_SFT}; CPT-only budget run"
+    notify "dalbit SFT skipped (CPT-only budget run)"
+    SFT_STATUS="skipped"
+else
+    notify "dalbit SFT start"
+    SFT_START=$(date +%s)
+    run_timeout "${SFT_TIMEOUT_HOURS}" env \
     BASE_MODEL="${CPT_MERGED}" \
     SFT_RAW_JSONL="${TRAIN_CPT_JSONL}" \
     SFT_PAIR_JSONL="${TRAIN_SFT_PAIR_JSONL}" \
@@ -496,18 +505,19 @@ run_timeout "${SFT_TIMEOUT_HOURS}" env \
     SFT_LOG_FILE="${SFT_PY_LOG}" \
     SFT_HUB_MODEL_ID="${HF_REPO_SFT}" \
     HF_HUB_ENABLE_HF_TRANSFER=1 \
-    python3 "${WORKSPACE}/train_sft.py" >> "${LOG_FILE}" 2>&1
-SFT_EXIT=$?
-SFT_END=$(date +%s)
-SFT_ELAPSED=$(( (SFT_END - SFT_START) / 60 ))
+        python3 "${WORKSPACE}/train_sft.py" >> "${LOG_FILE}" 2>&1
+    SFT_EXIT=$?
+    SFT_END=$(date +%s)
+    SFT_ELAPSED=$(( (SFT_END - SFT_START) / 60 ))
 
-SFT_STATUS="ok"
-if [ ${SFT_EXIT} -ne 0 ]; then
-    log "[WARN] SFT 실패 exit=${SFT_EXIT} — CPT merged만 배포"
-    SFT_STATUS="sft_failed"
-    # Non-fatal: include SFT log tail in ntfy but continue to upload CPT
-    TAIL_BLOB="$(blob_head_tail "${SFT_PY_LOG}" 15 25)"
-    notify "dalbit SFT failed rc=${SFT_EXIT} ${TAIL_BLOB}"
+    SFT_STATUS="ok"
+    if [ ${SFT_EXIT} -ne 0 ]; then
+        log "[WARN] SFT 실패 exit=${SFT_EXIT} — CPT merged만 배포"
+        SFT_STATUS="sft_failed"
+        # Non-fatal: include SFT log tail in ntfy but continue to upload CPT
+        TAIL_BLOB="$(blob_head_tail "${SFT_PY_LOG}" 15 25)"
+        notify "dalbit SFT failed rc=${SFT_EXIT} ${TAIL_BLOB}"
+    fi
 fi
 
 # ═══ STEP 5 HF upload ══════════════════════════════════════════════════
@@ -560,6 +570,7 @@ TOTAL_MIN=$(( (CHAIN_END - CPT_START) / 60 ))
 
 FINAL_STATUS="done_ok"
 [ "${SFT_STATUS}" = "sft_failed" ] && FINAL_STATUS="done_cpt_only"
+[ "${SFT_STATUS}" = "skipped" ] && FINAL_STATUS="done_cpt_only"
 [ "${HF_STATUS}" = "upload_failed" ] && FINAL_STATUS="done_no_upload"
 
 {
