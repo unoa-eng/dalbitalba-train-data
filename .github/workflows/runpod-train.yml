@@ -12,9 +12,9 @@ on:
         required: false
         default: "false"
       profile:
-        description: Optional recipe profile: budget30
+        description: "Optional recipe profile: budget30"
         required: false
-        default: ""
+        default: "none"
 
 jobs:
   launch-train:
