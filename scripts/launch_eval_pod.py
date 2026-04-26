@@ -151,8 +151,17 @@ def main() -> None:
     github_token = require_env("GITHUB_TOKEN")
     github_repo = os.environ.get("GITHUB_REPO", "unoa-eng/dalbitalba-train-data").strip()
     github_ref = os.environ.get("GITHUB_REF", "").strip() or detect_git_ref()
-    hf_adapter_repo = require_env("HF_ADAPTER_REPO")
-    anthropic_api_key = require_env("ANTHROPIC_API_KEY")
+    eval_mode = os.environ.get("EVAL_MODE", "phase6").strip() or "phase6"
+    hf_adapter_repo = os.environ.get("HF_ADAPTER_REPO", "").strip()
+    sft_adapter_repo = os.environ.get("SFT_ADAPTER_REPO", "").strip() or hf_adapter_repo
+    if eval_mode == "legacy":
+        if not hf_adapter_repo:
+            raise SystemExit("[ERROR] missing env: HF_ADAPTER_REPO")
+        anthropic_api_key = require_env("ANTHROPIC_API_KEY")
+    else:
+        if not sft_adapter_repo:
+            raise SystemExit("[ERROR] missing env: SFT_ADAPTER_REPO")
+        anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     hf_token = os.environ.get("HF_TOKEN", "").strip()
     openai_api_key = os.environ.get("OPENAI_API_KEY", "").strip()
     ntfy_topic = os.environ.get("NTFY_TOPIC", "").strip()
@@ -174,13 +183,16 @@ def main() -> None:
     env = {
         "GITHUB_TOKEN": github_token,
         "GITHUB_REPO": github_repo,
-        "HF_ADAPTER_REPO": hf_adapter_repo,
-        "ANTHROPIC_API_KEY": anthropic_api_key,
+        "EVAL_MODE": eval_mode,
+        "HF_ADAPTER_REPO": hf_adapter_repo or sft_adapter_repo,
+        "SFT_ADAPTER_REPO": sft_adapter_repo,
         "RUNPOD_API_KEY": api_key,
         "BASE_MODEL": base_model,
         "HF_HUB_ENABLE_HF_TRANSFER": "1",
         "RUNPOD_POD_ID": "__SELF__",
     }
+    if anthropic_api_key:
+        env["ANTHROPIC_API_KEY"] = anthropic_api_key
     if hf_token:
         env["HF_TOKEN"] = hf_token
     if openai_api_key:
@@ -239,6 +251,8 @@ def main() -> None:
             "github_repo": github_repo,
             "github_ref": github_ref,
             "hf_adapter_repo": hf_adapter_repo,
+            "sft_adapter_repo": sft_adapter_repo,
+            "eval_mode": eval_mode,
             "gpu_type": chosen_gpu,
             "gpu_type_candidates": gpu_types,
             "base_model": base_model,

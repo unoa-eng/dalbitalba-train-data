@@ -79,10 +79,14 @@ LR = float(os.environ.get("SFT_LR", "5e-5"))
 WARMUP_RATIO = float(os.environ.get("SFT_WARMUP_RATIO", "0.05"))
 WEIGHT_DECAY = float(os.environ.get("SFT_WEIGHT_DECAY", "0.01"))
 NUM_EPOCHS = int(os.environ.get("SFT_NUM_EPOCHS", "2"))
+MAX_STEPS_OVERRIDE = int(os.environ.get("SFT_MAX_STEPS", "0") or "0")
 SAVE_STEPS = int(os.environ.get("SFT_SAVE_STEPS", "50"))
 SAVE_TOTAL_LIMIT = int(os.environ.get("SFT_SAVE_TOTAL_LIMIT", "3"))
 EVAL_STEPS = int(os.environ.get("SFT_EVAL_STEPS", "200"))
 LOGGING_STEPS = int(os.environ.get("SFT_LOGGING_STEPS", "10"))
+RAW_LIMIT_ROWS = int(os.environ.get("SFT_RAW_LIMIT_ROWS", "0") or "0")
+PAIR_LIMIT_ROWS = int(os.environ.get("SFT_PAIR_LIMIT_ROWS", "0") or "0")
+VAL_LIMIT_ROWS = int(os.environ.get("SFT_VAL_LIMIT_ROWS", "0") or "0")
 
 RAW_RATIO = float(os.environ.get("SFT_RAW_RATIO", "0.8"))
 PAIR_RATIO = 1.0 - RAW_RATIO
@@ -143,6 +147,15 @@ def build_mixed_dataset(tokenizer) -> tuple[Dataset, Dataset | None]:
     raw_rows = load_jsonl(SFT_RAW_JSONL)
     pair_rows = load_jsonl(SFT_PAIR_JSONL)
     val_rows = load_jsonl(SFT_VAL_JSONL)
+    if RAW_LIMIT_ROWS > 0 and len(raw_rows) > RAW_LIMIT_ROWS:
+        logger.info(f"SFT_RAW_LIMIT_ROWS 적용: {len(raw_rows):,} -> {RAW_LIMIT_ROWS:,}")
+        raw_rows = raw_rows[:RAW_LIMIT_ROWS]
+    if PAIR_LIMIT_ROWS > 0 and len(pair_rows) > PAIR_LIMIT_ROWS:
+        logger.info(f"SFT_PAIR_LIMIT_ROWS 적용: {len(pair_rows):,} -> {PAIR_LIMIT_ROWS:,}")
+        pair_rows = pair_rows[:PAIR_LIMIT_ROWS]
+    if VAL_LIMIT_ROWS > 0 and len(val_rows) > VAL_LIMIT_ROWS:
+        logger.info(f"SFT_VAL_LIMIT_ROWS 적용: {len(val_rows):,} -> {VAL_LIMIT_ROWS:,}")
+        val_rows = val_rows[:VAL_LIMIT_ROWS]
 
     logger.info(
         f"mix policy: raw={RAW_RATIO:.2f} pair={PAIR_RATIO:.2f}"
@@ -297,6 +310,9 @@ def main() -> None:
     train_ds, eval_ds = build_mixed_dataset(tokenizer)
 
     total_steps = math.ceil(len(train_ds) / (BATCH_SIZE * GRAD_ACCUM)) * NUM_EPOCHS
+    if MAX_STEPS_OVERRIDE > 0:
+        logger.info(f"SFT_MAX_STEPS override 적용: {total_steps} -> {MAX_STEPS_OVERRIDE}")
+        total_steps = MAX_STEPS_OVERRIDE
     warmup_steps = max(1, int(total_steps * WARMUP_RATIO))
     logger.info(f"total_steps={total_steps} warmup={warmup_steps}")
 
@@ -311,6 +327,7 @@ def main() -> None:
     kwargs = dict(
         output_dir=CKPT_DIR,
         num_train_epochs=NUM_EPOCHS,
+        max_steps=MAX_STEPS_OVERRIDE if MAX_STEPS_OVERRIDE > 0 else -1,
         per_device_train_batch_size=BATCH_SIZE,
         gradient_accumulation_steps=GRAD_ACCUM,
         learning_rate=LR,

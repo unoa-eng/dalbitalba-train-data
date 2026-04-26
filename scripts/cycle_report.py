@@ -38,10 +38,18 @@ def metric_passes(value: object, spec: dict) -> bool:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--eval-run", required=True, help="Run suffix for runs/eval-run-<arg>")
+    parser.add_argument(
+        "--eval-run",
+        required=True,
+        help="Run id, accepting either <stamp> or eval-run-<stamp>",
+    )
     args = parser.parse_args()
 
-    run_dir = Path("runs") / f"eval-run-{args.eval_run}"
+    run_name = args.eval_run
+    if not run_name.startswith("eval-run-"):
+        run_name = f"eval-run-{run_name}"
+
+    run_dir = Path("runs") / run_name
     metrics_path = run_dir / "metrics.json"
     report_path = run_dir / "CYCLE_REPORT.md"
 
@@ -51,7 +59,7 @@ def main() -> None:
     verdict = payload.get("gate", {}).get("verdict", "UNKNOWN")
 
     lines = [
-        f"# Cycle Report: eval-run-{args.eval_run}",
+        f"# Cycle Report: {run_name}",
         "",
         "| Metric | Value | Threshold | Status |",
         "| --- | ---: | --- | --- |",

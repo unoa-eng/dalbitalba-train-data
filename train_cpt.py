@@ -70,10 +70,13 @@ LR = float(os.environ.get("CPT_LR", "2e-4"))
 WARMUP_RATIO = float(os.environ.get("CPT_WARMUP_RATIO", "0.03"))
 WEIGHT_DECAY = float(os.environ.get("CPT_WEIGHT_DECAY", "0.01"))
 NUM_EPOCHS = int(os.environ.get("CPT_NUM_EPOCHS", "1"))
+MAX_STEPS_OVERRIDE = int(os.environ.get("CPT_MAX_STEPS", "0") or "0")
 SAVE_STEPS = int(os.environ.get("CPT_SAVE_STEPS", "50"))
 SAVE_TOTAL_LIMIT = int(os.environ.get("CPT_SAVE_TOTAL_LIMIT", "3"))
 EVAL_STEPS = int(os.environ.get("CPT_EVAL_STEPS", "200"))
 LOGGING_STEPS = int(os.environ.get("CPT_LOGGING_STEPS", "20"))
+LIMIT_ROWS = int(os.environ.get("CPT_LIMIT_ROWS", "0") or "0")
+VAL_LIMIT_ROWS = int(os.environ.get("CPT_VAL_LIMIT_ROWS", "0") or "0")
 
 LORA_R = int(os.environ.get("CPT_LORA_R", "64"))
 LORA_ALPHA = int(os.environ.get("CPT_LORA_ALPHA", "64"))
@@ -225,6 +228,12 @@ def main() -> None:
     # ── Data ────────────────────────────────────────────────────────
     train_raw = load_corpus(INPUT_JSONL)
     eval_raw = load_corpus(VAL_JSONL) if os.path.exists(VAL_JSONL) else None
+    if LIMIT_ROWS > 0 and len(train_raw) > LIMIT_ROWS:
+        logger.info(f"CPT_LIMIT_ROWS 적용: {len(train_raw):,} -> {LIMIT_ROWS:,}")
+        train_raw = train_raw.select(range(LIMIT_ROWS))
+    if eval_raw is not None and VAL_LIMIT_ROWS > 0 and len(eval_raw) > VAL_LIMIT_ROWS:
+        logger.info(f"CPT_VAL_LIMIT_ROWS 적용: {len(eval_raw):,} -> {VAL_LIMIT_ROWS:,}")
+        eval_raw = eval_raw.select(range(VAL_LIMIT_ROWS))
 
     train_ds = train_raw.map(
         lambda ex: tokenize_fn(ex, tokenizer),
@@ -250,6 +259,9 @@ def main() -> None:
 
     steps_per_epoch = math.ceil(len(train_ds) / (BATCH_SIZE * GRAD_ACCUM))
     total_steps = steps_per_epoch * NUM_EPOCHS
+    if MAX_STEPS_OVERRIDE > 0:
+        logger.info(f"CPT_MAX_STEPS override 적용: {total_steps} -> {MAX_STEPS_OVERRIDE}")
+        total_steps = MAX_STEPS_OVERRIDE
     warmup_steps = max(1, int(total_steps * WARMUP_RATIO))
     logger.info(
         f"steps_per_epoch={steps_per_epoch} total_steps={total_steps} "
@@ -266,6 +278,7 @@ def main() -> None:
     training_args_kwargs = dict(
         output_dir=CKPT_DIR,
         num_train_epochs=NUM_EPOCHS,
+        max_steps=MAX_STEPS_OVERRIDE if MAX_STEPS_OVERRIDE > 0 else -1,
         per_device_train_batch_size=BATCH_SIZE,
         gradient_accumulation_steps=GRAD_ACCUM,
         learning_rate=LR,

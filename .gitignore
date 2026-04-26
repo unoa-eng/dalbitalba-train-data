@@ -26,3 +26,7 @@ eval_key.json
 # the *.log ignore above makes the commits empty.
 !runs/**/*.log
 !runs/**/preflight.log
+
+# Local verifier outputs are reproducible and should not be pushed as run artifacts.
+runs/local-verification-*/
+runs/latest-local-verification.json

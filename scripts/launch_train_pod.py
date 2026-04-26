@@ -223,6 +223,27 @@ def main() -> None:
         "SFT_LR": sft_lr,
         "WANDB_PROJECT": wandb_project,
     }
+    for optional_key in (
+        "CPT_MAX_STEPS",
+        "SFT_MAX_STEPS",
+        "CPT_LIMIT_ROWS",
+        "CPT_VAL_LIMIT_ROWS",
+        "SFT_RAW_LIMIT_ROWS",
+        "SFT_PAIR_LIMIT_ROWS",
+        "SFT_VAL_LIMIT_ROWS",
+        "SFT_RAW_RATIO",
+        "CPT_SAVE_STEPS",
+        "SFT_SAVE_STEPS",
+        "CPT_EVAL_STEPS",
+        "SFT_EVAL_STEPS",
+        "CPT_LOGGING_STEPS",
+        "SFT_LOGGING_STEPS",
+        "EVAL_MODE",
+        "EVAL_MAX_ROWS",
+    ):
+        value = os.environ.get(optional_key, "").strip()
+        if value:
+            env[optional_key] = value
     if wandb_api_key:
         env["WANDB_API_KEY"] = wandb_api_key
         env["TRAIN_REPORT_TO"] = "wandb"
