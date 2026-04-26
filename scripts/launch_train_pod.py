@@ -253,6 +253,10 @@ def main() -> None:
         "SFT_EVAL_STEPS",
         "CPT_LOGGING_STEPS",
         "SFT_LOGGING_STEPS",
+        "CPT_TIMEOUT_HOURS",
+        "MERGE_TIMEOUT_HOURS",
+        "SFT_TIMEOUT_HOURS",
+        "HF_UPLOAD_TIMEOUT_HOURS",
         "EVAL_MODE",
         "EVAL_MAX_ROWS",
     ):

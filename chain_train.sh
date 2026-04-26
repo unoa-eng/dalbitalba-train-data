@@ -44,6 +44,10 @@ TRAIN_VAL_JSONL="${CPT_VAL_JSONL:-${DATA_DIR}/val_set.v2.jsonl}"
 CPT_EPOCHS="${CPT_NUM_EPOCHS:-1}"
 SFT_EPOCHS="${SFT_NUM_EPOCHS:-2}"
 BASE_MODEL_CPT="${BASE_MODEL:-Qwen/Qwen3-8B-Base}"
+CPT_TIMEOUT_HOURS="${CPT_TIMEOUT_HOURS:-36}"
+MERGE_TIMEOUT_HOURS="${MERGE_TIMEOUT_HOURS:-8}"
+SFT_TIMEOUT_HOURS="${SFT_TIMEOUT_HOURS:-96}"
+HF_UPLOAD_TIMEOUT_HOURS="${HF_UPLOAD_TIMEOUT_HOURS:-4}"
 TIMESTAMP="$(date -u '+%Y%m%d-%H%M')"
 HF_REPO_SFT="${HF_USERNAME:-unoa}/dalbitalba-qwen3-sft-${TIMESTAMP}"
 HF_REPO_CPT="${HF_USERNAME:-unoa}/dalbitalba-qwen3-cpt-${TIMESTAMP}"
@@ -89,6 +93,17 @@ blob_head_tail() {
         echo "====TAIL===="
         tail -n "${ntail}" "${file}" 2>/dev/null || true
     } | tr '\n' '|' | cut -c1-3500
+}
+
+run_timeout() {
+    local hours="$1"
+    shift
+    if command -v timeout >/dev/null 2>&1; then
+        timeout --foreground "${hours}h" "$@"
+    else
+        log "[WARN] timeout command not found; running without timeout: $*"
+        "$@"
+    fi
 }
 
 stop_pod() {
@@ -215,6 +230,7 @@ log "  hf_repo_cpt  : ${HF_REPO_CPT}"
 log "  hf_repo_sft  : ${HF_REPO_SFT}"
 log "  cpt_epochs   : ${CPT_EPOCHS}"
 log "  sft_epochs   : ${SFT_EPOCHS}"
+log "  timeouts     : cpt=${CPT_TIMEOUT_HOURS}h merge=${MERGE_TIMEOUT_HOURS}h sft=${SFT_TIMEOUT_HOURS}h upload=${HF_UPLOAD_TIMEOUT_HOURS}h"
 log "=========================================="
 
 # System snapshot
@@ -406,16 +422,17 @@ log "[2/6] CPT 학습 시작 (base=${BASE_MODEL_CPT})"
 notify "dalbit CPT start — ${RUNPOD_POD_ID:-unknown}"
 
 CPT_START=$(date +%s)
-BASE_MODEL="${BASE_MODEL_CPT}" \
-INPUT_JSONL="${TRAIN_CPT_JSONL}" \
-CPT_VAL_JSONL="${TRAIN_VAL_JSONL}" \
-CPT_NUM_EPOCHS="${CPT_EPOCHS}" \
-CPT_OUTPUT_DIR="${CPT_OUT}" \
-CPT_CKPT_DIR="${OUT_DIR}/cpt-ckpt" \
-CPT_LOG_FILE="${CPT_PY_LOG}" \
-CPT_HUB_MODEL_ID="${HF_REPO_CPT}" \
-HF_HUB_ENABLE_HF_TRANSFER=1 \
-python3 "${WORKSPACE}/train_cpt.py" >> "${LOG_FILE}" 2>&1
+run_timeout "${CPT_TIMEOUT_HOURS}" env \
+    BASE_MODEL="${BASE_MODEL_CPT}" \
+    INPUT_JSONL="${TRAIN_CPT_JSONL}" \
+    CPT_VAL_JSONL="${TRAIN_VAL_JSONL}" \
+    CPT_NUM_EPOCHS="${CPT_EPOCHS}" \
+    CPT_OUTPUT_DIR="${CPT_OUT}" \
+    CPT_CKPT_DIR="${OUT_DIR}/cpt-ckpt" \
+    CPT_LOG_FILE="${CPT_PY_LOG}" \
+    CPT_HUB_MODEL_ID="${HF_REPO_CPT}" \
+    HF_HUB_ENABLE_HF_TRANSFER=1 \
+    python3 "${WORKSPACE}/train_cpt.py" >> "${LOG_FILE}" 2>&1
 CPT_EXIT=$?
 CPT_END=$(date +%s)
 CPT_ELAPSED=$(( (CPT_END - CPT_START) / 60 ))
@@ -432,7 +449,11 @@ log "[3/6] CPT adapter → fp16 merge"
 BASE_MODEL="${BASE_MODEL_CPT}" \
 CPT_LORA_DIR="${CPT_OUT}" \
 CPT_MERGED_DIR="${CPT_MERGED}" \
-python3 "${WORKSPACE}/scripts/merge_cpt_to_fp16.py" 2>&1 | tee "${MERGE_PY_LOG}" >> "${LOG_FILE}"
+run_timeout "${MERGE_TIMEOUT_HOURS}" env \
+    BASE_MODEL="${BASE_MODEL_CPT}" \
+    CPT_LORA_DIR="${CPT_OUT}" \
+    CPT_MERGED_DIR="${CPT_MERGED}" \
+    python3 "${WORKSPACE}/scripts/merge_cpt_to_fp16.py" 2>&1 | tee "${MERGE_PY_LOG}" >> "${LOG_FILE}"
 MERGE_EXIT=${PIPESTATUS[0]}
 if [ ${MERGE_EXIT} -ne 0 ]; then
     log "[ERROR] merge 실패 exit=${MERGE_EXIT}"
@@ -444,17 +465,18 @@ log "[3/6] merge 완료"
 log "[4/6] SFT 학습 시작 (base=${CPT_MERGED})"
 notify "dalbit SFT start"
 SFT_START=$(date +%s)
-BASE_MODEL="${CPT_MERGED}" \
-SFT_RAW_JSONL="${TRAIN_CPT_JSONL}" \
-SFT_PAIR_JSONL="${TRAIN_SFT_PAIR_JSONL}" \
-SFT_VAL_JSONL="${TRAIN_VAL_JSONL}" \
-SFT_NUM_EPOCHS="${SFT_EPOCHS}" \
-SFT_OUTPUT_DIR="${SFT_OUT}" \
-SFT_CKPT_DIR="${OUT_DIR}/sft-ckpt" \
-SFT_LOG_FILE="${SFT_PY_LOG}" \
-SFT_HUB_MODEL_ID="${HF_REPO_SFT}" \
-HF_HUB_ENABLE_HF_TRANSFER=1 \
-python3 "${WORKSPACE}/train_sft.py" >> "${LOG_FILE}" 2>&1
+run_timeout "${SFT_TIMEOUT_HOURS}" env \
+    BASE_MODEL="${CPT_MERGED}" \
+    SFT_RAW_JSONL="${TRAIN_CPT_JSONL}" \
+    SFT_PAIR_JSONL="${TRAIN_SFT_PAIR_JSONL}" \
+    SFT_VAL_JSONL="${TRAIN_VAL_JSONL}" \
+    SFT_NUM_EPOCHS="${SFT_EPOCHS}" \
+    SFT_OUTPUT_DIR="${SFT_OUT}" \
+    SFT_CKPT_DIR="${OUT_DIR}/sft-ckpt" \
+    SFT_LOG_FILE="${SFT_PY_LOG}" \
+    SFT_HUB_MODEL_ID="${HF_REPO_SFT}" \
+    HF_HUB_ENABLE_HF_TRANSFER=1 \
+    python3 "${WORKSPACE}/train_sft.py" >> "${LOG_FILE}" 2>&1
 SFT_EXIT=$?
 SFT_END=$(date +%s)
 SFT_ELAPSED=$(( (SFT_END - SFT_START) / 60 ))
@@ -470,7 +492,7 @@ fi
 
 # ═══ STEP 5 HF upload ══════════════════════════════════════════════════
 log "[5/6] HF 최종 upload (adapter dirs)"
-SFT_STATUS="${SFT_STATUS}" python3 - >> "${LOG_FILE}" 2>&1 <<'PYEOF'
+run_timeout "${HF_UPLOAD_TIMEOUT_HOURS}" env SFT_STATUS="${SFT_STATUS}" python3 - >> "${LOG_FILE}" 2>&1 <<'PYEOF'
 import os, sys, time
 from huggingface_hub import HfApi, create_repo
 api = HfApi()
