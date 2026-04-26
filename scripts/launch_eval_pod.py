@@ -125,6 +125,21 @@ def detect_git_ref() -> str:
     return "main"
 
 
+def resolve_git_ref() -> str:
+    raw = (
+        os.environ.get("TRAIN_GITHUB_REF", "").strip()
+        or os.environ.get("GITHUB_REF_NAME", "").strip()
+        or os.environ.get("GITHUB_REF", "").strip()
+    )
+    if raw.startswith("refs/heads/"):
+        raw = raw.removeprefix("refs/heads/")
+    elif raw.startswith("refs/tags/"):
+        raw = raw.removeprefix("refs/tags/")
+    elif raw.startswith("refs/pull/"):
+        raw = ""
+    return raw or detect_git_ref()
+
+
 def main() -> None:
     load_env()
 
@@ -150,7 +165,7 @@ def main() -> None:
     api_key = require_env("RUNPOD_API_KEY")
     github_token = require_env("GITHUB_TOKEN")
     github_repo = os.environ.get("GITHUB_REPO", "unoa-eng/dalbitalba-train-data").strip()
-    github_ref = os.environ.get("GITHUB_REF", "").strip() or detect_git_ref()
+    github_ref = resolve_git_ref()
     eval_mode = os.environ.get("EVAL_MODE", "phase6").strip() or "phase6"
     hf_adapter_repo = os.environ.get("HF_ADAPTER_REPO", "").strip()
     sft_adapter_repo = os.environ.get("SFT_ADAPTER_REPO", "").strip() or hf_adapter_repo

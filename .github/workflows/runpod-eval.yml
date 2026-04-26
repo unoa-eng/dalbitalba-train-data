@@ -4,8 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       hf_adapter_repo:
-        description: Hugging Face repo id that contains cpt-lora/ and optional sft-lora/
+        description: Hugging Face SFT adapter repo id for phase6, or legacy combined repo
         required: true
+      eval_mode:
+        description: phase6 or legacy
+        required: false
+        default: "phase6"
       dry_run:
         description: Print the RunPod payload without creating a pod
         required: false
@@ -28,14 +32,17 @@ jobs:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_ADAPTER_REPO: ${{ github.event.inputs.hf_adapter_repo }}
+          SFT_ADAPTER_REPO: ${{ github.event.inputs.hf_adapter_repo }}
+          EVAL_MODE: ${{ github.event.inputs.eval_mode }}
           GITHUB_TOKEN: ${{ secrets.TRAIN_REPO_PUSH_TOKEN }}
           GITHUB_REPO: unoa-eng/dalbitalba-train-data
+          TRAIN_GITHUB_REF: ${{ github.ref_name }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          BASE_MODEL: ${{ vars.BASE_MODEL || 'upstage/SOLAR-10.7B-v1.0' }}
-          GPU_TYPE: ${{ vars.GPU_TYPE || 'NVIDIA A100 80GB PCIe' }}
-          CONTAINER_IMAGE: ${{ vars.CONTAINER_IMAGE || 'runpod/pytorch:2.2.0-py3.10-cuda12.1.1-devel-ubuntu22.04' }}
+          BASE_MODEL: ${{ vars.BASE_MODEL || 'Qwen/Qwen3-8B-Base' }}
+          GPU_TYPE: ${{ vars.GPU_TYPE || 'NVIDIA L40S,NVIDIA A100 80GB PCIe,NVIDIA RTX 6000 Ada Generation' }}
+          CONTAINER_IMAGE: ${{ vars.CONTAINER_IMAGE || 'runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04' }}
         run: |
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
             python scripts/launch_eval_pod.py --dry-run

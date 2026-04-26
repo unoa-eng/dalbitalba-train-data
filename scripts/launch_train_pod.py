@@ -86,6 +86,21 @@ def detect_git_ref() -> str:
     return "main"
 
 
+def resolve_git_ref() -> str:
+    raw = (
+        os.environ.get("TRAIN_GITHUB_REF", "").strip()
+        or os.environ.get("GITHUB_REF_NAME", "").strip()
+        or os.environ.get("GITHUB_REF", "").strip()
+    )
+    if raw.startswith("refs/heads/"):
+        raw = raw.removeprefix("refs/heads/")
+    elif raw.startswith("refs/tags/"):
+        raw = raw.removeprefix("refs/tags/")
+    elif raw.startswith("refs/pull/"):
+        raw = ""
+    return raw or detect_git_ref()
+
+
 def save_state(pod_id: str, metadata: dict) -> None:
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     STATE_FILE.write_text(
@@ -157,7 +172,7 @@ def main() -> None:
     hf_username = require_env("HF_USERNAME")
     github_token = require_env("GITHUB_TOKEN")
     github_repo = os.environ.get("GITHUB_REPO", "unoa-eng/dalbitalba-train-data").strip()
-    github_ref = os.environ.get("GITHUB_REF", "").strip() or detect_git_ref()
+    github_ref = resolve_git_ref()
     ntfy_topic = os.environ.get("NTFY_TOPIC", "").strip()
     cloud_type = os.environ.get("RUNPOD_CLOUD_TYPE", "COMMUNITY").strip().upper() or "COMMUNITY"
     base_model = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base").strip() or "Qwen/Qwen3-8B-Base"
