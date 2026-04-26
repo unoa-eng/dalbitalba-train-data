@@ -106,11 +106,31 @@ run_timeout() {
     fi
 }
 
+resolve_pod_id() {
+    if [ -n "${RUNPOD_POD_ID:-}" ] && [ "${RUNPOD_POD_ID}" != "__SELF__" ]; then
+        printf '%s' "${RUNPOD_POD_ID}"
+        return 0
+    fi
+    curl -fsS -m 5 http://169.254.169.254/latest/meta-data/instance-id 2>/dev/null || \
+        curl -fsS -m 5 http://metadata.runpod.io/pod-id 2>/dev/null || true
+}
+
 stop_pod() {
     local reason="$1"
-    log "[stop] reason=${reason}"
+    local pod_id
+    pod_id="$(resolve_pod_id)"
+    log "[stop] reason=${reason} pod_id=${pod_id:-unknown}"
+    if [ -n "${pod_id}" ]; then
+        export RUNPOD_POD_ID="${pod_id}"
+    fi
     if command -v runpodctl &>/dev/null && [ -n "${RUNPOD_POD_ID:-}" ]; then
-        runpodctl stop pod "${RUNPOD_POD_ID}" >> "${LOG_FILE}" 2>&1 || true
+        runpodctl stop pod "${RUNPOD_POD_ID}" >> "${LOG_FILE}" 2>&1 && return 0
+    fi
+    if [ -n "${RUNPOD_POD_ID:-}" ] && [ -n "${RUNPOD_API_KEY:-}" ]; then
+        curl -fsS -X POST \
+            -H "Authorization: Bearer ${RUNPOD_API_KEY}" \
+            "https://rest.runpod.io/v1/pods/${RUNPOD_POD_ID}/stop" \
+            >> "${LOG_FILE}" 2>&1 || true
     fi
 }
 

@@ -383,7 +383,7 @@ def audit_hf_repo(repo_id: str, token: str | None, kind: str) -> dict[str, Any]:
     )
 
     if kind == "cpt":
-        if "adapter_model.safetensors" not in files:
+        if "adapter_model.safetensors" not in files and "cpt-lora/adapter_model.safetensors" not in files:
             report["severe"].append("CPT adapter_model.safetensors missing")
         if "last-checkpoint/trainer_state.json" not in files:
             report["severe"].append("CPT trainer_state.json missing")
