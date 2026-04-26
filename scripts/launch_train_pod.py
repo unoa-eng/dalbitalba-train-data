@@ -305,6 +305,8 @@ def main() -> None:
         except RuntimeError as exc:
             last_error = exc
             print(f"[warn] gpu launch failed for {gpu_type}: {exc}")
+            if "balance is too low" in str(exc).lower():
+                break
 
     if data is None or chosen_gpu is None:
         raise SystemExit(str(last_error or RuntimeError("RunPod launch failed")))
