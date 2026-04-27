@@ -132,22 +132,38 @@ python scripts/launch_train_pod.py --dry-run | jq '.imageName, .env.SKIP_SFT, .e
 set -a; source recipes/smoke.env; set +a
 python scripts/launch_train_pod.py
 # 폰 ntfy 로 진행 이벤트 수신 — preflight OK / CPT start / SFT done / HF upload
-# 예상 시간: ~30-40분, 비용 ~$0.5
+# 예상 시간: ~30-40분, 비용 ~$0.5 (worst-case ~$5.5; 그 이상이면 즉시 §12 비상 정지)
 ```
 
-smoke 에서 다음이 모두 푸시되면 합격:
-- `runs/train-run-<stamp>/` 브랜치에 `DONE.txt`, `manifest.json`, `*.log`
-- HF 측 `UNOA/dalbitalba-qwen3-cpt-<stamp>` 와 `*-sft-<stamp>` 에 adapter 파일
+smoke 가 끝나면 `runs/train-run-<stamp>/` 브랜치에 `DONE.txt`, `manifest.json`,
+`*.log` 가 푸시되고 `runs/latest-train.json` 포인터가 업데이트된다.
+
+## 8.5. PROMOTION 게이트 (smoke → budget30 진입 전 필수)
+
+```bash
+git fetch origin
+git checkout origin/main -- runs/latest-train.json
+python3 scripts/check_smoke_promotion.py --require-sft
+# 종료코드 0 = PROMOTE, 1 = HOLD, 2 = USAGE
+```
+
+기대:
+- `latest-train status=done_ok`
+- `hf_cpt adapter present at UNOA/dalbitalba-qwen3-cpt-<stamp>`
+- `hf_sft adapter present at UNOA/dalbitalba-qwen3-sft-<stamp>`
+- `DONE.txt = done_ok`, `manifest.json present`
+
+`HOLD` 가 떨어지면 budget30 절대 launch 금지. 실패 사유 모두 해결 후 재시도.
 
 ## 9. 본 run — budget30 CPT-only
 
-smoke 합격 시:
+8.5 PROMOTE 통과 후에만:
 
 ```bash
 set -a; source recipes/budget30.env; set +a
 python scripts/launch_train_pod.py
 # 예상 시간: ~30시간, 비용 ~$23.36
-# Stage timeout 자동 작동 (CPT 32h cap)
+# Stage timeout 자동 작동 (CPT 32h cap, A100 fallback 차단됨 — recipes/budget30.env 참조)
 ```
 
 ## 10. 평가 (eval pod)

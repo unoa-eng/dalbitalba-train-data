@@ -19,7 +19,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-BASE_MODEL = os.environ.get("BASE_MODEL", "upstage/SOLAR-10.7B-v1.0")
+BASE_MODEL = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base")
 HF_ADAPTER_REPO = os.environ.get("HF_ADAPTER_REPO", "").strip()
 HF_TOKEN = os.environ.get("HF_TOKEN", "").strip() or None
 OUTPUT_FILE = REPO_ROOT / "ai_generated.jsonl"

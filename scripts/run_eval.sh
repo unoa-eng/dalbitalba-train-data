@@ -10,6 +10,18 @@ REPO_DIR="${WORKSPACE}/repo"
 mkdir -p "${LOG_DIR}"
 touch "${LOG_FILE}"
 
+# Stage timeouts (hours). Defaults sized for budget30 eval ~$1.5 ceiling.
+EVAL_INSTALL_TIMEOUT_HOURS="${EVAL_INSTALL_TIMEOUT_HOURS:-1}"
+EVAL_GENERATE_TIMEOUT_HOURS="${EVAL_GENERATE_TIMEOUT_HOURS:-2}"
+EVAL_METRIC_TIMEOUT_HOURS="${EVAL_METRIC_TIMEOUT_HOURS:-1}"
+
+# Pin python interpreter — never trust PATH (chain_train.sh established this rule).
+PY="${PY:-python3}"
+PIP="${PIP:-${PY} -m pip}"
+
+EVAL_FAILED=0
+ARTIFACTS_PERSISTED=0
+
 log() {
   printf '[%s] %s\n' "$(date -u '+%Y-%m-%d %H:%M:%S UTC')" "$*" | tee -a "${LOG_FILE}"
 }
@@ -29,6 +41,20 @@ require_env() {
   fi
 }
 
+# run_timeout HOURS LABEL CMD...
+run_timeout() {
+  local hours="$1"
+  local label="$2"
+  shift 2
+  if command -v timeout >/dev/null 2>&1; then
+    log "[stage:start] ${label} timeout=${hours}h"
+    timeout --foreground "${hours}h" "$@"
+  else
+    log "[WARN] timeout binary missing — running ${label} unbounded"
+    "$@"
+  fi
+}
+
 stop_pod() {
   local reason="$1"
   log "[stop] reason=${reason}"
@@ -40,6 +66,37 @@ stop_pod() {
       curl -fsS -X POST -H "Authorization: Bearer ${RUNPOD_API_KEY}" "https://rest.runpod.io/v1/pods/${RUNPOD_POD_ID}/stop" >/dev/null 2>&1 || true
   fi
 }
+
+graceful_abort() {
+  local sig="$1"
+  log "[abort] signal=${sig} — persisting partial artifacts then stopping pod"
+  EVAL_FAILED=1
+  if [[ "${ARTIFACTS_PERSISTED}" -eq 0 ]] && [[ -d "${REPO_DIR}/.git" ]]; then
+    persist_eval_artifacts "aborted_${sig}" || log "[abort] persist failed"
+    ARTIFACTS_PERSISTED=1
+  fi
+  notify "dalbitalba eval aborted (${sig})"
+  stop_pod "aborted_${sig}"
+  exit 130
+}
+
+on_exit() {
+  local rc=$?
+  if [[ ${rc} -ne 0 ]] && [[ "${ARTIFACTS_PERSISTED}" -eq 0 ]] && [[ -d "${REPO_DIR}/.git" ]]; then
+    log "[exit] non-zero rc=${rc} — persisting failure artifacts"
+    persist_eval_artifacts "failed_rc_${rc}" || log "[exit] persist failed"
+    ARTIFACTS_PERSISTED=1
+    notify "dalbitalba eval failed rc=${rc}"
+    stop_pod "failed_rc_${rc}"
+  fi
+  exit ${rc}
+}
+
+trap 'graceful_abort TERM' TERM
+trap 'graceful_abort INT' INT
+trap 'graceful_abort HUP' HUP
+trap 'graceful_abort QUIT' QUIT
+trap on_exit EXIT
 
 persist_eval_artifacts() {
   local status="$1"
@@ -146,7 +203,8 @@ git config user.email "${GITHUB_EMAIL:-eval@dalbitalba.local}"
 git config user.name "${GITHUB_NAME:-dalbitalba-eval}"
 
 log "[1/5] install python dependencies"
-pip install -q --no-cache-dir --upgrade \
+run_timeout "${EVAL_INSTALL_TIMEOUT_HOURS}" "pip install" \
+  ${PIP} install -q --no-cache-dir --upgrade \
   "transformers==4.51.3" \
   "peft==0.13.2" \
   "bitsandbytes==0.49.2" \
@@ -164,7 +222,7 @@ pip install -q --no-cache-dir --upgrade \
   >> "${LOG_FILE}" 2>&1
 
 log "[1/5] verify python imports"
-python - <<'EOF' >> "${LOG_FILE}" 2>&1
+${PY} - <<'EOF' >> "${LOG_FILE}" 2>&1
 import torch
 import transformers
 import peft
@@ -180,11 +238,13 @@ EOF
 
 if [[ "${EVAL_MODE:-phase6}" = "legacy" ]]; then
   log "[2/5] generate ai samples (legacy blind judge mode)"
-  HF_ADAPTER_REPO="${HF_ADAPTER_REPO}" HF_TOKEN="${HF_TOKEN:-}" BASE_MODEL="${BASE_MODEL:-upstage/SOLAR-10.7B-v1.0}" \
-    python scripts/generate_samples.py >> "${LOG_FILE}" 2>&1
+  HF_ADAPTER_REPO="${HF_ADAPTER_REPO}" HF_TOKEN="${HF_TOKEN:-}" BASE_MODEL="${BASE_MODEL:-Qwen/Qwen3-8B-Base}" \
+    run_timeout "${EVAL_GENERATE_TIMEOUT_HOURS}" "legacy:generate_samples" \
+    ${PY} scripts/generate_samples.py >> "${LOG_FILE}" 2>&1
 
   log "[3/5] build blind eval set"
-  python eval/make_eval_samples.py \
+  run_timeout "${EVAL_METRIC_TIMEOUT_HOURS}" "legacy:make_eval_samples" \
+    ${PY} eval/make_eval_samples.py \
     --ai-output ai_generated.jsonl \
     --crawl cpt_corpus.jsonl \
     --n "${EVAL_PER_CLASS:-30}" \
@@ -193,20 +253,21 @@ if [[ "${EVAL_MODE:-phase6}" = "legacy" ]]; then
 
   log "[4/5] run judges"
   ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}" OPENAI_API_KEY="${OPENAI_API_KEY:-}" \
-    python eval/judge_3way.py \
+    run_timeout "${EVAL_METRIC_TIMEOUT_HOURS}" "legacy:judge_3way" \
+    ${PY} eval/judge_3way.py \
     --samples eval_samples.jsonl \
     --output-dir eval/results \
     >> "${LOG_FILE}" 2>&1
 
   log "[5/5] render reports"
-  python eval/native_eval_kit.py \
+  ${PY} eval/native_eval_kit.py \
     --samples eval_samples.jsonl \
     --results-dir eval/results \
     --format html \
     --output eval/native_kit.html \
     >> "${LOG_FILE}" 2>&1
 
-  python eval/native_eval_kit.py \
+  ${PY} eval/native_eval_kit.py \
     --samples eval_samples.jsonl \
     --results-dir eval/results \
     --format md \
@@ -219,19 +280,22 @@ else
   BASE_MODEL="${BASE_MODEL:-Qwen/Qwen3-8B-Base}" \
   SFT_ADAPTER_REPO="${SFT_ADAPTER_REPO}" \
   HF_TOKEN="${HF_TOKEN:-}" \
-    python scripts/phase6_generate.py >> "${LOG_FILE}" 2>&1
+    run_timeout "${EVAL_GENERATE_TIMEOUT_HOURS}" "phase6:generate" \
+    ${PY} scripts/phase6_generate.py >> "${LOG_FILE}" 2>&1
   cp /workspace/ai_generated.jsonl ai_generated.jsonl
 
   log "[3/5] run phase6 metric gate"
   if [[ "${RUN_MAUVE:-0}" != "1" ]]; then
-    python scripts/phase6_eval.py \
+    run_timeout "${EVAL_METRIC_TIMEOUT_HOURS}" "phase6:eval-no-mauve" \
+      ${PY} scripts/phase6_eval.py \
       --ai ai_generated.jsonl \
       --raw val_set.v2.jsonl \
       --out eval/metrics.json \
       --skip-mauve \
       >> "${LOG_FILE}" 2>&1 || PHASE6_RC=$?
   else
-    python scripts/phase6_eval.py \
+    run_timeout "${EVAL_METRIC_TIMEOUT_HOURS}" "phase6:eval-mauve" \
+      ${PY} scripts/phase6_eval.py \
       --ai ai_generated.jsonl \
       --raw val_set.v2.jsonl \
       --out eval/metrics.json \
@@ -243,6 +307,7 @@ else
 fi
 
 persist_eval_artifacts "done_ok"
+ARTIFACTS_PERSISTED=1
 notify "dalbitalba eval done"
 stop_pod "done_ok"
 log "=== dalbitalba eval chain complete ==="
