@@ -44,6 +44,24 @@ TRAIN_VAL_JSONL="${CPT_VAL_JSONL:-${DATA_DIR}/val_set.v2.jsonl}"
 CPT_EPOCHS="${CPT_NUM_EPOCHS:-1}"
 SFT_EPOCHS="${SFT_NUM_EPOCHS:-2}"
 BASE_MODEL_CPT="${BASE_MODEL:-Qwen/Qwen3-8B-Base}"
+# Hard refusal: only Qwen3 family is supported on this branch.
+# 0618 burned $60 on SOLAR-10.7B (Llama-2 BPE, ~48% Korean UNK on extended studies).
+# Do not allow that regression. Override the guard with FORCE_BASE_MODEL=1 only
+# for explicit experiments — never on the budget30 path.
+case "${BASE_MODEL_CPT}" in
+    Qwen/Qwen3-8B-Base|Qwen/Qwen3-*-Base)
+        ;;
+    *)
+        if [ "${FORCE_BASE_MODEL:-0}" = "1" ]; then
+            log "[WARN] BASE_MODEL_CPT=${BASE_MODEL_CPT} not Qwen3 — FORCE_BASE_MODEL=1 set, proceeding"
+        else
+            log "[FATAL] BASE_MODEL_CPT=${BASE_MODEL_CPT} is not a Qwen3 base model."
+            log "[FATAL] This branch refuses to launch with non-Qwen3 to prevent the 0618 SOLAR regression."
+            log "[FATAL] Set FORCE_BASE_MODEL=1 only for explicit experiments outside the budget30 path."
+            exit 2
+        fi
+        ;;
+esac
 SKIP_SFT="${SKIP_SFT:-0}"
 CPT_TIMEOUT_HOURS="${CPT_TIMEOUT_HOURS:-36}"
 MERGE_TIMEOUT_HOURS="${MERGE_TIMEOUT_HOURS:-8}"
@@ -240,6 +258,23 @@ on_exit() {
         write_done "unexpected_exit" "rc=${rc}"
     fi
 }
+
+# Signal-safe abort: persist whatever we have, then stop the paid pod so the
+# wallet does not bleed when the wrapper shell is killed (TERM/INT/HUP/QUIT).
+graceful_abort() {
+    local sig="$1"
+    log "[abort] signal=${sig} — persisting artifacts then stopping pod"
+    if [ ! -f "${DONE_FILE}" ]; then
+        write_done "aborted_${sig}" "signal=${sig}"
+    fi
+    persist_run_artifacts "aborted_${sig}" 2>/dev/null || log "[abort] persist failed"
+    stop_pod "aborted_${sig}" 2>/dev/null || log "[abort] stop_pod failed"
+    exit 130
+}
+trap 'graceful_abort TERM' TERM
+trap 'graceful_abort INT' INT
+trap 'graceful_abort HUP' HUP
+trap 'graceful_abort QUIT' QUIT
 trap on_exit EXIT
 
 # ═══ STEP 0 env + data check ═══════════════════════════════════════════

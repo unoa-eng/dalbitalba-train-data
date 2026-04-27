@@ -274,10 +274,14 @@ def validate_dataset(kind: str, path: Path) -> dict[str, Any]:
         severe.append(f"{path.name}: unicode replacement characters remain")
     if nonempty_texts and encoding["hangul_ratio"] < 0.15 and encoding["cjk_ratio"] > 0.10:
         severe.append(f"{path.name}: possible mojibake encoding corruption")
-    if nonempty_texts and duplicate_count / len(nonempty_texts) > 0.35:
-        warn.append(
-            f"{path.name}: high duplicate rate={duplicate_count / len(nonempty_texts):.3f}"
-        )
+    if nonempty_texts:
+        dup_rate = duplicate_count / len(nonempty_texts)
+        if dup_rate > 0.50:
+            severe.append(
+                f"{path.name}: catastrophic duplicate rate={dup_rate:.3f} (>0.50) — training on this data is meaningless; regenerate corpus"
+            )
+        elif dup_rate > 0.35:
+            warn.append(f"{path.name}: high duplicate rate={dup_rate:.3f}")
     if lengths and sum(1 for x in lengths if x < 20) / len(lengths) > 0.20:
         warn.append(f"{path.name}: many very short rows")
 
@@ -584,6 +588,12 @@ def main() -> int:
     parser.add_argument("--hourly-usd", type=float, default=0.79)
     parser.add_argument("--budget-usd", type=float, default=30.0)
     parser.add_argument("--strict", action="store_true")
+    parser.add_argument(
+        "--profile",
+        choices=("default", "budget30", "smoke"),
+        default=os.environ.get("BUDGET_PROFILE", "default"),
+        help="when 'budget30', a budget overrun escalates from WARN to SEVERE",
+    )
     args = parser.parse_args()
 
     datasets = {name: validate_dataset(name, path) for name, path in DEFAULT_FILES.items()}
@@ -609,14 +619,35 @@ def main() -> int:
         sec_per_step=args.sec_per_step,
         hourly_usd=args.hourly_usd,
     )
-    if cost["total_train_usd"] > args.budget_usd:
-        warnings.append(
-            f"estimated full train cost ${cost['total_train_usd']} exceeds budget ${args.budget_usd}; use a smoke or CPT-only budget recipe"
-        )
-    elif cost["total_train_usd"] > args.budget_usd * 0.85:
-        warnings.append(
-            f"estimated train cost ${cost['total_train_usd']} is close to budget ${args.budget_usd}"
-        )
+    # Profile-aware budget gating.
+    # default: full CPT+SFT vs budget (warn only, since the operator may pick a sub-profile).
+    # budget30: CPT-only — overrun is SEVERE (a paid run under this profile must fit $30).
+    # smoke: budget bound is much smaller; overrun is SEVERE.
+    profile = args.profile
+    if profile == "budget30":
+        cpt_cost = cost["cpt_usd"]
+        if cpt_cost > args.budget_usd:
+            severe.append(
+                f"[budget30] estimated CPT cost ${cpt_cost} exceeds ceiling ${args.budget_usd}; refuse to launch"
+            )
+        elif cpt_cost > args.budget_usd * 0.92:
+            warnings.append(
+                f"[budget30] CPT cost ${cpt_cost} ≥ 92% of ${args.budget_usd}; safety margin almost gone"
+            )
+    elif profile == "smoke":
+        if cost["cpt_usd"] > 8:
+            severe.append(
+                f"[smoke] CPT cost estimate ${cost['cpt_usd']} > $8 ceiling for plumbing test"
+            )
+    else:
+        if cost["total_train_usd"] > args.budget_usd:
+            warnings.append(
+                f"estimated full train cost ${cost['total_train_usd']} exceeds budget ${args.budget_usd}; use a smoke or CPT-only budget recipe"
+            )
+        elif cost["total_train_usd"] > args.budget_usd * 0.85:
+            warnings.append(
+                f"estimated train cost ${cost['total_train_usd']} is close to budget ${args.budget_usd}"
+            )
     if val_rows < 500:
         warnings.append("validation set is small for stable generation metrics")
 

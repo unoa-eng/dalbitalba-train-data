@@ -21,6 +21,41 @@ REPO_ROOT = SCRIPT_DIR.parent
 STATE_DIR = REPO_ROOT / ".state"
 STATE_FILE = STATE_DIR / "train_pod_state.json"
 RUNPOD_REST = "https://rest.runpod.io/v1/pods"
+LOCAL_VERIFICATION_LATEST = REPO_ROOT / "runs" / "latest-local-verification.json"
+
+
+def assert_verifier_pass_for_budget30() -> None:
+    """Refuse to launch under BUDGET_PROFILE=budget30 unless the latest local
+    verification produced verdict=PASS. This is the mechanical defense against
+    re-running on data we already know is bad (the 0618 dup_rate=0.396 trap).
+
+    Override with FORCE_LAUNCH=1 only for explicit experiments.
+    """
+    profile = os.environ.get("BUDGET_PROFILE", "").strip()
+    if profile != "budget30":
+        return
+    if os.environ.get("FORCE_LAUNCH", "0") == "1":
+        print("[WARN] FORCE_LAUNCH=1 — skipping verifier gate for budget30")
+        return
+    if not LOCAL_VERIFICATION_LATEST.exists():
+        raise SystemExit(
+            f"[FATAL] BUDGET_PROFILE=budget30 requires a fresh local verification report.\n"
+            f"        Run: python3 scripts/local_verification_loop.py --strict --profile budget30\n"
+            f"        Expected file: {LOCAL_VERIFICATION_LATEST}"
+        )
+    try:
+        report = json.loads(LOCAL_VERIFICATION_LATEST.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"[FATAL] cannot parse {LOCAL_VERIFICATION_LATEST}: {exc}")
+    verdict = report.get("verdict", "")
+    if verdict != "PASS":
+        raise SystemExit(
+            f"[FATAL] latest local verification verdict={verdict!r} (expected PASS).\n"
+            f"        Refuse to launch budget30 with non-PASS verifier output.\n"
+            f"        Inspect: {report.get('report', LOCAL_VERIFICATION_LATEST)}\n"
+            f"        Override only with FORCE_LAUNCH=1 for explicit experiments."
+        )
+    print(f"[gate] verifier PASS @ {report.get('timestamp', '?')}")
 
 
 def load_env() -> None:
@@ -166,6 +201,10 @@ def main() -> None:
         ),
     )
     args = parser.parse_args()
+
+    # Mechanical defense — refuse budget30 launch without a fresh PASS verifier
+    # report. Bypassable only with FORCE_LAUNCH=1.
+    assert_verifier_pass_for_budget30()
 
     api_key = require_env("RUNPOD_API_KEY")
     hf_token = require_env("HF_TOKEN")

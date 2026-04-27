@@ -35,6 +35,11 @@ REQUIRED_HF_FILES = (
     "adapter_model.safetensors",
 )
 
+TRAINER_STATE_CANDIDATES = (
+    "trainer_state.json",
+    "cpt-lora/trainer_state.json",
+)
+
 
 def load_env() -> None:
     for candidate in (REPO_ROOT / ".env.local", Path.home() / ".env.local"):
@@ -64,6 +69,20 @@ def hf_list_files(repo_id: str, token: str | None) -> list[str]:
         return [item.get("path", "") for item in payload if isinstance(item, dict)]
     except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError, TimeoutError):
         return []
+
+
+def hf_fetch_json(repo_id: str, filename: str, token: str | None) -> dict | None:
+    """Download a JSON file from a HF repo. Returns None on any error."""
+    url = f"https://huggingface.co/{repo_id}/resolve/main/{filename}"
+    headers = {"User-Agent": "dalbit-promotion-check/1.0"}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    try:
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=30) as response:
+            return json.loads(response.read())
+    except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError, TimeoutError):
+        return None
 
 
 def main() -> int:
@@ -129,6 +148,38 @@ def main() -> int:
                 ok_checks.append(f"hf_cpt adapter present at {hf_cpt}")
             else:
                 reasons.append(f"hf_cpt={hf_cpt} has {len(files)} files but no adapter_model.safetensors")
+
+    # Check 2.5: trainer_state.json must show global_step >= max_steps
+    # This is the mechanical defense against the 0618 partial-CPT trap (step 2700/5775
+    # promoted as if it were complete).
+    if hf_cpt:
+        trainer_state = None
+        resolved_trainer = None
+        for cand in TRAINER_STATE_CANDIDATES:
+            trainer_state = hf_fetch_json(hf_cpt, cand, hf_token)
+            if trainer_state is not None:
+                resolved_trainer = cand
+                break
+        if trainer_state is None:
+            reasons.append(
+                f"hf_cpt={hf_cpt} has no trainer_state.json — cannot verify training completed"
+            )
+        else:
+            global_step = trainer_state.get("global_step", 0)
+            max_steps = trainer_state.get("max_steps", 0)
+            epoch = trainer_state.get("epoch", 0)
+            if max_steps > 0 and global_step < max_steps:
+                reasons.append(
+                    f"trainer_state.json @ {resolved_trainer}: global_step={global_step} "
+                    f"< max_steps={max_steps} (only {global_step / max_steps:.1%} complete) — "
+                    f"refuse to promote partial training"
+                )
+            elif global_step <= 0:
+                reasons.append(f"trainer_state.json: global_step={global_step} (training never started)")
+            else:
+                ok_checks.append(
+                    f"trainer_state.json: global_step={global_step}, max_steps={max_steps}, epoch={epoch:.2f}"
+                )
 
     # Check 3 (optional): SFT adapter must exist for smoke
     if args.require_sft:
