@@ -214,6 +214,18 @@ def main() -> None:
         env["OPENAI_API_KEY"] = openai_api_key
     if ntfy_topic:
         env["NTFY_TOPIC"] = ntfy_topic
+    # Forward recipe-driven optional keys so smoke/budget30 envs reach run_eval.sh.
+    for optional_key in (
+        "RUN_MAUVE",
+        "EVAL_MAX_ROWS",
+        "CPT_MERGED_REPO",
+        "CPT_MERGED_PATH",
+        "WANDB_API_KEY",
+        "WANDB_PROJECT",
+    ):
+        value = os.environ.get(optional_key, "").strip()
+        if value:
+            env[optional_key] = value
 
     gpu_types = parse_gpu_types(args.gpu_type)
 
