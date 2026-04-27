@@ -30,3 +30,8 @@ eval_key.json
 # Local verifier outputs are reproducible and should not be pushed as run artifacts.
 runs/local-verification-*/
 runs/latest-local-verification.json
+
+# Pre-clean backups — large binary snapshots, local-only.
+archive/dataset-backups/
+.omc/
+.venv/
