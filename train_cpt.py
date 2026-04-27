@@ -1,33 +1,39 @@
 #!/usr/bin/env python3
 """
-train_cpt.py — Solar 10.7B CPT (Continued Pretraining) with QLoRA.
+train_cpt.py — v2 — Continued pretraining on raw Korean community text.
 
-왜 이 설정인가:
-- Solar 10.7B: 한국어 성능 우수 + Llama-2 아키텍처 호환 → PEFT LoRA 바로 적용 가능
-- QLoRA 4bit: A100 80GB 기준 10.7B full fine-tune 불가, 4bit NF4 양자화로 ~16GB VRAM 사용
-- r=32, alpha=64: r=16보다 표현력 높지만 r=64보다 VRAM 절약 (실험적 sweet spot)
-- max_seq_len=1024: 코퍼스 평균 문서 길이 ~120자 ≈ 60토큰, 패딩 낭비 최소화하면서 긴 문서 처리
-- grad_accum=16: batch_size=1 × 16 = effective 16, OOM 방지
-- 예상 학습 시간: ~18시간 @ A100 80GB ($1.19/hr → ~$21.42)
-- 예상 비용: $21 (1 epoch, 2.28M tokens, seq_len=1024, eff_batch=16)
+Recipe (2026-04, fixed from 9-voice research consensus):
+  - Base:    Qwen/Qwen3-8B-Base       (BBPE 151K, KMMLU 52.54, Apache-2.0)
+  - LoRA:    r=64, alpha=64, use_rslora=True, target_modules="all-linear"
+  - LR:      2e-4 cosine, warmup 3%, weight_decay 0.01
+  - seq_len: 1024
+  - batch:   1 x grad_accum 16 (eff 16)
+  - bf16 + gradient_checkpointing (use_reentrant=False) + flash-attn 2
+  - Data:    cpt_corpus.v2.jsonl (raw continuation text, no template)
+  - Val:     val_set.v2.jsonl (5% held-out, time-split)
+  - Seed:    full deterministic path
+  - Hub:     push every 50 steps to last-checkpoint (pod-death resume)
 
-실행 위치: RunPod pod 내 /workspace/
-  python train_cpt.py
-
-의존성 (pod 시작 후 설치):
-  pip install transformers>=4.40 peft>=0.10 bitsandbytes>=0.43 datasets accelerate tqdm
+No alpaca template. No adapter stacking — a fresh LoRA is trained on the
+quantized base. After this finishes, scripts/merge_cpt_to_fp16.py folds
+the adapter into a fp16 checkpoint that is then the base for SFT.
 """
 
+from __future__ import annotations
+
+import hashlib
 import json
 import logging
 import math
 import os
+import random
+import subprocess
 import sys
 import time
 from pathlib import Path
 
-# ── 의존성 확인 ──────────────────────────────────────────────────────────────
 try:
+    import numpy as np
     import torch
     from datasets import Dataset
     from peft import LoraConfig, TaskType, get_peft_model, prepare_model_for_kbit_training
@@ -40,54 +46,73 @@ try:
         TrainingArguments,
     )
 except ImportError as e:
-    print(f"[오류] 필수 패키지 미설치: {e}")
-    print("다음 명령으로 설치하세요:")
-    print("  pip install transformers>=4.40 peft>=0.10 bitsandbytes>=0.43 datasets accelerate tqdm")
+    print(f"[오류] 의존성 누락: {e}")
+    print(
+        "pip install transformers>=4.51.3 peft>=0.13.2 bitsandbytes>=0.49.2 "
+        "trl>=0.12.1 datasets>=2.21 accelerate>=0.33 flash-attn>=2.6.3"
+    )
     sys.exit(1)
 
-# ── 설정 ──────────────────────────────────────────────────────────────────────
-BASE_MODEL = "upstage/SOLAR-10.7B-v1.0"          # HuggingFace 모델 ID
-INPUT_JSONL = "/workspace/data/cpt_corpus.jsonl"  # Phase 1 산출물
-OUTPUT_DIR = "/workspace/out/cpt-lora"            # LoRA adapter 저장
-CKPT_DIR = "/workspace/out/cpt-ckpt"              # 중간 체크포인트
-LOG_FILE = "/workspace/train_cpt.log"
+# ── 환경변수 ──────────────────────────────────────────────────────────
+BASE_MODEL = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base")
+INPUT_JSONL = os.environ.get("INPUT_JSONL", "/workspace/data/cpt_corpus.v2.jsonl")
+VAL_JSONL = os.environ.get("CPT_VAL_JSONL", "/workspace/data/val_set.v2.jsonl")
+OUTPUT_DIR = os.environ.get("CPT_OUTPUT_DIR", "/workspace/out/cpt-lora")
+CKPT_DIR = os.environ.get("CPT_CKPT_DIR", "/workspace/out/cpt-ckpt")
+LOG_FILE = os.environ.get("CPT_LOG_FILE", "/workspace/train_cpt.log")
+HUB_MODEL_ID = os.environ.get("CPT_HUB_MODEL_ID", "").strip() or None
 
-MAX_SEQ_LEN = 1024
-BATCH_SIZE = 1
-GRAD_ACCUM = 16          # effective batch = 16
-LR = 1e-4
-WARMUP_RATIO = 0.03
-NUM_EPOCHS = 1
-SAVE_STEPS = 500
-LOGGING_STEPS = 20
+SEED = int(os.environ.get("TRAIN_SEED", "42"))
+MAX_SEQ_LEN = int(os.environ.get("CPT_MAX_SEQ_LEN", "1024"))
+BATCH_SIZE = int(os.environ.get("CPT_BATCH_SIZE", "1"))
+GRAD_ACCUM = int(os.environ.get("CPT_GRAD_ACCUM", "16"))
+LR = float(os.environ.get("CPT_LR", "2e-4"))
+WARMUP_RATIO = float(os.environ.get("CPT_WARMUP_RATIO", "0.03"))
+WEIGHT_DECAY = float(os.environ.get("CPT_WEIGHT_DECAY", "0.01"))
+NUM_EPOCHS = int(os.environ.get("CPT_NUM_EPOCHS", "1"))
+MAX_STEPS_OVERRIDE = int(os.environ.get("CPT_MAX_STEPS", "0") or "0")
+SAVE_STEPS = int(os.environ.get("CPT_SAVE_STEPS", "50"))
+SAVE_TOTAL_LIMIT = int(os.environ.get("CPT_SAVE_TOTAL_LIMIT", "3"))
+EVAL_STEPS = int(os.environ.get("CPT_EVAL_STEPS", "200"))
+LOGGING_STEPS = int(os.environ.get("CPT_LOGGING_STEPS", "20"))
+LIMIT_ROWS = int(os.environ.get("CPT_LIMIT_ROWS", "0") or "0")
+VAL_LIMIT_ROWS = int(os.environ.get("CPT_VAL_LIMIT_ROWS", "0") or "0")
 
-# LoRA 설정 — Solar / LLaMA-2 아키텍처 전체 attention + FFN 레이어 타겟
-LORA_R = 32
-LORA_ALPHA = 64          # alpha = 2r → 학습률 스케일 안정
-LORA_DROPOUT = 0.05
-LORA_TARGET_MODULES = [
-    "q_proj", "k_proj", "v_proj", "o_proj",
-    "gate_proj", "up_proj", "down_proj",
-]
+LORA_R = int(os.environ.get("CPT_LORA_R", "64"))
+LORA_ALPHA = int(os.environ.get("CPT_LORA_ALPHA", "64"))
+LORA_DROPOUT = float(os.environ.get("CPT_LORA_DROPOUT", "0.0"))
+USE_RSLORA = os.environ.get("CPT_USE_RSLORA", "1") == "1"
+USE_DORA = os.environ.get("CPT_USE_DORA", "0") == "1"
 
-# ── 로깅 설정 ─────────────────────────────────────────────────────────────────
+FLASH_ATTN = os.environ.get("CPT_FLASH_ATTN", "flash_attention_2")
+
+# ── Logging ───────────────────────────────────────────────────────────
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler(LOG_FILE),
-        logging.StreamHandler(sys.stdout),
-    ],
+    handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler(sys.stdout)],
 )
 logger = logging.getLogger(__name__)
 
 
+def set_all_seeds(seed: int) -> None:
+    os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    try:
+        torch.use_deterministic_algorithms(True, warn_only=True)
+    except Exception:
+        pass
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+
 def load_corpus(path: str) -> Dataset:
-    """
-    cpt_corpus.jsonl 로드 → HuggingFace Dataset.
-    각 줄: {"text": "...", "kind": "comment"|"post"}
-    """
-    records = []
+    records: list[dict] = []
     skipped = 0
     with open(path, "r", encoding="utf-8") as f:
         for line in f:
@@ -101,181 +126,241 @@ def load_corpus(path: str) -> Dataset:
                     records.append({"text": text})
             except json.JSONDecodeError:
                 skipped += 1
-    logger.info(f"코퍼스 로드: {len(records)}건 (스킵 {skipped}건) ← {path}")
+    logger.info(f"load_corpus({path}) -> {len(records):,} rows (skipped {skipped})")
     return Dataset.from_list(records)
 
 
 def tokenize_fn(examples: dict, tokenizer) -> dict:
-    """
-    텍스트 토크나이즈 + max_seq_len 절단.
-    labels = input_ids (언어 모델링 목적)
-    """
-    result = tokenizer(
+    # No template. Raw continuation; each row is a standalone text.
+    out = tokenizer(
         examples["text"],
         truncation=True,
         max_length=MAX_SEQ_LEN,
         padding=False,
     )
-    result["labels"] = result["input_ids"].copy()
-    return result
+    out["labels"] = [ids.copy() for ids in out["input_ids"]]
+    return out
 
 
 def main() -> None:
-    start_time = time.time()
+    start = time.time()
     logger.info("=" * 60)
-    logger.info("CPT 학습 시작")
-    logger.info(f"  모델: {BASE_MODEL}")
-    logger.info(f"  입력: {INPUT_JSONL}")
-    logger.info(f"  출력: {OUTPUT_DIR}")
-    logger.info(f"  LoRA r={LORA_R}, alpha={LORA_ALPHA}")
-    logger.info(f"  seq_len={MAX_SEQ_LEN}, eff_batch={BATCH_SIZE * GRAD_ACCUM}")
-    logger.info(f"  예상 소요: ~18시간 / 예상 비용: ~$21 @ A100 80GB")
+    logger.info("CPT v2 시작")
+    logger.info(f"  base         : {BASE_MODEL}")
+    logger.info(f"  input        : {INPUT_JSONL}")
+    logger.info(f"  val          : {VAL_JSONL}")
+    logger.info(f"  output       : {OUTPUT_DIR}")
+    logger.info(f"  hub_model_id : {HUB_MODEL_ID or '(disabled)'}")
+    logger.info(
+        f"  LoRA r={LORA_R} α={LORA_ALPHA} rsLoRA={USE_RSLORA} DoRA={USE_DORA}"
+    )
+    logger.info(
+        f"  seq_len={MAX_SEQ_LEN} eff_batch={BATCH_SIZE*GRAD_ACCUM} "
+        f"lr={LR} epochs={NUM_EPOCHS}"
+    )
+    logger.info(f"  seed         : {SEED}")
     logger.info("=" * 60)
 
-    # CUDA 확인
+    set_all_seeds(SEED)
+
     if not torch.cuda.is_available():
-        logger.warning("CUDA를 사용할 수 없습니다. CPU 학습은 매우 느립니다.")
+        logger.warning("CUDA 불가. CPU는 비실용적. 진행은 시도됨.")
     else:
-        gpu_name = torch.cuda.get_device_name(0)
-        vram_gb = torch.cuda.get_device_properties(0).total_memory / 1e9
-        logger.info(f"GPU: {gpu_name} ({vram_gb:.1f}GB)")
+        logger.info(
+            f"GPU: {torch.cuda.get_device_name(0)} "
+            f"({torch.cuda.get_device_properties(0).total_memory/1e9:.1f}GB)"
+        )
 
-    # ── 출력 디렉토리 생성 ────────────────────────────────────────────────────
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     os.makedirs(CKPT_DIR, exist_ok=True)
 
-    # ── 토크나이저 로드 ───────────────────────────────────────────────────────
-    logger.info("토크나이저 로드 중...")
+    # ── Tokenizer ────────────────────────────────────────────────────
     tokenizer = AutoTokenizer.from_pretrained(
-        BASE_MODEL,
-        trust_remote_code=True,
-        use_fast=True,
+        BASE_MODEL, trust_remote_code=True, use_fast=True
     )
-    # Solar/LLaMA 계열: pad 토큰이 없으면 eos로 대체
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.pad_token_id = tokenizer.eos_token_id
-    logger.info(f"토크나이저 vocab size: {tokenizer.vocab_size}")
+    logger.info(f"tokenizer vocab size: {tokenizer.vocab_size}")
 
-    # ── 모델 로드 (4bit QLoRA) ────────────────────────────────────────────────
-    logger.info("모델 로드 중 (QLoRA 4bit NF4)...")
+    # ── 4-bit quantized base ─────────────────────────────────────────
     bnb_config = BitsAndBytesConfig(
         load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",          # NF4: 정규분포 가중치에 최적화된 양자화
-        bnb_4bit_compute_dtype=torch.bfloat16,  # bfloat16: A100에서 성능/정밀도 균형
-        bnb_4bit_use_double_quant=True,     # double quantization: VRAM 추가 절약
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.bfloat16,
+        bnb_4bit_use_double_quant=True,
     )
-    model = AutoModelForCausalLM.from_pretrained(
-        BASE_MODEL,
+    model_kwargs = dict(
         quantization_config=bnb_config,
-        device_map="auto",                  # GPU 자동 배치
         trust_remote_code=True,
         torch_dtype=torch.bfloat16,
     )
-    model.config.use_cache = False          # gradient checkpointing과 호환
-    model.config.pretraining_tp = 1
+    if FLASH_ATTN:
+        model_kwargs["attn_implementation"] = FLASH_ATTN
+    try:
+        model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, **model_kwargs)
+    except Exception as e:
+        logger.warning(f"flash_attention_2 로드 실패, eager로 fallback: {e}")
+        model_kwargs.pop("attn_implementation", None)
+        model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, **model_kwargs)
 
-    # ── kbit 학습 준비 ────────────────────────────────────────────────────────
+    model.config.use_cache = False
+    if hasattr(model.config, "pretraining_tp"):
+        model.config.pretraining_tp = 1
+
     model = prepare_model_for_kbit_training(
-        model,
-        use_gradient_checkpointing=True,    # VRAM 절약 (속도 ~20% 감소)
+        model, use_gradient_checkpointing=True
     )
 
-    # ── LoRA 적용 ─────────────────────────────────────────────────────────────
     lora_config = LoraConfig(
         r=LORA_R,
         lora_alpha=LORA_ALPHA,
         lora_dropout=LORA_DROPOUT,
-        target_modules=LORA_TARGET_MODULES,
+        target_modules="all-linear",
         task_type=TaskType.CAUSAL_LM,
         bias="none",
+        use_rslora=USE_RSLORA,
+        use_dora=USE_DORA,
     )
     model = get_peft_model(model, lora_config)
     model.print_trainable_parameters()
 
-    # ── 데이터 로드 및 토크나이즈 ─────────────────────────────────────────────
-    logger.info("데이터 로드 및 토크나이즈 중...")
-    raw_dataset = load_corpus(INPUT_JSONL)
+    # ── Data ────────────────────────────────────────────────────────
+    train_raw = load_corpus(INPUT_JSONL)
+    eval_raw = load_corpus(VAL_JSONL) if os.path.exists(VAL_JSONL) else None
+    if LIMIT_ROWS > 0 and len(train_raw) > LIMIT_ROWS:
+        logger.info(f"CPT_LIMIT_ROWS 적용: {len(train_raw):,} -> {LIMIT_ROWS:,}")
+        train_raw = train_raw.select(range(LIMIT_ROWS))
+    if eval_raw is not None and VAL_LIMIT_ROWS > 0 and len(eval_raw) > VAL_LIMIT_ROWS:
+        logger.info(f"CPT_VAL_LIMIT_ROWS 적용: {len(eval_raw):,} -> {VAL_LIMIT_ROWS:,}")
+        eval_raw = eval_raw.select(range(VAL_LIMIT_ROWS))
 
-    tokenized = raw_dataset.map(
-        lambda examples: tokenize_fn(examples, tokenizer),
+    train_ds = train_raw.map(
+        lambda ex: tokenize_fn(ex, tokenizer),
         batched=True,
         batch_size=1000,
         remove_columns=["text"],
-        desc="토크나이즈",
+        desc="tokenize train",
+    )
+    eval_ds = None
+    if eval_raw is not None:
+        eval_ds = eval_raw.map(
+            lambda ex: tokenize_fn(ex, tokenizer),
+            batched=True,
+            batch_size=1000,
+            remove_columns=["text"],
+            desc="tokenize val",
+        )
+    total_tokens = sum(len(x) for x in train_ds["input_ids"])
+    logger.info(
+        f"tokenize 완료: train {len(train_ds):,} rows / ~{total_tokens:,} tokens"
+        + (f", val {len(eval_ds):,} rows" if eval_ds is not None else "")
     )
 
-    # 전체 토큰 수 추정
-    total_tokens = sum(len(x) for x in tokenized["input_ids"])
-    logger.info(f"토크나이즈 완료: {len(tokenized)}건, ~{total_tokens:,} tokens")
-
-    # ── 학습 steps 계산 ──────────────────────────────────────────────────────
-    steps_per_epoch = math.ceil(len(tokenized) / (BATCH_SIZE * GRAD_ACCUM))
+    steps_per_epoch = math.ceil(len(train_ds) / (BATCH_SIZE * GRAD_ACCUM))
     total_steps = steps_per_epoch * NUM_EPOCHS
+    if MAX_STEPS_OVERRIDE > 0:
+        logger.info(f"CPT_MAX_STEPS override 적용: {total_steps} -> {MAX_STEPS_OVERRIDE}")
+        total_steps = MAX_STEPS_OVERRIDE
     warmup_steps = max(1, int(total_steps * WARMUP_RATIO))
-    logger.info(f"steps_per_epoch={steps_per_epoch}, total_steps={total_steps}, warmup={warmup_steps}")
-
-    # ── 데이터 콜레이터 ───────────────────────────────────────────────────────
-    data_collator = DataCollatorForLanguageModeling(
-        tokenizer=tokenizer,
-        mlm=False,          # CLM (인과 언어 모델링)
-        pad_to_multiple_of=8,
+    logger.info(
+        f"steps_per_epoch={steps_per_epoch} total_steps={total_steps} "
+        f"warmup={warmup_steps}"
     )
 
-    # ── TrainingArguments ─────────────────────────────────────────────────────
-    training_args = TrainingArguments(
+    logger.info("[step] DataCollatorForLanguageModeling build")
+    data_collator = DataCollatorForLanguageModeling(
+        tokenizer=tokenizer, mlm=False, pad_to_multiple_of=8
+    )
+    logger.info("[step] DataCollator OK")
+
+    logger.info("[step] building training_args_kwargs")
+    training_args_kwargs = dict(
         output_dir=CKPT_DIR,
         num_train_epochs=NUM_EPOCHS,
+        max_steps=MAX_STEPS_OVERRIDE if MAX_STEPS_OVERRIDE > 0 else -1,
         per_device_train_batch_size=BATCH_SIZE,
         gradient_accumulation_steps=GRAD_ACCUM,
         learning_rate=LR,
         lr_scheduler_type="cosine",
         warmup_steps=warmup_steps,
         save_steps=SAVE_STEPS,
-        save_total_limit=3,             # 체크포인트 최대 3개 보존
+        save_total_limit=SAVE_TOTAL_LIMIT,
         logging_steps=LOGGING_STEPS,
         logging_dir=f"{CKPT_DIR}/logs",
-        report_to="none",               # wandb 미사용 (없으면 오류 방지)
+        report_to=os.environ.get("TRAIN_REPORT_TO", "none"),
         fp16=False,
-        bf16=True,                      # A100은 bfloat16 native 지원
+        bf16=True,
         gradient_checkpointing=True,
-        dataloader_num_workers=4,
-        group_by_length=True,           # 비슷한 길이 묶기 → 패딩 최소화
+        gradient_checkpointing_kwargs={"use_reentrant": False},
+        dataloader_num_workers=2,
+        group_by_length=True,
         remove_unused_columns=False,
-        optim="paged_adamw_32bit",      # bitsandbytes paged optimizer: OOM 방지
+        optim="paged_adamw_32bit",
         max_grad_norm=1.0,
+        weight_decay=WEIGHT_DECAY,
         ddp_find_unused_parameters=False,
+        seed=SEED,
+        # data_seed intentionally omitted — transformers 4.51 requires
+        # accelerate>=1.1 for it, but our pinned accelerate is 0.34.2
+        # (required by trl 0.12.1). When data_seed is unset, transformers
+        # falls back to `seed` for the data sampler, so reproducibility
+        # is preserved.
     )
+    if eval_ds is not None:
+        training_args_kwargs.update(
+            dict(
+                eval_strategy="steps",
+                eval_steps=EVAL_STEPS,
+                per_device_eval_batch_size=BATCH_SIZE,
+            )
+        )
+    if HUB_MODEL_ID:
+        training_args_kwargs.update(
+            dict(
+                push_to_hub=True,
+                hub_model_id=HUB_MODEL_ID,
+                hub_strategy="checkpoint",
+                hub_private_repo=True,
+            )
+        )
+    logger.info(
+        f"[step] instantiate TrainingArguments "
+        f"(report_to={training_args_kwargs.get('report_to')}, "
+        f"push_to_hub={training_args_kwargs.get('push_to_hub', False)}, "
+        f"optim={training_args_kwargs.get('optim')})"
+    )
+    training_args = TrainingArguments(**training_args_kwargs)
+    logger.info("[step] TrainingArguments OK")
 
-    # ── Trainer ───────────────────────────────────────────────────────────────
+    logger.info("[step] instantiate Trainer")
     trainer = Trainer(
         model=model,
         args=training_args,
-        train_dataset=tokenized,
+        train_dataset=train_ds,
+        eval_dataset=eval_ds,
         data_collator=data_collator,
         tokenizer=tokenizer,
     )
+    logger.info("[step] Trainer OK")
 
-    # ── 체크포인트 재개 지원 ──────────────────────────────────────────────────
+    # resume
     resume_from = None
     ckpt_path = Path(CKPT_DIR)
-    existing_ckpts = sorted(ckpt_path.glob("checkpoint-*"), key=os.path.getmtime)
-    if existing_ckpts:
-        resume_from = str(existing_ckpts[-1])
-        logger.info(f"체크포인트 재개: {resume_from}")
+    existing = sorted(ckpt_path.glob("checkpoint-*"), key=os.path.getmtime)
+    if existing:
+        resume_from = str(existing[-1])
+        logger.info(f"resume from {resume_from}")
 
-    # ── 학습 실행 ─────────────────────────────────────────────────────────────
-    logger.info("학습 시작...")
+    logger.info("학습 시작 — trainer.train()")
     trainer.train(resume_from_checkpoint=resume_from)
 
-    # ── LoRA adapter 저장 ─────────────────────────────────────────────────────
     logger.info(f"LoRA adapter 저장 → {OUTPUT_DIR}")
     model.save_pretrained(OUTPUT_DIR)
     tokenizer.save_pretrained(OUTPUT_DIR)
 
-    elapsed = (time.time() - start_time) / 3600
-    logger.info(f"CPT 학습 완료. 소요: {elapsed:.2f}시간")
-    logger.info(f"결과물: {OUTPUT_DIR}")
+    elapsed = (time.time() - start) / 3600
+    logger.info(f"CPT 완료 ({elapsed:.2f}h) → {OUTPUT_DIR}")
 
 
 if __name__ == "__main__":

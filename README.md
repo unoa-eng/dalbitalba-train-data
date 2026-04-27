@@ -86,3 +86,20 @@ repository secrets and variables instead of a local `.env.local` file.
 
 `research/obsidian-export/` is preserved for manual analysis and board/community content review.
 It is not production input and should not be fed into training without an explicit curation step.
+
+## Source alignment check
+
+The active training and evaluation jobs consume the curated snapshots in the repository root,
+not the raw crawl directory directly. To verify that those snapshots still line up with the
+current crawl source, run:
+
+```bash
+python scripts/validate_source_alignment.py --raw-dir "C:\Users\mapdr\Desktop\queenalba-crawler\crawled-data-v2"
+```
+
+This command compares:
+
+- raw post bodies vs `cpt_corpus.jsonl`
+- raw normalized comments vs `cpt_corpus.jsonl`
+- raw post bodies vs `sft_pairs_v2.jsonl` post outputs
+- raw reply chains vs `sft_pairs_v2.jsonl` comment instruction/output pairs

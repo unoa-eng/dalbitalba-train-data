@@ -1,0 +1,54 @@
+{
+  "input": {
+    "raw_dir": "/mnt/c/Users/mapdr/Desktop/queenalba-crawler/crawled-data-v2",
+    "raw_posts": 11288
+  },
+  "pii_scrubbed": {
+    "phone": 14557,
+    "url": 1153
+  },
+  "filter_stats": {
+    "keep_post": 11219,
+    "keep_comment": 50811,
+    "drop_spam": 5038,
+    "drop_short": 67,
+    "drop_empty_post": 1,
+    "drop_minor": 1
+  },
+  "dedup": {
+    "threshold": 0.85,
+    "dropped_near_dup": 19
+  },
+  "split": {
+    "train_records": 58910,
+    "val_records": 3101,
+    "val_ratio": 0.05
+  },
+  "bucket_share_expanded_cpt": {
+    "xs": 0.24489486727195992,
+    "sm": 0.30401376519094875,
+    "md": 0.15715259666475484,
+    "lg": 0.15485839817329855,
+    "xl": 0.12778252729771555,
+    "xxl": 0.01129784540132241
+  },
+  "bucket_target": {
+    "xs": 0.26,
+    "sm": 0.35,
+    "md": 0.18,
+    "lg": 0.09,
+    "xl": 0.11,
+    "xxl": 0.01
+  },
+  "outputs": {
+    "cpt_corpus.v2.jsonl": 92407,
+    "sft_pairs.v2.jsonl": 78119,
+    "val_set.v2.jsonl": 3101
+  },
+  "mix_policy": {
+    "raw_continuation": 0.8,
+    "reply_pair": 0.2
+  },
+  "seed": 42,
+  "timestamp": "2026-04-24T05:16:24.353985Z"
+}

@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
@@ -19,7 +20,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 STATE_DIR = REPO_ROOT / ".state"
 STATE_FILE = STATE_DIR / "eval_pod_state.json"
-RUNPOD_GQL = "https://api.runpod.io/graphql"
+RUNPOD_REST = "https://rest.runpod.io/v1/pods"
 
 
 def load_env() -> None:
@@ -44,12 +45,16 @@ def require_env(key: str) -> str:
     return value
 
 
-def runpod_request(api_key: str, query: str, variables: dict) -> dict:
+def runpod_request(api_key: str, payload: dict) -> dict:
     req = urllib.request.Request(
-        f"{RUNPOD_GQL}?api_key={api_key}",
-        data=json.dumps({"query": query, "variables": variables}).encode(),
+        RUNPOD_REST,
+        data=json.dumps(payload).encode(),
         method="POST",
-        headers={"Content-Type": "application/json"},
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "User-Agent": "dalbitalba-train-data/1.0",
+        },
     )
     try:
         with urllib.request.urlopen(req, timeout=60) as response:
@@ -75,100 +80,210 @@ def save_state(pod_id: str, metadata: dict) -> None:
     )
 
 
+def parse_gpu_types(raw_value: str) -> list[str]:
+    values = [item.strip() for item in raw_value.split(",") if item.strip()]
+    return values or ["NVIDIA A100 80GB PCIe"]
+
+
+def redact_string(value: str) -> str:
+    if "x-access-token:" not in value:
+        return value
+    prefix, _, rest = value.partition("x-access-token:")
+    _, sep, tail = rest.partition("@github.com/")
+    if not sep:
+        return value
+    return f"{prefix}x-access-token:***REDACTED***@github.com/{tail}"
+
+
+def redact_payload(payload: dict) -> dict:
+    redacted = json.loads(json.dumps(payload))
+    for key in list(redacted.get("env", {}).keys()):
+        redacted["env"][key] = "***REDACTED***"
+
+    start_cmd = redacted.get("dockerStartCmd")
+    if isinstance(start_cmd, list):
+        redacted["dockerStartCmd"] = [redact_string(item) if isinstance(item, str) else item for item in start_cmd]
+    elif isinstance(start_cmd, str):
+        redacted["dockerStartCmd"] = redact_string(start_cmd)
+    return redacted
+
+
+def detect_git_ref() -> str:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        ref = result.stdout.strip()
+        if ref and ref != "HEAD":
+            return ref
+    except Exception:
+        pass
+    return "main"
+
+
+def resolve_git_ref() -> str:
+    raw = (
+        os.environ.get("TRAIN_GITHUB_REF", "").strip()
+        or os.environ.get("GITHUB_REF_NAME", "").strip()
+        or os.environ.get("GITHUB_REF", "").strip()
+    )
+    if raw.startswith("refs/heads/"):
+        raw = raw.removeprefix("refs/heads/")
+    elif raw.startswith("refs/tags/"):
+        raw = raw.removeprefix("refs/tags/")
+    elif raw.startswith("refs/pull/"):
+        raw = ""
+    return raw or detect_git_ref()
+
+
 def main() -> None:
+    load_env()
+
     parser = argparse.ArgumentParser(description="Launch dalbitalba-train-data RunPod eval pod")
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--gpu-type", default=os.environ.get("GPU_TYPE", "NVIDIA A100 80GB PCIe"))
+    parser.add_argument(
+        "--gpu-type",
+        default=os.environ.get(
+            "GPU_TYPE",
+            "NVIDIA L40S,NVIDIA A100 80GB PCIe,NVIDIA RTX 6000 Ada Generation",
+        ),
+        help="Comma-separated GPU preference list (tried in order)",
+    )
     parser.add_argument(
         "--container-image",
         default=os.environ.get(
             "CONTAINER_IMAGE",
-            "runpod/pytorch:2.2.0-py3.10-cuda12.1.1-devel-ubuntu22.04",
+            "runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04",
         ),
     )
     args = parser.parse_args()
 
-    load_env()
-
     api_key = require_env("RUNPOD_API_KEY")
     github_token = require_env("GITHUB_TOKEN")
     github_repo = os.environ.get("GITHUB_REPO", "unoa-eng/dalbitalba-train-data").strip()
-    hf_adapter_repo = require_env("HF_ADAPTER_REPO")
-    anthropic_api_key = require_env("ANTHROPIC_API_KEY")
+    github_ref = resolve_git_ref()
+    eval_mode = os.environ.get("EVAL_MODE", "phase6").strip() or "phase6"
+    hf_adapter_repo = os.environ.get("HF_ADAPTER_REPO", "").strip()
+    sft_adapter_repo = os.environ.get("SFT_ADAPTER_REPO", "").strip() or hf_adapter_repo
+    if eval_mode == "legacy":
+        if not hf_adapter_repo:
+            raise SystemExit("[ERROR] missing env: HF_ADAPTER_REPO")
+        anthropic_api_key = require_env("ANTHROPIC_API_KEY")
+    else:
+        if not sft_adapter_repo:
+            raise SystemExit("[ERROR] missing env: SFT_ADAPTER_REPO")
+        anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     hf_token = os.environ.get("HF_TOKEN", "").strip()
     openai_api_key = os.environ.get("OPENAI_API_KEY", "").strip()
     ntfy_topic = os.environ.get("NTFY_TOPIC", "").strip()
-    base_model = os.environ.get("BASE_MODEL", "upstage/SOLAR-10.7B-v1.0").strip()
+    base_model = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base").strip()
 
-    clone_url = f"https://x-access-token:{github_token}@github.com/{github_repo}.git"
+    # SECURITY: never embed the PAT in dockerStartCmd — RunPod persists the
+    # pod spec including this field. Use env.GITHUB_TOKEN via shell expansion
+    # so the PAT only lives inside the running container, not in the spec.
     startup_cmd = (
-        "bash -lc "
-        "\"mkdir -p /workspace/logs && "
-        f"git clone {clone_url} /workspace/repo && "
+        "mkdir -p /workspace/logs && "
+        "rm -rf /workspace/repo && "
+        f"git clone --branch {github_ref} --single-branch "
+        f"\"https://x-access-token:${{GITHUB_TOKEN}}@github.com/{github_repo}.git\" "
+        "/workspace/repo && "
         "chmod +x /workspace/repo/scripts/run_eval.sh && "
-        "nohup bash /workspace/repo/scripts/run_eval.sh > /workspace/logs/eval.log 2>&1 &\""
+        "exec bash /workspace/repo/scripts/run_eval.sh"
     )
 
-    env = [
-        {"key": "GITHUB_TOKEN", "value": github_token},
-        {"key": "GITHUB_REPO", "value": github_repo},
-        {"key": "HF_ADAPTER_REPO", "value": hf_adapter_repo},
-        {"key": "ANTHROPIC_API_KEY", "value": anthropic_api_key},
-        {"key": "RUNPOD_API_KEY", "value": api_key},
-        {"key": "BASE_MODEL", "value": base_model},
-        {"key": "RUNPOD_POD_ID", "value": "__SELF__"},
-    ]
+    env = {
+        "GITHUB_TOKEN": github_token,
+        "GITHUB_REPO": github_repo,
+        "EVAL_MODE": eval_mode,
+        "HF_ADAPTER_REPO": hf_adapter_repo or sft_adapter_repo,
+        "SFT_ADAPTER_REPO": sft_adapter_repo,
+        "RUNPOD_API_KEY": api_key,
+        "BASE_MODEL": base_model,
+        "HF_HUB_ENABLE_HF_TRANSFER": "1",
+        "RUNPOD_POD_ID": "__SELF__",
+    }
+    if anthropic_api_key:
+        env["ANTHROPIC_API_KEY"] = anthropic_api_key
     if hf_token:
-        env.append({"key": "HF_TOKEN", "value": hf_token})
+        env["HF_TOKEN"] = hf_token
     if openai_api_key:
-        env.append({"key": "OPENAI_API_KEY", "value": openai_api_key})
+        env["OPENAI_API_KEY"] = openai_api_key
     if ntfy_topic:
-        env.append({"key": "NTFY_TOPIC", "value": ntfy_topic})
+        env["NTFY_TOPIC"] = ntfy_topic
+    # Forward recipe-driven optional keys so smoke/budget30 envs reach run_eval.sh.
+    for optional_key in (
+        "RUN_MAUVE",
+        "EVAL_MAX_ROWS",
+        "CPT_MERGED_REPO",
+        "CPT_MERGED_PATH",
+        "WANDB_API_KEY",
+        "WANDB_PROJECT",
+    ):
+        value = os.environ.get(optional_key, "").strip()
+        if value:
+            env[optional_key] = value
+
+    gpu_types = parse_gpu_types(args.gpu_type)
 
     payload = {
-        "input": {
-            "cloudType": "COMMUNITY",
-            "gpuCount": 1,
-            "volumeInGb": 60,
-            "containerDiskInGb": 30,
-            "minVcpuCount": 8,
-            "minMemoryInGb": 48,
-            "gpuTypeId": args.gpu_type,
-            "name": f"dalbitalba-eval-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M')}",
-            "imageName": args.container_image,
-            "dockerArgs": "",
-            "ports": "",
-            "volumeMountPath": "/workspace",
-            "env": env,
-            "startSsh": False,
-            "startJupyter": False,
-            "dockerStartCmd": startup_cmd,
-        }
+        "name": f"dalbitalba-eval-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M')}",
+        "imageName": args.container_image,
+        "computeType": "GPU",
+        "cloudType": "COMMUNITY",
+        "gpuCount": 1,
+        "gpuTypePriority": "availability",
+        "volumeInGb": 60,
+        "containerDiskInGb": 30,
+        "minVCPUPerGPU": 8,
+        "minRAMPerGPU": 48,
+        "volumeMountPath": "/workspace",
+        "ports": [],
+        "interruptible": False,
+        "env": env,
+        "dockerEntrypoint": [],
+        "dockerStartCmd": ["bash", "-lc", startup_cmd],
     }
 
     if args.dry_run:
-        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        dry_run_payload = dict(payload)
+        dry_run_payload["gpuTypeIds"] = gpu_types
+        print(json.dumps(redact_payload(dry_run_payload), indent=2, ensure_ascii=False))
         return
 
-    mutation = """
-    mutation CreatePod($input: PodFindAndDeployOnDemandInput!) {
-      podFindAndDeployOnDemand(input: $input) {
-        id
-        desiredStatus
-      }
-    }
-    """
-    data = runpod_request(api_key, mutation, payload)
-    if "errors" in data:
-        raise SystemExit(json.dumps(data["errors"], ensure_ascii=False))
+    last_error: RuntimeError | None = None
+    chosen_gpu: str | None = None
+    data: dict | None = None
+    for gpu_type in gpu_types:
+        candidate_payload = dict(payload)
+        candidate_payload["gpuTypeIds"] = [gpu_type]
+        try:
+            data = runpod_request(api_key, candidate_payload)
+            chosen_gpu = gpu_type
+            break
+        except RuntimeError as exc:
+            last_error = exc
+            print(f"[warn] gpu launch failed for {gpu_type}: {exc}")
+            if "balance is too low" in str(exc).lower():
+                break
 
-    pod_id = data["data"]["podFindAndDeployOnDemand"]["id"]
+    if data is None or chosen_gpu is None:
+        raise SystemExit(str(last_error or RuntimeError("RunPod eval launch failed")))
+
+    pod_id = data["id"]
     save_state(
         pod_id,
         {
             "github_repo": github_repo,
+            "github_ref": github_ref,
             "hf_adapter_repo": hf_adapter_repo,
-            "gpu_type": args.gpu_type,
+            "sft_adapter_repo": sft_adapter_repo,
+            "eval_mode": eval_mode,
+            "gpu_type": chosen_gpu,
+            "gpu_type_candidates": gpu_types,
             "base_model": base_model,
         },
     )
