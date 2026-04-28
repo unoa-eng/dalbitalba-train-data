@@ -183,9 +183,9 @@ def main() -> None:
     samples = load_samples(args.samples)
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
-    anthropic_model_primary = os.environ.get("ANTHROPIC_PRIMARY_MODEL", "claude-3-7-sonnet-latest")
-    anthropic_model_secondary = os.environ.get("ANTHROPIC_SECONDARY_MODEL", "claude-3-5-haiku-latest")
-    openai_model = os.environ.get("OPENAI_MODEL", "gpt-4.1")
+    anthropic_model_primary = os.environ.get("ANTHROPIC_PRIMARY_MODEL", "claude-opus-4-6")
+    anthropic_model_secondary = os.environ.get("ANTHROPIC_SECONDARY_MODEL", "claude-sonnet-4-6")
+    openai_model = os.environ.get("OPENAI_MODEL", "gpt-5.4")
 
     results: list[dict] = []
 
@@ -256,7 +256,122 @@ def main() -> None:
         )
 
     build_consensus(samples, results, args.output_dir / "consensus.json")
-    print(f"[done] wrote judge outputs to {args.output_dir}")
+
+    # ── Obsidian EVAL-PROTOCOL: FP/FN 분리 + kind 층화 + 편향 분석 ──
+    report = compute_detailed_metrics(samples, results)
+    report_path = args.output_dir / "eval_report.json"
+    report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    # Print summary
+    print(f"\n{'='*60}")
+    print(f"EVAL REPORT (Obsidian Protocol)")
+    print(f"{'='*60}")
+    for judge_name, metrics in report["per_judge"].items():
+        print(f"\n  {judge_name}:")
+        print(f"    accuracy={metrics['accuracy']:.3f}  FP={metrics['fp_rate']:.3f}  FN={metrics['fn_rate']:.3f}")
+        print(f"    |FP-FN|={metrics['fp_fn_gap']:.3f}  bias={metrics['bias']}")
+        if metrics.get("per_kind"):
+            for kind, km in metrics["per_kind"].items():
+                print(f"      {kind}: acc={km['accuracy']:.3f} n={km['n']}")
+    overall = report["overall"]
+    print(f"\n  OVERALL: accuracy={overall['accuracy']:.3f} FP={overall['fp_rate']:.3f} FN={overall['fn_rate']:.3f}")
+    print(f"  TARGET: accuracy ≤ 0.60, |FP-FN| < 0.15")
+    print(f"  VERDICT: {overall['verdict']}")
+    print(f"{'='*60}")
+
+    print(f"[done] wrote judge outputs + eval_report to {args.output_dir}")
+
+
+def compute_detailed_metrics(samples: list[dict], results: list[dict]) -> dict:
+    """Obsidian EVAL-PROTOCOL 4축 분석"""
+    from collections import defaultdict
+
+    report = {"per_judge": {}, "overall": {}}
+
+    all_preds = []
+    for result in results:
+        preds = result["predictions"]
+        tp = fn = fp = tn = 0
+        per_kind = defaultdict(lambda: {"tp": 0, "fn": 0, "fp": 0, "tn": 0, "n": 0})
+
+        for pred in preds:
+            truth = pred["truth"]
+            predicted = pred["prediction"]
+            sample = next((s for s in samples if s["id"] == pred["sample_id"]), {})
+            kind = sample.get("kind", "unknown")
+
+            per_kind[kind]["n"] += 1
+
+            if truth == "AI" and predicted == "AI":
+                tp += 1; per_kind[kind]["tp"] += 1
+            elif truth == "AI" and predicted == "HUMAN":
+                fn += 1; per_kind[kind]["fn"] += 1
+            elif truth == "HUMAN" and predicted == "AI":
+                fp += 1; per_kind[kind]["fp"] += 1
+            elif truth == "HUMAN" and predicted == "HUMAN":
+                tn += 1; per_kind[kind]["tn"] += 1
+
+        total = tp + fn + fp + tn
+        ai_total = tp + fn
+        human_total = fp + tn
+        accuracy = (tp + tn) / max(total, 1)
+        fp_rate = fp / max(human_total, 1)  # HUMAN→AI 오판
+        fn_rate = fn / max(ai_total, 1)     # AI→HUMAN 오판
+        fp_fn_gap = abs(fp_rate - fn_rate)
+
+        # Bias detection (Obsidian: Judge가 AI 판정을 기피하는 편향)
+        ai_predictions = sum(1 for p in preds if p["prediction"] == "AI")
+        human_predictions = sum(1 for p in preds if p["prediction"] == "HUMAN")
+        if total > 0:
+            ai_pred_ratio = ai_predictions / total
+            bias = "neutral"
+            if ai_pred_ratio < 0.3:
+                bias = "AI판정_기피"
+            elif ai_pred_ratio > 0.7:
+                bias = "AI판정_과다"
+        else:
+            bias = "unknown"
+
+        kind_metrics = {}
+        for kind, km in per_kind.items():
+            kn = km["n"]
+            kacc = (km["tp"] + km["tn"]) / max(kn, 1)
+            kind_metrics[kind] = {"accuracy": round(kacc, 3), "n": kn,
+                                  "tp": km["tp"], "fn": km["fn"], "fp": km["fp"], "tn": km["tn"]}
+
+        report["per_judge"][result["judge"]] = {
+            "accuracy": round(accuracy, 3),
+            "fp_rate": round(fp_rate, 3),
+            "fn_rate": round(fn_rate, 3),
+            "fp_fn_gap": round(fp_fn_gap, 3),
+            "bias": bias,
+            "tp": tp, "fn": fn, "fp": fp, "tn": tn,
+            "per_kind": kind_metrics,
+        }
+        all_preds.append({"tp": tp, "fn": fn, "fp": fp, "tn": tn})
+
+    # Overall (consensus-like)
+    total_tp = sum(p["tp"] for p in all_preds)
+    total_fn = sum(p["fn"] for p in all_preds)
+    total_fp = sum(p["fp"] for p in all_preds)
+    total_tn = sum(p["tn"] for p in all_preds)
+    total_all = total_tp + total_fn + total_fp + total_tn
+    overall_acc = (total_tp + total_tn) / max(total_all, 1)
+    overall_fp_rate = total_fp / max(total_fp + total_tn, 1)
+    overall_fn_rate = total_fn / max(total_tp + total_fn, 1)
+
+    verdict = "PASS" if overall_acc <= 0.60 and abs(overall_fp_rate - overall_fn_rate) < 0.15 else "FAIL"
+
+    report["overall"] = {
+        "accuracy": round(overall_acc, 3),
+        "fp_rate": round(overall_fp_rate, 3),
+        "fn_rate": round(overall_fn_rate, 3),
+        "fp_fn_gap": round(abs(overall_fp_rate - overall_fn_rate), 3),
+        "verdict": verdict,
+        "target": "accuracy ≤ 0.60, |FP-FN| < 0.15",
+    }
+
+    return report
 
 
 if __name__ == "__main__":
