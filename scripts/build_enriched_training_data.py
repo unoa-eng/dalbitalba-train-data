@@ -108,8 +108,9 @@ def rescale_views_for_new_site(original_views: int, post_date: str = None) -> in
     # site_month: 1~12 (uniformly sampled for diverse training data)
     site_month = random.randint(1, 12)
 
-    # Exponential growth base: month 1 → base 15, month 12 → base 400
-    growth_base = 15 * math.exp(0.27 * (site_month - 1))
+    # Exponential growth base: month 1 → base 10, month 12 → base 250
+    # Tuned to produce: 신규<10%, 소수 30-40%, 보통 30-40%, 인기 15-25%, 핫<3%
+    growth_base = 10 * math.exp(0.24 * (site_month - 1))
 
     # Apply percentile spread (popular posts get more views)
     spread = 0.3 + percentile * 1.5  # 0.3x ~ 1.8x of base
