@@ -1,0 +1,9 @@
+[merge] base  : Qwen/Qwen3-8B-Base
+[merge] lora  : /workspace/out/cpt-lora
+[merge] out   : /workspace/out/cpt-merged-fp16
+[merge] tokenizer source: /workspace/out/cpt-lora
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:00<00:00, 51.85it/s]
+[merge] loaded base in torch.bfloat16
+[merge] resize_token_embeddings: 151936 -> 151680
+[merge] merge_and_unload done
+[merge] saved merged fp16 model → /workspace/out/cpt-merged-fp16

@@ -1,0 +1,45 @@
+2026-04-29 11:01:39,670 [INFO] ============================================================
+2026-04-29 11:01:39,673 [INFO] SFT v2 시작
+2026-04-29 11:01:39,675 [INFO]   base          : /workspace/out/cpt-merged-fp16
+2026-04-29 11:01:39,677 [INFO]   raw_jsonl     : /workspace/data/v3-data/cpt_structured_v3.jsonl
+2026-04-29 11:01:39,680 [INFO]   input_jsonl   : /workspace/data/v3-data/sft_5task_v3.jsonl
+2026-04-29 11:01:39,683 [INFO]   val_jsonl     : /workspace/data/val_set.v3.jsonl
+2026-04-29 11:01:39,685 [INFO]   output        : /workspace/out/sft-lora
+2026-04-29 11:01:39,687 [INFO]   hub_model_id  : UNOA/dalbitalba-qwen3-sft-20260429-0849
+2026-04-29 11:01:39,690 [INFO]   LoRA r=64 α=64 rsLoRA=True DoRA=False
+2026-04-29 11:01:39,692 [INFO]   seq_len=1024 eff_batch=16 lr=5e-05 epochs=1
+2026-04-29 11:01:39,694 [INFO] ============================================================
+2026-04-29 11:01:39,726 [INFO] GPU: NVIDIA A40
+2026-04-29 11:03:39,895 [INFO]   load /workspace/data/v3-data/cpt_structured_v3.jsonl -> 53,675
+2026-04-29 11:03:40,193 [INFO]   load /workspace/data/v3-data/sft_5task_v3.jsonl -> 58,476
+2026-04-29 11:03:40,203 [INFO]   load /workspace/data/val_set.v3.jsonl -> 412
+2026-04-29 11:03:40,204 [INFO] mix policy: raw=0.80 pair=0.20
+2026-04-29 11:03:40,230 [INFO] supervised row formats: {'instruction': 58476}
+2026-04-29 11:03:40,232 [INFO] sampled sizes: raw=53,675 supervised=13,419 / 58,476 available
+2026-04-29 11:03:52,019 [INFO] merged train size: 67,094
+2026-04-29 11:03:54,192 [INFO] val size: 412
+2026-04-29 11:03:54,369 [INFO] total_steps=4194 warmup=209
+2026-04-29 11:03:54,792 [INFO] SFT 학습 시작
+2026-04-29 15:30:34,155 [INFO] ============================================================
+2026-04-29 15:30:34,156 [INFO] SFT v2 시작
+2026-04-29 15:30:34,157 [INFO]   base          : /workspace/out/cpt-merged-fp16
+2026-04-29 15:30:34,159 [INFO]   raw_jsonl     : /workspace/data/v3-data/cpt_structured_v3.jsonl
+2026-04-29 15:30:34,160 [INFO]   input_jsonl   : /workspace/data/v3-data/sft_5task_v3.jsonl
+2026-04-29 15:30:34,161 [INFO]   val_jsonl     : /workspace/data/val_set.v3.jsonl
+2026-04-29 15:30:34,162 [INFO]   output        : /workspace/out/sft-lora
+2026-04-29 15:30:34,163 [INFO]   hub_model_id  : UNOA/dalbitalba-qwen3-sft-20260429-1523
+2026-04-29 15:30:34,164 [INFO]   LoRA r=64 α=64 rsLoRA=True DoRA=False
+2026-04-29 15:30:34,165 [INFO]   seq_len=1024 eff_batch=16 lr=5e-05 epochs=1
+2026-04-29 15:30:34,166 [INFO] ============================================================
+2026-04-29 15:30:34,189 [INFO] GPU: NVIDIA A40
+2026-04-29 15:31:56,921 [INFO]   load /workspace/data/v3-data/cpt_structured_v3.jsonl -> 53,675
+2026-04-29 15:31:57,227 [INFO]   load /workspace/data/v3-data/sft_5task_v3.jsonl -> 58,476
+2026-04-29 15:31:57,235 [INFO]   load /workspace/data/val_set.v3.jsonl -> 412
+2026-04-29 15:31:57,236 [INFO] mix policy: raw=0.80 pair=0.20
+2026-04-29 15:31:57,245 [INFO] supervised row formats: {'instruction': 58476}
+2026-04-29 15:31:57,247 [INFO] sampled sizes: raw=53,675 supervised=13,419 / 58,476 available
+2026-04-29 15:32:09,000 [INFO] merged train size: 67,094
+2026-04-29 15:32:11,035 [INFO] val size: 412
+2026-04-29 15:32:11,208 [INFO] total_steps=4194 warmup=209
+2026-04-29 15:32:11,602 [INFO] resume from /workspace/out/sft-ckpt/checkpoint-950
+2026-04-29 15:32:11,603 [INFO] SFT 학습 시작
