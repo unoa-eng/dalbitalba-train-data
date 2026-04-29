@@ -568,16 +568,18 @@ if [ "${SKIP_SFT}" = "1" ] || [ "${SKIP_SFT}" = "true" ]; then
 else
     notify "dalbit SFT start"
     SFT_START=$(date +%s)
-    # A-path warm-restart: paged_adamw_32bit -> paged_adamw_8bit incompat,
-    # move optimizer/scheduler/rng/trainer_state to backup so HF Trainer
-    # falls back to weight-only resume (LoRA weight preserved, step=0).
+    # A-path resume: paged_adamw_32bit -> paged_adamw_8bit optimizer formats
+    # are incompatible, so move ONLY optimizer.pt+scheduler.pt to backup.
+    # trainer_state.json (step counter, LR pos) and rng_state.pth stay so
+    # HF Trainer does a real resume: step/LR/data-order preserved,
+    # only optimizer momentum is reset.
     SFT_CKPT_PARENT_A="${OUT_DIR}/sft-ckpt"
     if [ -d "${SFT_CKPT_PARENT_A}" ]; then
         for d in "${SFT_CKPT_PARENT_A}"/checkpoint-*/; do
             [ -d "${d}" ] || continue
             backup_a="${d%/}/__backup-pre-warm-restart"
             mkdir -p "${backup_a}"
-            for f in optimizer.pt scheduler.pt rng_state.pth trainer_state.json; do
+            for f in optimizer.pt scheduler.pt; do
                 if [ -f "${d%/}/${f}" ]; then
                     mv "${d%/}/${f}" "${backup_a}/"
                 fi
