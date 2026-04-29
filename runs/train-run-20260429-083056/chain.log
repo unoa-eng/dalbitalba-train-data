@@ -1,0 +1,68 @@
+2026-04-29T08:30:55Z ==========================================
+2026-04-29T08:30:55Z dalbitalba chain_train.sh v3 시작
+2026-04-29T08:30:55Z   pod          : qet380symz9nqx
+2026-04-29T08:30:55Z   base         : Qwen/Qwen3-8B-Base
+2026-04-29T08:30:55Z   hf_repo_cpt  : UNOA/dalbitalba-qwen3-cpt-20260429-0830
+2026-04-29T08:30:55Z   hf_repo_sft  : UNOA/dalbitalba-qwen3-sft-20260429-0830
+2026-04-29T08:30:55Z   cpt_lr       : 2e-4
+2026-04-29T08:30:55Z   cpt_epochs   : 1
+2026-04-29T08:30:55Z   sft_epochs   : 2
+2026-04-29T08:30:55Z   skip_sft     : 0
+2026-04-29T08:30:55Z   cpt_jsonl    : /workspace/data/cpt_corpus.v3.jsonl
+2026-04-29T08:30:55Z   sft_input    : /workspace/data/v3-data/sft_5task_v3.jsonl
+2026-04-29T08:30:55Z   val_jsonl    : /workspace/data/val_set.v3.jsonl
+2026-04-29T08:30:55Z   timeouts     : cpt=36h merge=8h sft=96h upload=4h
+2026-04-29T08:30:55Z ==========================================
+--- system snapshot ---
+Wed Apr 29 08:30:55 UTC 2026
+Linux a3f9cc0b177c 6.5.0-35-generic #35~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Tue May  7 09:00:52 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+--- nvidia-smi ---
+Wed Apr 29 08:30:55 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 555.42.02              Driver Version: 555.42.02      CUDA Version: 12.5     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA A100 80GB PCIe          On  |   00000000:C6:00.0 Off |                    0 |
+| N/A   30C    P0             44W /  300W |       1MiB /  81920MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI        PID   Type   Process name                              GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+--- disk ---
+Filesystem           Size  Used Avail Use% Mounted on
+/dev/mapper/vg0-lv0   80G  452M   80G   1% /workspace
+overlay               40G   16M   40G   1% /
+--- mem ---
+               total        used        free      shared  buff/cache   available
+Mem:           1.0Ti        13Gi       511Gi        67Mi       482Gi       989Gi
+Swap:             0B          0B          0B
+--- python ---
+/usr/bin/python3
+Python 3.11.10
+pip 24.2 from /usr/local/lib/python3.11/dist-packages/pip (python 3.11)
+--- /workspace ---
+total 92
+drwxr-xr-x  8 root root   186 Apr 29 08:30 .
+drwxr-xr-x  1 root root    70 Apr 29 08:30 ..
+-rwxr-xr-x  1 root root 26558 Apr 29 08:30 chain_train.sh
+drwxr-xr-x  3 root root  4096 Apr 29 08:30 data
+drwxr-xr-x  2 root root    10 Apr 29 08:30 hf_cache
+drwxr-xr-x  2 root root    69 Apr 29 08:30 logs
+drwxr-xr-x  2 root root    10 Apr 29 08:30 out
+drwxr-xr-x 15 root root  4096 Apr 29 08:30 repo
+drwxr-xr-x  2 root root    42 Apr 29 08:30 scripts
+-rw-r--r--  1 root root 35258 Apr 29 08:30 train_cpt.py
+-rw-r--r--  1 root root 16595 Apr 29 08:30 train_sft.py
+------
+2026-04-29T08:30:56Z [ERROR] 데이터 파일 없음: /workspace/data/cpt_corpus.v3.jsonl
+2026-04-29T08:30:56Z [DONE] /workspace/out/DONE.txt
+{"id":"p8KOkA6KJk3g","time":1777451456,"expires":1777494656,"event":"message","topic":"dalbit_ai_alert","message":"dalbit data_missing rc=1 ====HEAD====|2026-04-29T08:30:55Z ==========================================|2026-04-29T08:30:55Z dalbitalba chain_train.sh v3 시작|2026-04-29T08:30:55Z   pod          : qet380symz9nqx|2026-04-29T08:30:55Z   base         : Qwen/Qwen3-8B-Base|2026-04-29T08:30:55Z   hf_repo_cpt  : UNOA/dalbitalba-qwen3-cpt-20260429-0830|2026-04-29T08:30:55Z   hf_repo_sft  : UNOA/dalbitalba-qwen3-sft-20260429-0830|2026-04-29T08:30:55Z   cpt_lr       : 2e-4|2026-04-29T08:30:55Z   cpt_epochs   : 1|2026-04-29T08:30:55Z   sft_epochs   : 2|2026-04-29T08:30:55Z   skip_sft     : 0|2026-04-29T08:30:55Z   cpt_jsonl    : /workspace/data/cpt_corpus.v3.jsonl|2026-04-29T08:30:55Z   sft_input    : /workspace/data/v3-data/sft_5task_v3.jsonl|2026-04-29T08:30:55Z   val_jsonl    : /workspace/data/val_set.v3.jsonl|2026-04-29T08:30:55Z   timeouts     : cpt=36h merge=8h sft=96h upload=4h|2026-04-29T08:30:55Z ==========================================|--- system snapshot ---|Wed Apr 29 08:30:55 UTC 2026|Linux a3f9cc0b177c 6.5.0-35-generic #35~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Tue May  7 09:00:52 UTC 2 x86_64 x86_64 x86_64 GNU/Linux|--- nvidia-smi ---|Wed Apr 29 08:30:55 2026       |+-----------------------------------------------------------------------------------------+|| NVIDIA-SMI 555.42.02              Driver Version: 555.42.02      CUDA Version: 12.5     |||-----------------------------------------+------------------------+----------------------+|| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC ||| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. ||====TAIL====|/dev/mapper/vg0-lv0   80G  452M   80G   1% /workspace|overlay               40G   16M   40G   1% /|--- mem ---|               total        used        free      shared  buff/cache   available|Mem:           1.0Ti        13Gi       511Gi        67Mi       482Gi       989Gi|Swap:             0B          0B          0B|--- python ---|/usr/bin/python3|Python 3.11.10|pip 24.2 from /usr/local/lib/python3.11/dist-packages/pip (python 3.11)|--- /workspace ---|total 92|drwxr-xr-x  8 root root   186 Apr 29 08:30 .|drwxr-xr-x  1 root root    70 Apr 29 08:30 ..|-rwxr-xr-x  1 root root 26558 Apr 29 08:30 chain_train.sh|drwxr-xr-x  3 root root  4096 Apr 29 08:30 data|drwxr-xr-x  2 root root    10 Apr 29 08:30 hf_cache|drwxr-xr-x  2 root root    69 Apr 29 08:30 logs|drwxr-xr-x  2 root root    10 Apr 29 08:30 out|drwxr-xr-x 15 root root  4096 Apr 29 08:30 repo|drwxr-xr-x  2 root root    42 Apr 29 08:30 scripts|-rw-r--r--  1 root root 35258 Apr 29 08:30 train_cpt.py|-rw-r--r--  1 root root 16595 Apr 29 08:30 train_sft.py|------|2026-04-29T08:30:56Z [ERROR] 데이터 파일 없음: /workspace/data/cpt_corpus.v3.jsonl|"}
