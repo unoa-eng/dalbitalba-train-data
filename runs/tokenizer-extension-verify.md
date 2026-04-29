@@ -1,29 +1,43 @@
 # Tokenizer Extension Verification
 
 Date: 2026-04-29
+Branch: `budget30-pre-launch`
 
 ## Scope
 
-- Extended the `Qwen/Qwen3-8B-Base` tokenizer with the structured CPT v3 markers used by `v3-data/cpt_structured_v3.jsonl`.
-- Verified that each structural marker encodes as a single token with the saved tokenizer in `v3-data/tokenizer/`.
-- Verified that `scripts/launch_train_pod.py --dry-run` forwards `CPT_TOKENIZER_DIR` into the pod payload.
+- Rebuilt `v3-data/tokenizer/` from `Qwen/Qwen3-8B-Base`.
+- Confirmed the structured CPT marker set now covers depths `0..5`.
+- Confirmed `train_cpt.py` can load the saved tokenizer bundle and re-apply the manifest at runtime when `CPT_EXTEND_TOKENS=1`.
 
 ## Commands
 
 ```bash
-.venv/bin/python scripts/extend_tokenizer_v3.py
-python3 -m py_compile scripts/extend_tokenizer_v3.py train_cpt.py scripts/launch_train_pod.py
-set -a; source recipes/budget30_v2.env; set +a
-RUNPOD_API_KEY=dummy HF_TOKEN=dummy HF_USERNAME=unoa GITHUB_TOKEN=dummy \
-  .venv/bin/python scripts/launch_train_pod.py --dry-run
+python3 -m py_compile scripts/extend_tokenizer_v3.py train_cpt.py scripts/launch_train_pod.py scripts/local_verification_loop.py
+source .venv/bin/activate
+python3 scripts/extend_tokenizer_v3.py --model Qwen/Qwen3-8B-Base --out-dir v3-data/tokenizer
+export TRAIN_CPT_JSONL=v3-data/cpt_structured_v3.jsonl
+export CPT_TOKENIZER_DIR=v3-data/tokenizer
+export CPT_EXTEND_TOKENS=1
+export CPT_LOG_FILE=runs/train_cpt_tokenizer_import.log
+python3 - <<'PY'
+from transformers import AutoTokenizer
+import train_cpt
+
+train_jsonl = train_cpt.resolve_train_jsonl()
+source, structured = train_cpt.resolve_tokenizer_source(train_jsonl)
+runtime_tokens = train_cpt.load_runtime_special_tokens()
+tokenizer = AutoTokenizer.from_pretrained(source, trust_remote_code=True, use_fast=True)
+added = tokenizer.add_special_tokens({"additional_special_tokens": runtime_tokens})
+print(train_jsonl, source, structured, len(runtime_tokens), added)
+PY
 ```
 
-## Tokenizer Build Result
+## Build Result
 
 - Base tokenizer size: `151669`
-- Extended tokenizer size: `151676`
-- Added tokens: `7`
-- Saved tokenizer dir: `v3-data/tokenizer/`
+- Extended tokenizer size: `151680`
+- Added tokens: `11`
+- Manifest file: `v3-data/tokenizer/token_list.json`
 
 Added token IDs:
 
@@ -33,54 +47,29 @@ Added token IDs:
 | `<|/post|>` | `151670` |
 | `<|comment depth=0|>` | `151671` |
 | `<|comment depth=1|>` | `151672` |
-| `<|/comment|>` | `151673` |
-| `<|thread|>` | `151674` |
-| `<|/thread|>` | `151675` |
+| `<|comment depth=2|>` | `151673` |
+| `<|comment depth=3|>` | `151674` |
+| `<|comment depth=4|>` | `151675` |
+| `<|comment depth=5|>` | `151676` |
+| `<|/comment|>` | `151677` |
+| `<|thread|>` | `151678` |
+| `<|/thread|>` | `151679` |
 
-## Encode Verification
+## Runtime Probe
 
-Each structured marker is split into multiple subword tokens by the base tokenizer, but exactly one token by the extended tokenizer:
+Saved in `runs/train_cpt_tokenizer_probe.log`.
 
-| Token | Base encode length | Extended encode length | Extended ID |
-| --- | ---: | ---: | ---: |
-| `<|post|>` | `5` | `1` | `151669` |
-| `<|/post|>` | `6` | `1` | `151670` |
-| `<|comment depth=0|>` | `8` | `1` | `151671` |
-| `<|comment depth=1|>` | `8` | `1` | `151672` |
-| `<|/comment|>` | `6` | `1` | `151673` |
-| `<|thread|>` | `5` | `1` | `151674` |
-| `<|/thread|>` | `6` | `1` | `151675` |
+- `structured_detected=True`
+- `tokenizer_source=v3-data/tokenizer`
+- `runtime_token_count=11`
+- `runtime_added=0`
 
-Representative structured sample:
+Interpretation:
 
-```text
-<|thread|><|post|>제목: 테스트
-본문<|/post|><|comment depth=0|>첫 댓글<|/comment|><|/thread|>
-```
-
-- Base tokenizer length: `44`
-- Extended tokenizer length: `17`
-
-## Train Loader Verification
-
-- `train_cpt.dataset_contains_structured_tokens("v3-data/cpt_structured_v3.jsonl")` returned `true`.
-- `train_cpt.resolve_tokenizer_source("v3-data/cpt_structured_v3.jsonl")` resolved to `v3-data/tokenizer`.
-- `train_cpt.py` now raises if structured CPT markers are detected without `CPT_TOKENIZER_DIR`, preventing a silent launch with subword-split structural markers.
-
-## Launcher Verification
-
-`scripts/launch_train_pod.py --dry-run` output includes:
-
-- `[gate] verifier PASS`
-- `"TRAIN_CPT_JSONL": "***REDACTED***"`
-- `"INPUT_JSONL": "***REDACTED***"`
-- `"CPT_TOKENIZER_DIR": "***REDACTED***"`
-
-Path normalization check:
-
-- `normalize_workspace_repo_path("v3-data/tokenizer") -> /workspace/repo/v3-data/tokenizer`
-- `normalize_workspace_repo_path("./v3-data/tokenizer") -> /workspace/repo/v3-data/tokenizer`
+- The saved tokenizer bundle already contains the full marker set.
+- The runtime manifest path is still valid, so a pod can re-apply the same 11 tokens safely when `CPT_EXTEND_TOKENS=1`.
+- If the saved tokenizer directory is missing or incomplete, `train_cpt.py` now falls back to `BASE_MODEL` plus runtime token extension instead of blocking launch.
 
 ## Verdict
 
-`PASS` — the v3 structured CPT markers now have dedicated tokenizer IDs, the extended tokenizer is saved in-repo at `v3-data/tokenizer/`, and the train launcher forwards the tokenizer directory into the pod environment.
+`PASS` — the tokenizer artifact on disk and the runtime fallback path now agree on the same 11 structured CPT tokens.
