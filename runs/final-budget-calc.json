@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-04-28T07:51:08Z",
+  "cpt_jsonl": "cpt_context_stream.jsonl",
+  "cpt_rows": 45893,
+  "effective_batch": 16,
+  "cpt_epochs": 1,
+  "sec_per_step": 18.43,
+  "hourly_usd": 0.79,
+  "cpt_steps": 2869,
+  "cpt_hours_exact": 14.68768611111111,
+  "cpt_usd_exact": 11.603272027777779,
+  "cpt_hours": 14.69,
+  "cpt_usd": 11.6
+}

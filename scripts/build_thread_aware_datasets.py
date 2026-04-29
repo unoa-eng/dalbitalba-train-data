@@ -14,6 +14,8 @@ PROMO_KW_RE = re.compile(
     r"(문의|카톡|텔레|라인|지원금|TC|실장|부장|출근문의|픽업|풀상주|면접|당일지급|지명비|이벤트|광고)",
     re.IGNORECASE,
 )
+HANGUL_RE = re.compile(r"[가-힣]")
+SEPARATOR_RE = re.compile(r"([^\w\s가-힣]|ㅡ)\1{2,}")
 COMMENT_TAG_RE = re.compile(r"^(?:[^\[\n]{0,30})?\[(\d+(?:-\d+)*)\]\s*")
 COMMENT_REF_RE = re.compile(r"^(?:\S+\s+)?\[(\d+(?:-\d+)*)\]\s*")
 
@@ -56,6 +58,27 @@ def iter_rows(raw_dir: Path):
 def is_promo(text: str) -> bool:
     text = (text or "").strip()
     return bool(PHONE_RE.search(text) or URL_RE.search(text) or (PROMO_KW_RE.search(text) and len(text) > 60))
+
+
+def is_valid_hybrid_user_part(text: str) -> bool:
+    text = (text or "").strip()
+    return len(text) > 13 and bool(HANGUL_RE.search(text)) and not is_promo(text)
+
+
+def extract_hybrid_user_part(text: str) -> str | None:
+    lines = [(line or "").strip() for line in (text or "").replace("\r\n", "\n").replace("\r", "\n").split("\n")]
+    if len(lines) < 2:
+        return None
+
+    for idx, line in enumerate(lines):
+        if not line or not SEPARATOR_RE.search(line):
+            continue
+        candidate = "\n".join(lines[:idx]).strip()
+        suffix = "\n".join(lines[idx:]).strip()
+        if candidate and is_valid_hybrid_user_part(candidate) and is_promo(suffix):
+            return candidate
+
+    return None
 
 
 def clean_comment(text: str) -> tuple[str | None, str]:
@@ -179,21 +202,28 @@ def main() -> None:
                     continue
 
                 promo = is_promo(cleaned)
+                recovered_hybrid = extract_hybrid_user_part(cleaned) if promo else None
+                effective_cleaned = recovered_hybrid or cleaned
+                effective_promo = promo and recovered_hybrid is None
+
+                if recovered_hybrid:
+                    summary["recovered_hybrid_comments"] += 1
+
                 if promo:
                     promo_counter[cleaned] += 1
-                    if promo_counter[cleaned] > args.max_promo_duplicates:
+                    if effective_promo and promo_counter[cleaned] > args.max_promo_duplicates:
                         summary["dropped_duplicate_promo_comments"] += 1
                         continue
 
-                normalized_comments.append((key, cleaned))
+                normalized_comments.append((key, effective_cleaned))
                 if key is not None:
-                    comment_map[key] = cleaned
+                    comment_map[key] = effective_cleaned
 
-                if not promo:
+                if not effective_promo:
                     cpt_handle.write(
                         json.dumps(
                             {
-                                "text": cleaned,
+                                "text": effective_cleaned,
                                 "kind": "comment",
                                 "source_id": post_id,
                                 "comment_key": key,

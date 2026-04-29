@@ -1,0 +1,442 @@
+{
+  "phase6_v2_version": "round2-1",
+  "base": {
+    "metrics": {
+      "n_ai": 100,
+      "n_raw": 2451,
+      "bigram_jsd": 0.5000340924785803,
+      "length_kl": 1.9512146370046293,
+      "digit_density_delta": 0.049997063343549954,
+      "english_density_delta": 0.015903015419005205,
+      "domain_keyword_alignment": 0.0,
+      "tone_distribution_match": 0.1466299469604243,
+      "mauve_score": null
+    },
+    "details": {
+      "domain_keyword_alignment": {
+        "aligned_terms": 8,
+        "total_terms": 20,
+        "aligned_fraction": 0.4,
+        "minimum_ratio_term": "호빠",
+        "minimum_ratio": 0.0,
+        "per_term": {
+          "쩜오": {
+            "generated_ratio": 0.07,
+            "raw_ratio": 0.015095879232966136,
+            "ratio": 4.6370270270270275,
+            "aligned": true,
+            "source_absent": false
+          },
+          "텐카": {
+            "generated_ratio": 0.08,
+            "raw_ratio": 0.016319869441044473,
+            "ratio": 4.902,
+            "aligned": true,
+            "source_absent": false
+          },
+          "호빠": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.014687882496940025,
+            "ratio": 0.0,
+            "aligned": false,
+            "source_absent": false
+          },
+          "도파민": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.03223174214606283,
+            "ratio": 0.0,
+            "aligned": false,
+            "source_absent": false
+          },
+          "하이퍼": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0008159934720522236,
+            "ratio": 0.0,
+            "aligned": false,
+            "source_absent": false
+          },
+          "퍼펙트": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0024479804161566705,
+            "ratio": 0.0,
+            "aligned": false,
+            "source_absent": false
+          },
+          "마담": {
+            "generated_ratio": 0.19,
+            "raw_ratio": 0.013055895552835577,
+            "ratio": 14.5528125,
+            "aligned": true,
+            "source_absent": false
+          },
+          "TC": {
+            "generated_ratio": 0.12,
+            "raw_ratio": 0.0036719706242350062,
+            "ratio": 32.68,
+            "aligned": true,
+            "source_absent": false
+          },
+          "티씨": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.014279885760913913,
+            "ratio": 0.0,
+            "aligned": false,
+            "source_absent": false
+          },
+          "빠꾸": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "밀빵": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.005303957568339453,
+            "ratio": 0.0,
+            "aligned": false,
+            "source_absent": false
+          },
+          "풀묶": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0004079967360261118,
+            "ratio": 0.0,
+            "aligned": false,
+            "source_absent": false
+          },
+          "팁": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.011831905344757242,
+            "ratio": 0.0,
+            "aligned": false,
+            "source_absent": false
+          },
+          "초이스": {
+            "generated_ratio": 0.03,
+            "raw_ratio": 0.04079967360261118,
+            "ratio": 0.7353,
+            "aligned": true,
+            "source_absent": false
+          },
+          "케어": {
+            "generated_ratio": 0.21,
+            "raw_ratio": 0.02039983680130559,
+            "ratio": 10.2942,
+            "aligned": true,
+            "source_absent": false
+          },
+          "갯수": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.017135862913096694,
+            "ratio": 0.0,
+            "aligned": false,
+            "source_absent": false
+          },
+          "강남": {
+            "generated_ratio": 0.04,
+            "raw_ratio": 0.0485516115871073,
+            "ratio": 0.8238655462184874,
+            "aligned": true,
+            "source_absent": false
+          },
+          "역삼": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0036719706242350062,
+            "ratio": 0.0,
+            "aligned": false,
+            "source_absent": false
+          },
+          "선릉": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0016319869441044472,
+            "ratio": 0.0,
+            "aligned": false,
+            "source_absent": false
+          },
+          "논현": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0028559771521827824,
+            "ratio": 0.0,
+            "aligned": false,
+            "source_absent": false
+          }
+        }
+      },
+      "tone_distribution_match": {
+        "generated": {
+          "반말": 0.11,
+          "존댓말": 0.21,
+          "혼합": 0.68
+        },
+        "raw": {
+          "반말": 0.2566299469604243,
+          "존댓말": 0.11219910240718074,
+          "혼합": 0.6311709506323949
+        },
+        "absolute_deltas": {
+          "반말": 0.1466299469604243,
+          "존댓말": 0.09780089759281925
+        },
+        "within_threshold": true
+      }
+    },
+    "gate": {
+      "verdict": "FAIL",
+      "violations": [
+        "bigram_jsd=0.5000 > 0.08",
+        "length_kl=1.9512 > 0.1",
+        "digit_density_delta=0.0500 > 0.03",
+        "domain_keyword_alignment=0.0000 < 0.5"
+      ]
+    }
+  },
+  "v2": {
+    "metrics": {
+      "punct_ratio_match_max": 0.25,
+      "choseong_marker_match_max": 0.22321428571428573,
+      "reply_depth_kl": 39.86313713864979,
+      "persona_consistency": 1.0,
+      "cross_machine_agreement": 0.0
+    },
+    "details": {
+      "punct_ratio": {
+        "post": {
+          "generated": {
+            "q": 0.5,
+            "ex": 0.3,
+            "ellipsis": 0.4
+          },
+          "raw": {
+            "q": 0.5357142857142857,
+            "ex": 0.05,
+            "ellipsis": 0.26785714285714285
+          },
+          "deltas": {
+            "q": 0.0357142857142857,
+            "ex": 0.25,
+            "ellipsis": 0.13214285714285717
+          }
+        },
+        "comment": {
+          "generated": {
+            "q": 0.25,
+            "ex": 0.2,
+            "ellipsis": 0.15
+          },
+          "raw": {
+            "q": 0.1850872554204125,
+            "ex": 0.07985193019566367,
+            "ellipsis": 0.1787414066631412
+          },
+          "deltas": {
+            "q": 0.06491274457958751,
+            "ex": 0.12014806980433634,
+            "ellipsis": 0.028741406663141206
+          }
+        },
+        "any": {
+          "generated": {
+            "q": 0.3,
+            "ex": 0.22,
+            "ellipsis": 0.2
+          },
+          "raw": {
+            "q": 0.2651978784169727,
+            "ex": 0.07303141574867401,
+            "ellipsis": 0.19910240718074254
+          },
+          "deltas": {
+            "q": 0.03480212158302731,
+            "ex": 0.14696858425132597,
+            "ellipsis": 0.00089759281925747
+          }
+        }
+      },
+      "choseong_marker": {
+        "post": {
+          "generated": {
+            "kkk": 0.0,
+            "huhu": 0.0,
+            "tt": 0.0,
+            "rieng": 0.0,
+            "oj": 0.0,
+            "jn": 0.25,
+            "sb": 0.0
+          },
+          "raw": {
+            "kkk": 0.10178571428571428,
+            "huhu": 0.008928571428571428,
+            "tt": 0.22321428571428573,
+            "rieng": 0.019642857142857142,
+            "oj": 0.02142857142857143,
+            "jn": 0.060714285714285714,
+            "sb": 0.025
+          },
+          "deltas": {
+            "kkk": 0.10178571428571428,
+            "huhu": 0.008928571428571428,
+            "tt": 0.22321428571428573,
+            "rieng": 0.019642857142857142,
+            "oj": 0.02142857142857143,
+            "jn": 0.18928571428571428,
+            "sb": 0.025
+          }
+        },
+        "comment": {
+          "generated": {
+            "kkk": 0.1,
+            "huhu": 0.0875,
+            "tt": 0.125,
+            "rieng": 0.125,
+            "oj": 0.0875,
+            "jn": 0.15,
+            "sb": 0.125
+          },
+          "raw": {
+            "kkk": 0.1263881544156531,
+            "huhu": 0.01269169751454257,
+            "tt": 0.11581173982020095,
+            "rieng": 0.011634056054997356,
+            "oj": 0.01639344262295082,
+            "jn": 0.02908514013749339,
+            "sb": 0.010576414595452142
+          },
+          "deltas": {
+            "kkk": 0.026388154415653092,
+            "huhu": 0.07480830248545742,
+            "tt": 0.009188260179799054,
+            "rieng": 0.11336594394500264,
+            "oj": 0.07110655737704917,
+            "jn": 0.12091485986250661,
+            "sb": 0.11442358540454786
+          }
+        },
+        "any": {
+          "generated": {
+            "kkk": 0.08,
+            "huhu": 0.07,
+            "tt": 0.1,
+            "rieng": 0.1,
+            "oj": 0.07,
+            "jn": 0.17,
+            "sb": 0.1
+          },
+          "raw": {
+            "kkk": 0.12076703386372908,
+            "huhu": 0.011831905344757242,
+            "tt": 0.14035087719298245,
+            "rieng": 0.01346389228886169,
+            "oj": 0.017543859649122806,
+            "jn": 0.03631170950632395,
+            "sb": 0.0138718890248878
+          },
+          "deltas": {
+            "kkk": 0.04076703386372908,
+            "huhu": 0.058168094655242766,
+            "tt": 0.04035087719298244,
+            "rieng": 0.08653610771113832,
+            "oj": 0.0524561403508772,
+            "jn": 0.13368829049367606,
+            "sb": 0.08612811097511221
+          }
+        }
+      },
+      "reply_depth": {
+        "generated": [
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "raw": [
+          0.0,
+          0.6938127974616605,
+          0.3061872025383395,
+          0.0,
+          0.0
+        ]
+      },
+      "persona_consistency": {
+        "skipped": "no persona-tagged rows"
+      },
+      "cross_machine_agreement": {
+        "skipped": "no secondary-ai provided"
+      }
+    },
+    "gate": {
+      "verdict": "FAIL",
+      "violations": [
+        "punct_ratio_match_max=0.2500 > 0.15",
+        "choseong_marker_match_max=0.2232 > 0.2",
+        "reply_depth_kl=39.8631 > 0.2"
+      ]
+    }
+  },
+  "overall": {
+    "verdict": "FAIL",
+    "violations": [
+      "bigram_jsd=0.5000 > 0.08",
+      "length_kl=1.9512 > 0.1",
+      "digit_density_delta=0.0500 > 0.03",
+      "domain_keyword_alignment=0.0000 < 0.5",
+      "punct_ratio_match_max=0.2500 > 0.15",
+      "choseong_marker_match_max=0.2232 > 0.2",
+      "reply_depth_kl=39.8631 > 0.2"
+    ]
+  },
+  "thresholds": {
+    "base": {
+      "bigram_jsd": {
+        "op": "le",
+        "value": 0.08
+      },
+      "length_kl": {
+        "op": "le",
+        "value": 0.1
+      },
+      "digit_density_delta": {
+        "op": "le",
+        "value": 0.03
+      },
+      "english_density_delta": {
+        "op": "le",
+        "value": 0.02
+      },
+      "domain_keyword_alignment": {
+        "op": "ge",
+        "value": 0.5
+      },
+      "tone_distribution_match": {
+        "op": "le",
+        "value": 0.15
+      },
+      "mauve_score": {
+        "op": "ge",
+        "value": 0.8
+      }
+    },
+    "v2": {
+      "punct_ratio_match_max": {
+        "op": "le",
+        "value": 0.15
+      },
+      "choseong_marker_match_max": {
+        "op": "le",
+        "value": 0.2
+      },
+      "reply_depth_kl": {
+        "op": "le",
+        "value": 0.2
+      },
+      "persona_consistency": {
+        "op": "ge",
+        "value": 0.85
+      },
+      "cross_machine_agreement": {
+        "op": "le",
+        "value": 0.1
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "out_dir": "/Users/unoa/projects/dalbitalba-train-data/v3-data",
+  "stats": {
+    "raw_posts": 11288,
+    "T1_title_to_body": 9945,
+    "T2_root_comment": 29647,
+    "T3_reply_comment": 10562,
+    "T5_continue": 4939,
+    "T4_topic_to_post": 3383,
+    "skipped_post": 16
+  }
+}

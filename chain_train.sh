@@ -38,10 +38,30 @@ SFT_PY_LOG="${WORKSPACE}/train_sft.log"
 MERGE_PY_LOG="${WORKSPACE}/merge_cpt.log"
 PREFLIGHT_LOG="${WORKSPACE}/preflight.log"
 
-TRAIN_CPT_JSONL="${INPUT_JSONL:-${DATA_DIR}/cpt_corpus.v2.jsonl}"
-TRAIN_SFT_PAIR_JSONL="${SFT_PAIR_JSONL:-${DATA_DIR}/sft_pairs.v2.jsonl}"
-TRAIN_VAL_JSONL="${CPT_VAL_JSONL:-${DATA_DIR}/val_set.v2.jsonl}"
-CPT_EPOCHS="${CPT_NUM_EPOCHS:-1}"
+DEFAULT_TRAIN_CPT_JSONL="${DATA_DIR}/cpt_corpus.v2.jsonl"
+if [ -f "${DATA_DIR}/cpt_corpus.v3.jsonl" ]; then
+    DEFAULT_TRAIN_CPT_JSONL="${DATA_DIR}/cpt_corpus.v3.jsonl"
+fi
+if [ -f "${DATA_DIR}/cpt_context_stream.jsonl" ]; then
+    DEFAULT_TRAIN_CPT_JSONL="${DATA_DIR}/cpt_context_stream.jsonl"
+fi
+DEFAULT_TRAIN_SFT_PAIR_JSONL="${DATA_DIR}/sft_pairs.v2.jsonl"
+DEFAULT_TRAIN_VAL_JSONL="${DATA_DIR}/val_set.v2.jsonl"
+
+TRAIN_CPT_JSONL="${TRAIN_CPT_JSONL:-${INPUT_JSONL:-${DEFAULT_TRAIN_CPT_JSONL}}}"
+TRAIN_SFT_PAIR_JSONL="${TRAIN_SFT_PAIR_JSONL:-${SFT_PAIR_JSONL:-${DEFAULT_TRAIN_SFT_PAIR_JSONL}}}"
+TRAIN_VAL_JSONL="${TRAIN_VAL_JSONL:-${CPT_VAL_JSONL:-${DEFAULT_TRAIN_VAL_JSONL}}}"
+
+# Keep both the legacy and explicit TRAIN_* aliases in sync so local/manual
+# launches and launch_train_pod.py resolve the same dataset paths.
+export INPUT_JSONL="${TRAIN_CPT_JSONL}"
+export TRAIN_CPT_JSONL
+export SFT_PAIR_JSONL="${TRAIN_SFT_PAIR_JSONL}"
+export TRAIN_SFT_PAIR_JSONL
+export CPT_VAL_JSONL="${TRAIN_VAL_JSONL}"
+export TRAIN_VAL_JSONL
+CPT_LR_VALUE="${CPT_LR:-1e-4}"
+CPT_EPOCHS="${CPT_NUM_EPOCHS:-2}"
 SFT_EPOCHS="${SFT_NUM_EPOCHS:-2}"
 BASE_MODEL_CPT="${BASE_MODEL:-Qwen/Qwen3-8B-Base}"
 # Hard refusal: only Qwen3 family is supported on this branch.
@@ -143,6 +163,7 @@ stop_pod() {
         export RUNPOD_POD_ID="${pod_id}"
     fi
     if command -v runpodctl &>/dev/null && [ -n "${RUNPOD_POD_ID:-}" ]; then
+        runpodctl pod stop "${RUNPOD_POD_ID}" >> "${LOG_FILE}" 2>&1 && return 0
         runpodctl stop pod "${RUNPOD_POD_ID}" >> "${LOG_FILE}" 2>&1 && return 0
     fi
     if [ -n "${RUNPOD_POD_ID:-}" ] && [ -n "${RUNPOD_API_KEY:-}" ]; then
@@ -222,6 +243,7 @@ persist_run_artifacts() {
   "pod_id": "${RUNPOD_POD_ID:-unknown}",
   "hf_repo_cpt": "${HF_REPO_CPT:-}",
   "hf_repo_sft": "${HF_REPO_SFT:-}",
+  "cpt_lr": "${CPT_LR_VALUE}",
   "cpt_epochs": ${CPT_EPOCHS},
   "sft_epochs": ${SFT_EPOCHS},
   "source_repo": "${GITHUB_REPO}"
@@ -284,9 +306,13 @@ log "  pod          : ${RUNPOD_POD_ID:-unknown}"
 log "  base         : ${BASE_MODEL_CPT}"
 log "  hf_repo_cpt  : ${HF_REPO_CPT}"
 log "  hf_repo_sft  : ${HF_REPO_SFT}"
+log "  cpt_lr       : ${CPT_LR_VALUE}"
 log "  cpt_epochs   : ${CPT_EPOCHS}"
 log "  sft_epochs   : ${SFT_EPOCHS}"
 log "  skip_sft     : ${SKIP_SFT}"
+log "  cpt_jsonl    : ${TRAIN_CPT_JSONL}"
+log "  sft_pair     : ${TRAIN_SFT_PAIR_JSONL}"
+log "  val_jsonl    : ${TRAIN_VAL_JSONL}"
 log "  timeouts     : cpt=${CPT_TIMEOUT_HOURS}h merge=${MERGE_TIMEOUT_HOURS}h sft=${SFT_TIMEOUT_HOURS}h upload=${HF_UPLOAD_TIMEOUT_HOURS}h"
 log "=========================================="
 
@@ -313,7 +339,12 @@ log "=========================================="
 [ -z "${HF_TOKEN:-}" ] && { log "[ERROR] HF_TOKEN 미설정"; fail_with_logs "env_error" "${LOG_FILE}" 1; }
 [ -z "${HF_USERNAME:-}" ] && { log "[ERROR] HF_USERNAME 미설정"; fail_with_logs "env_error" "${LOG_FILE}" 1; }
 
-for f in "${TRAIN_CPT_JSONL}" "${TRAIN_SFT_PAIR_JSONL}"; do
+required_data_files=("${TRAIN_CPT_JSONL}" "${TRAIN_VAL_JSONL}")
+if [ "${SKIP_SFT}" != "1" ] && [ "${SKIP_SFT}" != "true" ]; then
+    required_data_files+=("${TRAIN_SFT_PAIR_JSONL}")
+fi
+
+for f in "${required_data_files[@]}"; do
     if [ ! -f "${f}" ]; then
         log "[ERROR] 데이터 파일 없음: ${f}"
         fail_with_logs "data_missing" "${LOG_FILE}" 1
@@ -483,6 +514,7 @@ run_timeout "${CPT_TIMEOUT_HOURS}" env \
     BASE_MODEL="${BASE_MODEL_CPT}" \
     INPUT_JSONL="${TRAIN_CPT_JSONL}" \
     CPT_VAL_JSONL="${TRAIN_VAL_JSONL}" \
+    CPT_LR="${CPT_LR_VALUE}" \
     CPT_NUM_EPOCHS="${CPT_EPOCHS}" \
     CPT_OUTPUT_DIR="${CPT_OUT}" \
     CPT_CKPT_DIR="${OUT_DIR}/cpt-ckpt" \

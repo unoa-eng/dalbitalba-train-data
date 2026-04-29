@@ -104,6 +104,34 @@ def parse_gpu_types(raw_value: str) -> list[str]:
     return values or ["NVIDIA A100 80GB PCIe"]
 
 
+def normalize_workspace_data_path(raw_value: str) -> str:
+    value = raw_value.strip()
+    if not value:
+        return value
+    path = Path(value)
+    if path.is_absolute() or value.startswith("/workspace/"):
+        return value
+
+    relative = value[2:] if value.startswith("./") else value
+    if relative.startswith("data/"):
+        relative = relative[len("data/") :]
+    return f"/workspace/data/{relative}"
+
+
+def resolve_workspace_data_path(
+    env_keys: tuple[str, ...],
+    candidate_names: tuple[str, ...],
+) -> str:
+    for key in env_keys:
+        value = os.environ.get(key, "").strip()
+        if value:
+            return normalize_workspace_data_path(value)
+    for name in candidate_names:
+        if (REPO_ROOT / name).exists():
+            return f"/workspace/data/{name}"
+    return f"/workspace/data/{candidate_names[-1]}"
+
+
 def detect_git_ref() -> str:
     try:
         result = subprocess.run(
@@ -215,15 +243,18 @@ def main() -> None:
     ntfy_topic = os.environ.get("NTFY_TOPIC", "").strip()
     cloud_type = os.environ.get("RUNPOD_CLOUD_TYPE", "COMMUNITY").strip().upper() or "COMMUNITY"
     base_model = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base").strip() or "Qwen/Qwen3-8B-Base"
-    train_cpt_jsonl = os.environ.get(
-        "TRAIN_CPT_JSONL", "/workspace/data/cpt_corpus.v2.jsonl"
-    ).strip() or "/workspace/data/cpt_corpus.v2.jsonl"
-    train_sft_pair_jsonl = os.environ.get(
-        "TRAIN_SFT_PAIR_JSONL", "/workspace/data/sft_pairs.v2.jsonl"
-    ).strip() or "/workspace/data/sft_pairs.v2.jsonl"
-    train_val_jsonl = os.environ.get(
-        "TRAIN_VAL_JSONL", "/workspace/data/val_set.v2.jsonl"
-    ).strip() or "/workspace/data/val_set.v2.jsonl"
+    train_cpt_jsonl = resolve_workspace_data_path(
+        ("TRAIN_CPT_JSONL", "INPUT_JSONL"),
+        ("cpt_corpus.v3.jsonl", "cpt_corpus.v2.jsonl"),
+    )
+    train_sft_pair_jsonl = resolve_workspace_data_path(
+        ("TRAIN_SFT_PAIR_JSONL", "SFT_PAIR_JSONL"),
+        ("sft_pairs.v2.jsonl",),
+    )
+    train_val_jsonl = resolve_workspace_data_path(
+        ("TRAIN_VAL_JSONL", "CPT_VAL_JSONL"),
+        ("val_set.v2.jsonl",),
+    )
     cpt_num_epochs = os.environ.get("CPT_NUM_EPOCHS", "1").strip() or "1"
     sft_num_epochs = os.environ.get("SFT_NUM_EPOCHS", "2").strip() or "2"
     cpt_lr = os.environ.get("CPT_LR", "2e-4").strip() or "2e-4"
@@ -239,7 +270,7 @@ def main() -> None:
     # through shell variable expansion, which the RunPod API does not persist.
     #
     # Also: logs tee'd to /workspace/logs/chain.log so they survive pod EXIT
-    # (network volume at /workspace persists across pod lifecycle).
+    # because /workspace is backed by the Pod volume disk in this spec.
     startup_cmd = (
         "mkdir -p /workspace/logs /workspace/data /workspace/scripts "
         "/workspace/out /workspace/hf_cache && "
@@ -249,7 +280,7 @@ def main() -> None:
         f"git clone --branch {github_ref} --single-branch "
         f"\"https://x-access-token:${{GITHUB_TOKEN}}@github.com/{github_repo}.git\" "
         "/workspace/repo && "
-        # copy v2 data + train scripts + merge script
+        # copy repo datasets + train scripts + merge script
         "cp /workspace/repo/*.jsonl /workspace/data/ 2>/dev/null || true && "
         "cp /workspace/repo/train_*.py /workspace/ 2>/dev/null || true && "
         "mkdir -p /workspace/scripts && "
@@ -268,8 +299,11 @@ def main() -> None:
         "GITHUB_REPO": github_repo,
         "RUNPOD_API_KEY": api_key,
         "BASE_MODEL": base_model,
+        "TRAIN_CPT_JSONL": train_cpt_jsonl,
         "INPUT_JSONL": train_cpt_jsonl,
+        "TRAIN_SFT_PAIR_JSONL": train_sft_pair_jsonl,
         "SFT_PAIR_JSONL": train_sft_pair_jsonl,
+        "TRAIN_VAL_JSONL": train_val_jsonl,
         "CPT_VAL_JSONL": train_val_jsonl,
         "CPT_NUM_EPOCHS": cpt_num_epochs,
         "SFT_NUM_EPOCHS": sft_num_epochs,

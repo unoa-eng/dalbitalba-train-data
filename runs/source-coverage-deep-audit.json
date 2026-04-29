@@ -1,0 +1,627 @@
+{
+  "meta": {
+    "generated_at_utc": "2026-04-27T08:30:11.675096+00:00",
+    "raw_dir": "/Users/unoa/Downloads/crawled-data-v2",
+    "train_path": "/Users/unoa/projects/dalbitalba-train-data/cpt_corpus.v3.jsonl",
+    "val_path": "/Users/unoa/projects/dalbitalba-train-data/val_set.v2.jsonl",
+    "output_path": "/Users/unoa/projects/dalbitalba-train-data/runs/source-coverage-deep-audit.json",
+    "sample_size": 1000,
+    "sample_seed": 42
+  },
+  "coverage": {
+    "source_posts": 11288,
+    "source_comments": 55849,
+    "train_rows": 48125,
+    "train_posts": 10470,
+    "train_comments_total": 37655,
+    "post_source_id_coverage": {
+      "direct_source_id_match": {
+        "covered": 10639,
+        "total": 11288,
+        "pct": 0.942505
+      },
+      "train_post_rows_only": {
+        "covered": 10470,
+        "total": 11288,
+        "pct": 0.927534
+      },
+      "any_train_representation_including_patch_rows": {
+        "covered": 10684,
+        "total": 11288,
+        "pct": 0.946492
+      },
+      "patch_only_thread_recoveries": 45
+    },
+    "comment_survival": {
+      "base_comment_rows": 36386,
+      "patch_row_count": 1269,
+      "patch_unique_source_comments": 1070,
+      "represented_source_comments": 37456,
+      "represented_source_comments_pct": 0.670666,
+      "dropped_source_comments": 18393,
+      "dropped_source_comments_pct": 0.329334,
+      "note": "The base comment rows are one comment-row per retained raw comment. The patch adds 1,269 rows but they come from 1,070 distinct raw comments, so raw-comment coverage must use unique synthetic source_id count rather than patch row count."
+    },
+    "kind_mix": {
+      "source_post_share": 0.168134,
+      "source_comment_share": 0.831866,
+      "train_post_share": 0.217558,
+      "train_comment_share": 0.782442
+    }
+  },
+  "systematic_missingness": {
+    "summary": [
+      "604 source thread IDs have no representation in cpt_corpus.v3.jsonl.",
+      "522 of those 604 missing thread IDs are present in val_set.v2.jsonl, so the dominant missingness pattern is val holdout, concentrated on the final crawl days.",
+      "82 source thread IDs are absent from both train and val; 74 of those still look eligible under the current raw-data heuristics, which is evidence of stale or mismatched corpus provenance rather than intended filtering.",
+      "Only one boardName exists in the source crawl, so the missingness is thread-level and date-level rather than board-level."
+    ],
+    "missing_source_ids_total": 604,
+    "missing_in_val_only": 522,
+    "missing_from_both_train_and_val": 82,
+    "missing_in_val_only_pct": 0.864238,
+    "missing_from_both_train_and_val_pct": 0.135762,
+    "non_val_reason_counts": {
+      "unexplained_missing_from_train_and_val": 74,
+      "fully_filtered": 8
+    },
+    "missing_date_top": [
+      [
+        "2026-01-29",
+        441
+      ],
+      [
+        "2026-01-30",
+        88
+      ],
+      [
+        "2026-01-26",
+        9
+      ],
+      [
+        "2026-01-14",
+        7
+      ],
+      [
+        "2026-01-25",
+        6
+      ],
+      [
+        "2026-01-17",
+        5
+      ],
+      [
+        "2026-01-20",
+        5
+      ],
+      [
+        "2026-01-22",
+        5
+      ],
+      [
+        "2026-01-23",
+        5
+      ],
+      [
+        "2026-01-24",
+        5
+      ]
+    ],
+    "val_only_missing_date_top": [
+      [
+        "2026-01-29",
+        434
+      ],
+      [
+        "2026-01-30",
+        88
+      ]
+    ],
+    "missing_from_both_date_top": [
+      [
+        "2026-01-26",
+        9
+      ],
+      [
+        "2026-01-14",
+        7
+      ],
+      [
+        "2026-01-29",
+        7
+      ],
+      [
+        "2026-01-25",
+        6
+      ],
+      [
+        "2026-01-17",
+        5
+      ],
+      [
+        "2026-01-20",
+        5
+      ],
+      [
+        "2026-01-22",
+        5
+      ],
+      [
+        "2026-01-23",
+        5
+      ],
+      [
+        "2026-01-24",
+        5
+      ],
+      [
+        "2026-01-27",
+        5
+      ]
+    ],
+    "sample_selection": "10 val-only + 8 unexplained missing-from-both + 2 fully-filtered (seed=42)",
+    "sample": [
+      {
+        "source_id": "1200734",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-29",
+        "title": "손님이 제 얼굴 강제로 잡고",
+        "content_excerpt": "관자놀이에 세번이나 뽀뽀한게 수위조에요??\n\n담당한테 꼰질러서 수위조 만들고 대기실에 아가씨들한테 뭐라했는지 수위조 만드는게 어이가없네요\n\n이게 수위조 인가요?\n\n이게 수위조라면 잘못한거 인정할게요",
+        "comment_count": 5,
+        "post_reason": "eligible",
+        "comment_reason_counts": {
+          "eligible": 5
+        },
+        "comment_excerpt_samples": [
+          "[1] 아니에요 그게 무슨 ㅅㅇㅈ에요 더군다나 당한건데\n전혀ㅡ\n\n강남사라있네 승석팀장!\n\n1. 첫면접비 10만원 조건부\n-5개 이상시 지원\n\n2. 친구소개비10만원 조건부\n-5개 이상시 지원\n\n※친구소개올경우 1번중복해당X\n- 친구 소개시켜준 친구 지급!\n\n3. 만근비\n15일출근20만원\n20일출근30만원\n25일출근70만원",
+          "[2] 도파민이나 엘리트 ㄱㄱ 언니 걱정 사라지실 듯",
+          "[3] 몇몇 언니들 손님들한테 관심 몰빵 받으면 수위조로 몰아버리는 거 빡침"
+        ],
+        "source_file": "cb2_밤문화이야기_batch_65_2026-02-09T04-20-36.json",
+        "missing_group": "val_only",
+        "reason": "held_out_in_val_set"
+      },
+      {
+        "source_id": "1200610",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-29",
+        "title": "신촌 퍼블릭다녀왓는데",
+        "content_excerpt": "4시간 반 하규 51받앗네 팁까지..가끔와야지 ㅎㅎㅎ",
+        "comment_count": 3,
+        "post_reason": "eligible",
+        "comment_reason_counts": {
+          "eligible": 3
+        },
+        "comment_excerpt_samples": [
+          "[1] 고생하셨어여\n저두 신촌 보고 있는데 혹시 앱있는 가게 퍼블릭인가여?\n테이블만 보는뎁 신촌 가게들 2차가게 일반 퍼블가라? 종류 많아보이길래여ㅠ",
+          "[1-1] 헉 아녀! 여기 아가씨들도 거의없고 손님도 많이없는데에여",
+          "[1-2] 비회원 [1-1]  ㅇㅎ 알려쥬셔서 감사해요 고생하셧어용"
+        ],
+        "source_file": "cb2_밤문화이야기_batch_66_2026-02-09T04-38-01.json",
+        "missing_group": "val_only",
+        "reason": "held_out_in_val_set"
+      },
+      {
+        "source_id": "1200999",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-29",
+        "title": "서울하퍼 성형안한사람 일할수 있나요?",
+        "content_excerpt": "지방가씨인데 돈모아서 성형하려고 하는데 예쁜편은 아니고 그냥 평범해요ㅠㅠ",
+        "comment_count": 10,
+        "post_reason": "eligible",
+        "comment_reason_counts": {
+          "eligible": 8,
+          "spam_filter": 2
+        },
+        "comment_excerpt_samples": [
+          "[1] ㄴㄷ 가셔야하는거 아니애용? 걍 지하철민삘이란 말씀이시죵?? 비강남이면 괜찮낭 전 하퍼가씨가 아니라 ㅈㅅ.. 도움 안되는데 괜히 댓 달앗다..",
+          "[2] 걍 ㄴㄷ 가세요 일할 수는 있는데 그정도 사이즈면 ㄴㄷ가 돈 더 벌어요 뺑이 타는 시간 포함해서.. 언니가 객관적으로 6~7조 뚫을 수 있는지 생각해보세요",
+          "[3] 시도는 충분히 가능해요\n오셔서 직접 경험해보시는 것도 좋은 방법이에요\n문의만 주셔도 괜찮으니까\n편하게 연락 주세요 :)\n\n24시간 편하게 문의주시면 바로 답장드리고\n처음 일해보셔도 바로 적응하실 수 있게\n필요한 모든 부분 책임지고 케어하겠습니다!\n\n스타트톡 초톡 상시업뎃\n일하는 동안 5초 내로 칼답장 피드백\n불편사"
+        ],
+        "source_file": "cb2_밤문화이야기_batch_63_2026-02-09T03-40-01.json",
+        "missing_group": "val_only",
+        "reason": "held_out_in_val_set"
+      },
+      {
+        "source_id": "1200957",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-29",
+        "title": "ㅂㄹㄷ",
+        "content_excerpt": "솔직히 성미 성괴 ㅈㄴ 많지만\n다른 쩜 보다 이쁜건 ㅇㅈ (ㅈㅉ빼고)\n\n가끔 신규로 온 하퍼 사이즈\n한두명 보이는데\n줄 서 있으면 혼자만 ㅈㄴ 튐\n\n손님들도 다른 ㅉ보다\n여기가 훨씬 이쁘다 ㅇㅈ함\n\n아 물론 당연히 엥스러운 언니들도 있음",
+        "comment_count": 1,
+        "post_reason": "eligible",
+        "comment_reason_counts": {
+          "spam_filter": 1
+        },
+        "comment_excerpt_samples": [
+          "[1] ☆개인 이벤트 진행중☆\n팀1등 개인구좌1등 업팀1등\n손님 업팀25방ㅡ30방이상!\n\n실시간인증 빽판현황 가능!!\n전체 블렌딩 개인1등\n대한 은정 만세!!\n강남역12번출구 1분거리\n\n룸갯수 40개\n- 쩜오 - TC\n- 2시간 스타트 4개 40만원\n- 5시간 8개 80만원\n- 이후로는 100만원ㅡ 풀묶\n6시간30까지 완"
+        ],
+        "source_file": "cb2_밤문화이야기_batch_63_2026-02-09T03-40-01.json",
+        "missing_group": "val_only",
+        "reason": "held_out_in_val_set"
+      },
+      {
+        "source_id": "1200920",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-29",
+        "title": "저약간 우정잉 같은 찐따픽인데",
+        "content_excerpt": "성형하면 좀 벗어날수잇나여 ㅠ 눈이 ㅈㄴ 착하게 생김\n윤곽치고 코하게요..",
+        "comment_count": 1,
+        "post_reason": "eligible",
+        "comment_reason_counts": {
+          "eligible": 1
+        },
+        "comment_excerpt_samples": [
+          "[1] 코만 빡세워도 좀 달라짐"
+        ],
+        "source_file": "cb2_밤문화이야기_batch_64_2026-02-09T04-01-14.json",
+        "missing_group": "val_only",
+        "reason": "held_out_in_val_set"
+      },
+      {
+        "source_id": "1200772",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-29",
+        "title": "아 담당 내가 좀 술취한 것 같으면",
+        "content_excerpt": "팔 은근슬쩍 잡는거 개짜증나요 것도 좀 쎄게 잡고 끌어댕김\n이 글 무조건 볼텐데 찔리면 그러지 마시길\n다 인지하고 있으니까;;",
+        "comment_count": 6,
+        "post_reason": "eligible",
+        "comment_reason_counts": {
+          "eligible": 5,
+          "spam_filter": 1
+        },
+        "comment_excerpt_samples": [
+          "[1] 왜그러지",
+          "[1-1] 안그래도 팔뚝콤플렉스라 나시도 못입는데 짜증나죽겟음 ㅡㅡ",
+          "[1-2] 작성자 [1-1]  ㄹㅇ..."
+        ],
+        "source_file": "cb2_밤문화이야기_batch_64_2026-02-09T04-01-14.json",
+        "missing_group": "val_only",
+        "reason": "held_out_in_val_set"
+      },
+      {
+        "source_id": "1200722",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-29",
+        "title": "추우니까 오늘은 놀아용 호빠 일기장",
+        "content_excerpt": ".",
+        "comment_count": 0,
+        "post_reason": "eligible",
+        "comment_reason_counts": {},
+        "comment_excerpt_samples": [],
+        "source_file": "cb2_밤문화이야기_batch_65_2026-02-09T04-20-36.json",
+        "missing_group": "val_only",
+        "reason": "held_out_in_val_set"
+      },
+      {
+        "source_id": "1200699",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-29",
+        "title": "지금 보스턴 실시간",
+        "content_excerpt": "선수는 개많고 사이즈 좋은데 진짜 .. 내손님은 다 죽었나봥 ㅠㅠ 나 타고오면 진짜 잘해줄텐데… ㅜ",
+        "comment_count": 1,
+        "post_reason": "eligible",
+        "comment_reason_counts": {
+          "eligible": 1
+        },
+        "comment_excerpt_samples": [
+          "[1] 신고에 의해 블라인드 처리 되었습니다.."
+        ],
+        "source_file": "cb2_밤문화이야기_batch_65_2026-02-09T04-20-36.json",
+        "missing_group": "val_only",
+        "reason": "held_out_in_val_set"
+      },
+      {
+        "source_id": "1201262",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-29",
+        "title": "거울이나 기카로 면상보묜 깜짝놀래요",
+        "content_excerpt": "진짜 내얼굴이지만 개빻음 ㅠㅠ",
+        "comment_count": 1,
+        "post_reason": "eligible",
+        "comment_reason_counts": {
+          "eligible": 1
+        },
+        "comment_excerpt_samples": [
+          "[1] 저두요ㅋㅋ 앉히는 손놈이 있다는게 놀라울 지경임"
+        ],
+        "source_file": "cb2_밤문화이야기_batch_61_2026-02-09T03-04-21.json",
+        "missing_group": "val_only",
+        "reason": "held_out_in_val_set"
+      },
+      {
+        "source_id": "1200617",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-29",
+        "title": "전형적인일프상인데",
+        "content_excerpt": "텐카 나가도 잘되나요? 살이 좀 쪄서요",
+        "comment_count": 8,
+        "post_reason": "eligible",
+        "comment_reason_counts": {
+          "eligible": 7,
+          "spam_filter": 1
+        },
+        "comment_excerpt_samples": [
+          "[1] 일프에서도 젊손한테 잘되는거면 텐카 잘안되는더같아요 손나잇대 너무 높아서 전 텐카가 젤안됨",
+          "[1-1] 늙손픽임",
+          "[2] 쩜오는 어떠세요 ?? 손님은 많은데 아가씨가 너무 부족해요 ㅠㅠ\n\n도깨비 쩜오\n\n1등팀 흥팀 소속 영도부장\n많이 어렵게 생각하지 않으셔도 돼요\n결과로 보여드릴게요 ! 가게 초이스, 정산, 이름값 하는 팀입니다 편하게 믿고 연락 주세요\n⸻\n✅ 쩜오 TC\n2H 40만 / 3H 50만 / 4H 60만 / 5H 80만\n\n"
+        ],
+        "source_file": "cb2_밤문화이야기_batch_66_2026-02-09T04-38-01.json",
+        "missing_group": "val_only",
+        "reason": "held_out_in_val_set"
+      },
+      {
+        "source_id": "1186987",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-12",
+        "title": "오늘 역대급인듯",
+        "content_excerpt": ".",
+        "comment_count": 2,
+        "post_reason": "eligible",
+        "comment_reason_counts": {
+          "spam_filter": 2
+        },
+        "comment_excerpt_samples": [
+          "[1] 달리는토끼 W팀 — 여실장 우연\n오픈 우연 010-5875-9782\n마감 현무 010-5323-4537\n\n✔ 9시 이전 출근: TC 10\n✔ 9시 이후 출근: TC 9\n✔ 지명비: 매 타임 +1\n\n✔ 출퇴근 차량 지원\n✔ 필요한 비품 및 매점 지원\n\n언니들이 돈 버는 데만 집중할 수 있도록\n모든 부분에서 최대한 지",
+          "[2] 24시간 편하게 문의주시면 바로 답장드리고\n처음 일해보셔도 바로 적응하실 수 있게\n필요한 모든 부분 책임지고 케어하겠습니다!\n\n스타트톡 초톡 상시업뎃\n일하는 동안 5초 내로 칼답장 피드백\n불편사항 바로 접수 할 일 하는 담당\n\n퇴근시 칼정산 칼입금 돈실수X\n사고처리 진상처리 멘탈케어 식비지원\n\n정말 사소하고 세심한"
+        ],
+        "source_file": "cb2_밤문화이야기_batch_98_2026-02-10T04-14-35.json",
+        "missing_group": "missing_from_both_train_and_val",
+        "reason": "unexplained_missing_from_train_and_val"
+      },
+      {
+        "source_id": "1188724",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-14",
+        "title": "0",
+        "content_excerpt": "0",
+        "comment_count": 3,
+        "post_reason": "too_short",
+        "comment_reason_counts": {
+          "spam_filter": 1,
+          "eligible": 2
+        },
+        "comment_excerpt_samples": [
+          "[1] 기다리고 있을게요ㅎㅎ\n\n달리는토끼 W팀 — 여실장 우연\n오픈 우연 010-5875-9782\n마감 현무 010-5323-4537\n\n✔ 9시 이전 출근: TC 10\n✔ 9시 이후 출근: TC 9\n✔ 지명비: 매 타임 +1\n\n✔ 출퇴근 차량 지원\n✔ 필요한 비품 및 매점 지원\n\n언니들이 돈 버는 데만 집중할 수 있도록\n",
+          "[2] 2026년 말의 해, 새로운 기회가 달려오는 한 해 되시길 바랍니다.\n팁길만 걸으세요~",
+          "[3] 도파민은 어떠신가요?\n365일 24시 입니다\n\n1부~3부 2인1조로 풀상주중\n사고처리확실 스타트톡 개수톡 퇴근시칼수금!! 일하실때 필요한 비품 없는거 없어요 !!\n(스팀다리미, 꼬리빗, 숙취해소제,핫팩,담요)등\n\n아가씨 케어 정말 잘합니다\n밀빵 가능 갯수는 정점 찍을거에요~!!\n한번만 믿고 연락주세요~\n\n출근문의\n"
+        ],
+        "source_file": "cb2_밤문화이야기_batch_86_2026-02-09T23-22-38.json",
+        "missing_group": "missing_from_both_train_and_val",
+        "reason": "unexplained_missing_from_train_and_val"
+      },
+      {
+        "source_id": "1193398",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-20",
+        "title": "ㅇㄱㅇ ㅌㅅ이",
+        "content_excerpt": "어떰",
+        "comment_count": 1,
+        "post_reason": "eligible",
+        "comment_reason_counts": {
+          "eligible": 1
+        },
+        "comment_excerpt_samples": [
+          "[1] 보스턴 010.4655.4249\n\n1년 365일 연중무휴 (공휴일 일요일 정상영업)\n영업시간 저녁8시~다음날오후2시 (선수들은 저녁10시쯤 출근해요)\n\n절대 총 안 쏘고 정직하게 오픈하고 장사합니다\n강남 호빠 17년 경력 업계 최고라 자부합니다\n가게에 항시 상주해있으며, 무책임하게 손님만 보내놓고 돈벌지 않습니다\n"
+        ],
+        "source_file": "cb2_밤문화이야기_batch_40_2026-01-27T18-35-52.json",
+        "missing_group": "missing_from_both_train_and_val",
+        "reason": "unexplained_missing_from_train_and_val"
+      },
+      {
+        "source_id": "1193633",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-20",
+        "title": "코뿔소상",
+        "content_excerpt": "존나싫음",
+        "comment_count": 1,
+        "post_reason": "eligible",
+        "comment_reason_counts": {
+          "eligible": 1
+        },
+        "comment_excerpt_samples": [
+          "[1] 말의 해를 맞아 모든 계획이 힘차게 실현되길 바랍니다. 팁길만 걸으세요~"
+        ],
+        "source_file": "cb2_밤문화이야기_batch_38_2026-01-27T17-54-39.json",
+        "missing_group": "missing_from_both_train_and_val",
+        "reason": "unexplained_missing_from_train_and_val"
+      },
+      {
+        "source_id": "1200393",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-28",
+        "title": "강남 프린세스 렌탈샵 월~일요일 오후2시~새벽2시까지!",
+        "content_excerpt": "인스타그램 princess_rental_에서 더많은 의상정보 및 다양한 이벤트 확인 가능합니다\n\n의상 배송요청 새벽1시까지 가능해요!!\n\n카카오톡 princess28",
+        "comment_count": 0,
+        "post_reason": "eligible",
+        "comment_reason_counts": {},
+        "comment_excerpt_samples": [],
+        "source_file": "cb2_밤문화이야기_batch_67_2026-02-09T05-02-06.json",
+        "missing_group": "missing_from_both_train_and_val",
+        "reason": "unexplained_missing_from_train_and_val"
+      },
+      {
+        "source_id": "1201407",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-29",
+        "title": "머리숱없어보여요?",
+        "content_excerpt": "ㅜㅜ",
+        "comment_count": 1,
+        "post_reason": "eligible",
+        "comment_reason_counts": {
+          "eligible": 1
+        },
+        "comment_excerpt_samples": [
+          "[1] 삭제된 댓글입니다."
+        ],
+        "source_file": "cb2_밤문화이야기_batch_61_2026-02-09T03-04-21.json",
+        "missing_group": "missing_from_both_train_and_val",
+        "reason": "unexplained_missing_from_train_and_val"
+      },
+      {
+        "source_id": "1193185",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-19",
+        "title": "블렌딩",
+        "content_excerpt": "블렌딩 어때요?",
+        "comment_count": 1,
+        "post_reason": "eligible",
+        "comment_reason_counts": {
+          "spam_filter": 1
+        },
+        "comment_excerpt_samples": [
+          "[1] 한번 와보세요!! 여기 다른곳보다 수위 낮아서 시작하기 좋으실꺼예요!!\n\n광해 010 9557 8024\n카톡 foolace"
+        ],
+        "source_file": "cb2_밤문화이야기_batch_41_2026-01-27T18-57-53.json",
+        "missing_group": "missing_from_both_train_and_val",
+        "reason": "unexplained_missing_from_train_and_val"
+      },
+      {
+        "source_id": "1197962",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-25",
+        "title": "ㅅㅂ",
+        "content_excerpt": "ㅅㅂ",
+        "comment_count": 0,
+        "post_reason": "eligible",
+        "comment_reason_counts": {},
+        "comment_excerpt_samples": [],
+        "source_file": "cb2_밤문화이야기_batch_9_2026-01-27T07-32-15.json",
+        "missing_group": "missing_from_both_train_and_val",
+        "reason": "unexplained_missing_from_train_and_val"
+      },
+      {
+        "source_id": "1198692",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2026-01-26",
+        "title": "ㅍ",
+        "content_excerpt": "ㅍ",
+        "comment_count": 0,
+        "post_reason": "too_short",
+        "comment_reason_counts": {},
+        "comment_excerpt_samples": [],
+        "source_file": "cb2_밤문화이야기_batch_4_2026-01-27T05-59-27.json",
+        "missing_group": "missing_from_both_train_and_val",
+        "reason": "fully_filtered"
+      },
+      {
+        "source_id": "67",
+        "boardName": "cb2_밤문화이야기",
+        "date": "2016-07-04",
+        "title": "",
+        "content_excerpt": "",
+        "comment_count": 0,
+        "post_reason": "empty",
+        "comment_reason_counts": {},
+        "comment_excerpt_samples": [],
+        "source_file": "cb2_밤문화이야기_batch_1_2026-01-27T05-11-40.json",
+        "missing_group": "missing_from_both_train_and_val",
+        "reason": "fully_filtered"
+      }
+    ],
+    "board_distribution": {
+      "source_board_count": 1,
+      "source_posts_by_board": [
+        {
+          "boardName": "cb2_밤문화이야기",
+          "count": 11288,
+          "share": 1.0
+        }
+      ],
+      "source_text_units_by_board": [
+        {
+          "boardName": "cb2_밤문화이야기",
+          "count": 67137,
+          "share": 1.0
+        }
+      ],
+      "train_posts_by_board": [
+        {
+          "boardName": "cb2_밤문화이야기",
+          "count": 10470,
+          "share": 1.0
+        }
+      ],
+      "train_rows_by_board": [
+        {
+          "boardName": "cb2_밤문화이야기",
+          "count": 48125,
+          "share": 1.0
+        }
+      ],
+      "note": "Only one boardName exists in the source crawl, so board-level skew is not measurable beyond 100% concentration in that single board."
+    }
+  },
+  "character_level_comparison": {
+    "sample_size": 1000,
+    "sample_seed": 42,
+    "source": {
+      "total_chars": 85139,
+      "hangul_ratio": 0.606808,
+      "punctuation_density": 0.066456,
+      "symbol_density": 0.01285,
+      "emoji_char_ratio": 0.007541,
+      "rows_with_symbol_pct": 0.156,
+      "rows_with_emoji_pct": 0.061,
+      "leading_reply_tag_pct": 0.841,
+      "text_length_mean": 85.139,
+      "text_length_median": 39.0,
+      "sentence_count": 4009,
+      "sentence_length_mean": 20.274,
+      "sentence_length_median": 17,
+      "sentence_length_histogram": {
+        "1-9": 628,
+        "10-19": 1782,
+        "20-39": 1297,
+        "40-79": 260,
+        "80-159": 40,
+        "160+": 2
+      }
+    },
+    "train": {
+      "total_chars": 58463,
+      "hangul_ratio": 0.706224,
+      "punctuation_density": 0.037408,
+      "symbol_density": 0.008193,
+      "emoji_char_ratio": 0.003506,
+      "rows_with_symbol_pct": 0.089,
+      "rows_with_emoji_pct": 0.027,
+      "leading_reply_tag_pct": 0.0,
+      "text_length_mean": 58.463,
+      "text_length_median": 34.0,
+      "sentence_count": 2542,
+      "sentence_length_mean": 22.294,
+      "sentence_length_median": 17.0,
+      "sentence_length_histogram": {
+        "1-9": 452,
+        "10-19": 1011,
+        "20-39": 801,
+        "40-79": 219,
+        "80-159": 56,
+        "160+": 3
+      }
+    },
+    "delta_train_minus_source": {
+      "hangul_ratio": 0.099416,
+      "punctuation_density": -0.029048,
+      "symbol_density": -0.004657,
+      "emoji_char_ratio": -0.004035,
+      "rows_with_symbol_pct": -0.067,
+      "rows_with_emoji_pct": -0.034,
+      "leading_reply_tag_pct": -0.841,
+      "text_length_mean": -26.676,
+      "text_length_median": -5.0,
+      "sentence_length_mean": 2.02,
+      "sentence_length_median": 0.0
+    }
+  },
+  "verdict": {
+    "faithful_representation": false,
+    "because": [
+      "Thread coverage is incomplete: only 10,684 of 11,288 source thread IDs (94.6492%) have any train representation.",
+      "Comment survival is materially reduced: 37,456 of 55,849 source comments (67.0666%) are represented after filtering and patch recovery.",
+      "The train sample is structurally less forum-native than raw: source sample rows start with reply tags 84.1% of the time, while the train sample starts with reply tags 0% of the time.",
+      "There are 82 thread IDs missing from both train and val, and most of them do not look like intentional spam/short/minor drops."
+    ]
+  }
+}

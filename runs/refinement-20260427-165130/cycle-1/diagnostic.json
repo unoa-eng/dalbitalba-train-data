@@ -1,0 +1,456 @@
+{
+  "timestamp": "2026-04-27T16:51:31.283424",
+  "cycle": 1,
+  "summary": {
+    "total_gaps": 1,
+    "critical": 0,
+    "moderate": 1,
+    "minor": 0
+  },
+  "term_frequency": {
+    "쩜오": {
+      "category": "업소유형",
+      "term": "쩜오",
+      "source_count": 3338,
+      "train_count": 4322,
+      "source_per_million": 607.71,
+      "train_per_million": 428.74,
+      "ratio": 0.7055,
+      "severity": "ok"
+    },
+    "텐카": {
+      "category": "업소유형",
+      "term": "텐카",
+      "source_count": 1448,
+      "train_count": 3326,
+      "source_per_million": 263.62,
+      "train_per_million": 329.94,
+      "ratio": 1.2516,
+      "severity": "ok"
+    },
+    "호빠": {
+      "category": "업소유형",
+      "term": "호빠",
+      "source_count": 727,
+      "train_count": 1627,
+      "source_per_million": 132.36,
+      "train_per_million": 161.4,
+      "ratio": 1.2194,
+      "severity": "ok"
+    },
+    "도파민": {
+      "category": "업소유형",
+      "term": "도파민",
+      "source_count": 3936,
+      "train_count": 4900,
+      "source_per_million": 716.58,
+      "train_per_million": 486.08,
+      "ratio": 0.6783,
+      "severity": "ok"
+    },
+    "하이퍼": {
+      "category": "업소유형",
+      "term": "하이퍼",
+      "source_count": 141,
+      "train_count": 192,
+      "source_per_million": 25.67,
+      "train_per_million": 19.05,
+      "ratio": 0.742,
+      "severity": "ok"
+    },
+    "퍼펙트": {
+      "category": "업소유형",
+      "term": "퍼펙트",
+      "source_count": 820,
+      "train_count": 1340,
+      "source_per_million": 149.29,
+      "train_per_million": 132.93,
+      "ratio": 0.8904,
+      "severity": "ok"
+    },
+    "언니": {
+      "category": "직업용어",
+      "term": "언니",
+      "source_count": 14828,
+      "train_count": 36940,
+      "source_per_million": 2699.54,
+      "train_per_million": 3664.47,
+      "ratio": 1.3574,
+      "severity": "ok"
+    },
+    "실장": {
+      "category": "직업용어",
+      "term": "실장",
+      "source_count": 2112,
+      "train_count": 2983,
+      "source_per_million": 384.5,
+      "train_per_million": 295.92,
+      "ratio": 0.7696,
+      "severity": "ok"
+    },
+    "사장": {
+      "category": "직업용어",
+      "term": "사장",
+      "source_count": 1320,
+      "train_count": 1472,
+      "source_per_million": 240.32,
+      "train_per_million": 146.02,
+      "ratio": 0.6076,
+      "severity": "ok"
+    },
+    "마담": {
+      "category": "직업용어",
+      "term": "마담",
+      "source_count": 1014,
+      "train_count": 2630,
+      "source_per_million": 184.61,
+      "train_per_million": 260.9,
+      "ratio": 1.4133,
+      "severity": "ok"
+    },
+    "TC": {
+      "category": "직업용어",
+      "term": "TC",
+      "source_count": 2496,
+      "train_count": 2621,
+      "source_per_million": 454.41,
+      "train_per_million": 260.0,
+      "ratio": 0.5722,
+      "severity": "ok"
+    },
+    "선수": {
+      "category": "직업용어",
+      "term": "선수",
+      "source_count": 864,
+      "train_count": 2397,
+      "source_per_million": 157.3,
+      "train_per_million": 237.78,
+      "ratio": 1.5117,
+      "severity": "ok"
+    },
+    "티씨": {
+      "category": "금전",
+      "term": "티씨",
+      "source_count": 1251,
+      "train_count": 2585,
+      "source_per_million": 227.75,
+      "train_per_million": 256.43,
+      "ratio": 1.1259,
+      "severity": "ok"
+    },
+    "빠꾸": {
+      "category": "금전",
+      "term": "빠꾸",
+      "source_count": 12,
+      "train_count": 40,
+      "source_per_million": 2.18,
+      "train_per_million": 3.97,
+      "ratio": 1.8163,
+      "severity": "ok"
+    },
+    "밀빵": {
+      "category": "금전",
+      "term": "밀빵",
+      "source_count": 2683,
+      "train_count": 3374,
+      "source_per_million": 488.46,
+      "train_per_million": 334.7,
+      "ratio": 0.6852,
+      "severity": "ok"
+    },
+    "풀묶": {
+      "category": "금전",
+      "term": "풀묶",
+      "source_count": 140,
+      "train_count": 191,
+      "source_per_million": 25.49,
+      "train_per_million": 18.95,
+      "ratio": 0.7434,
+      "severity": "ok"
+    },
+    "팁": {
+      "category": "금전",
+      "term": "팁",
+      "source_count": 2628,
+      "train_count": 3521,
+      "source_per_million": 478.45,
+      "train_per_million": 349.29,
+      "ratio": 0.73,
+      "severity": "ok"
+    },
+    "초이스": {
+      "category": "행위",
+      "term": "초이스",
+      "source_count": 2883,
+      "train_count": 6664,
+      "source_per_million": 524.87,
+      "train_per_million": 661.07,
+      "ratio": 1.2595,
+      "severity": "ok"
+    },
+    "케어": {
+      "category": "행위",
+      "term": "케어",
+      "source_count": 5746,
+      "train_count": 7637,
+      "source_per_million": 1046.1,
+      "train_per_million": 757.59,
+      "ratio": 0.7242,
+      "severity": "ok"
+    },
+    "방": {
+      "category": "행위",
+      "term": "방",
+      "source_count": 12502,
+      "train_count": 22940,
+      "source_per_million": 2276.08,
+      "train_per_million": 2275.66,
+      "ratio": 0.9998,
+      "severity": "ok"
+    },
+    "갯수": {
+      "category": "행위",
+      "term": "갯수",
+      "source_count": 2463,
+      "train_count": 3967,
+      "source_per_million": 448.41,
+      "train_per_million": 393.53,
+      "ratio": 0.8776,
+      "severity": "ok"
+    },
+    "강남": {
+      "category": "지역",
+      "term": "강남",
+      "source_count": 6382,
+      "train_count": 8162,
+      "source_per_million": 1161.89,
+      "train_per_million": 809.67,
+      "ratio": 0.6969,
+      "severity": "ok"
+    },
+    "역삼": {
+      "category": "지역",
+      "term": "역삼",
+      "source_count": 122,
+      "train_count": 232,
+      "source_per_million": 22.21,
+      "train_per_million": 23.01,
+      "ratio": 1.0362,
+      "severity": "ok"
+    },
+    "선릉": {
+      "category": "지역",
+      "term": "선릉",
+      "source_count": 203,
+      "train_count": 216,
+      "source_per_million": 36.96,
+      "train_per_million": 21.43,
+      "ratio": 0.5798,
+      "severity": "ok"
+    },
+    "논현": {
+      "category": "지역",
+      "term": "논현",
+      "source_count": 142,
+      "train_count": 482,
+      "source_per_million": 25.85,
+      "train_per_million": 47.81,
+      "ratio": 1.8495,
+      "severity": "ok"
+    },
+    "ㅋㅋ": {
+      "category": "초성",
+      "term": "ㅋㅋ",
+      "source_count": 14129,
+      "train_count": 34167,
+      "source_per_million": 2572.29,
+      "train_per_million": 3389.39,
+      "ratio": 1.3177,
+      "severity": "ok"
+    },
+    "ㅎㅎ": {
+      "category": "초성",
+      "term": "ㅎㅎ",
+      "source_count": 1375,
+      "train_count": 1993,
+      "source_per_million": 250.33,
+      "train_per_million": 197.71,
+      "ratio": 0.7898,
+      "severity": "ok"
+    },
+    "ㅠㅠ": {
+      "category": "초성",
+      "term": "ㅠㅠ",
+      "source_count": 3882,
+      "train_count": 11891,
+      "source_per_million": 706.75,
+      "train_per_million": 1179.59,
+      "ratio": 1.669,
+      "severity": "ok"
+    },
+    "ㅇㅈ": {
+      "category": "초성",
+      "term": "ㅇㅈ",
+      "source_count": 888,
+      "train_count": 2320,
+      "source_per_million": 161.67,
+      "train_per_million": 230.15,
+      "ratio": 1.4236,
+      "severity": "ok"
+    },
+    "ㄹㅇ": {
+      "category": "초성",
+      "term": "ㄹㅇ",
+      "source_count": 795,
+      "train_count": 2402,
+      "source_per_million": 144.74,
+      "train_per_million": 238.28,
+      "ratio": 1.6463,
+      "severity": "ok"
+    },
+    "ㅈㄹ": {
+      "category": "초성",
+      "term": "ㅈㄹ",
+      "source_count": 441,
+      "train_count": 1418,
+      "source_per_million": 80.29,
+      "train_per_million": 140.67,
+      "ratio": 1.752,
+      "severity": "ok"
+    },
+    "ㅅㅂ": {
+      "category": "초성",
+      "term": "ㅅㅂ",
+      "source_count": 809,
+      "train_count": 2813,
+      "source_per_million": 147.28,
+      "train_per_million": 279.05,
+      "ratio": 1.8946,
+      "severity": "ok"
+    },
+    "ㅡㅡ": {
+      "category": "감정",
+      "term": "ㅡㅡ",
+      "source_count": 4466,
+      "train_count": 3907,
+      "source_per_million": 813.07,
+      "train_per_million": 387.58,
+      "ratio": 0.4767,
+      "severity": "moderate"
+    },
+    "^^": {
+      "category": "감정",
+      "term": "^^",
+      "source_count": 2110,
+      "train_count": 2531,
+      "source_per_million": 384.14,
+      "train_per_million": 251.08,
+      "ratio": 0.6536,
+      "severity": "ok"
+    },
+    "ㄷㄷ": {
+      "category": "감정",
+      "term": "ㄷㄷ",
+      "source_count": 337,
+      "train_count": 938,
+      "source_per_million": 61.35,
+      "train_per_million": 93.05,
+      "ratio": 1.5166,
+      "severity": "ok"
+    },
+    "ㅇㅇ": {
+      "category": "감정",
+      "term": "ㅇㅇ",
+      "source_count": 647,
+      "train_count": 2008,
+      "source_per_million": 117.79,
+      "train_per_million": 199.19,
+      "ratio": 1.6911,
+      "severity": "ok"
+    }
+  },
+  "structure_comparison": {
+    "source": {
+      "sample_size": 500,
+      "tone_distribution": {
+        "혼합": 0.574,
+        "반말": 0.218,
+        "존댓말": 0.208
+      },
+      "text_type_distribution": {
+        "정보형": 0.932,
+        "질문형": 0.058,
+        "후기형": 0.01
+      },
+      "avg_sentences_per_text": 4.08,
+      "avg_words_per_sentence": 4.41
+    },
+    "train": {
+      "sample_size": 500,
+      "tone_distribution": {
+        "혼합": 0.666,
+        "반말": 0.236,
+        "존댓말": 0.098
+      },
+      "text_type_distribution": {
+        "정보형": 0.854,
+        "질문형": 0.128,
+        "후기형": 0.018
+      },
+      "avg_sentences_per_text": 2.88,
+      "avg_words_per_sentence": 5.05
+    }
+  },
+  "coverage": {
+    "source_post_count": 11286,
+    "train_source_ids": 18133,
+    "covered": 11232,
+    "coverage_pct": 99.52,
+    "source_length_histogram": {
+      "0-50": 40449,
+      "50-100": 12415,
+      "100-200": 6129,
+      "200-500": 7564,
+      "500-1000": 549,
+      "1000-2000": 23,
+      "2000-5000": 0,
+      "5000-10000": 0,
+      "10000-50000": 0,
+      "50000+": 0
+    },
+    "train_length_histogram": {
+      "0-50": 94715,
+      "50-100": 34078,
+      "100-200": 15647,
+      "200-500": 7876,
+      "500-1000": 614,
+      "1000-2000": 119,
+      "2000-5000": 0,
+      "5000-10000": 0,
+      "10000-50000": 0,
+      "50000+": 0
+    }
+  },
+  "gaps": [
+    {
+      "category": "감정",
+      "term": "ㅡㅡ",
+      "source_count": 4466,
+      "train_count": 3907,
+      "source_per_million": 813.07,
+      "train_per_million": 387.58,
+      "ratio": 0.4767,
+      "severity": "moderate",
+      "phase": "1a_term_freq",
+      "action": "monitor"
+    }
+  ],
+  "recommended_actions": [
+    {
+      "priority": "moderate",
+      "target": "term:ㅡㅡ",
+      "description": "Term 'ㅡㅡ' is UNDER-represented in training vs source (ratio=0.4767). Likely caused by promo/spam filter removing posts containing this term. Review filter rules.",
+      "auto_fixable": false
+    }
+  ]
+}

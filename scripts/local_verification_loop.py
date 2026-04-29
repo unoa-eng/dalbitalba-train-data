@@ -27,8 +27,23 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNS_DIR = REPO_ROOT / "runs"
 
+
+def resolve_cpt_file() -> Path:
+    env_candidate = (os.environ.get("TRAIN_CPT_JSONL", "") or os.environ.get("INPUT_JSONL", "")).strip()
+    if env_candidate:
+        candidate = Path(env_candidate)
+        if not candidate.is_absolute():
+            candidate = REPO_ROOT / candidate
+        return candidate
+    for name in ("cpt_context_stream.jsonl", "cpt_corpus.v3.jsonl", "cpt_corpus.v2.jsonl"):
+        candidate = REPO_ROOT / name
+        if candidate.exists():
+            return candidate
+    return REPO_ROOT / "cpt_context_stream.jsonl"
+
+
 DEFAULT_FILES = {
-    "cpt": REPO_ROOT / "cpt_corpus.v2.jsonl",
+    "cpt": resolve_cpt_file(),
     "sft": REPO_ROOT / "sft_pairs.v2.jsonl",
     "val": REPO_ROOT / "val_set.v2.jsonl",
     "cai": REPO_ROOT / "cai_pairs.filtered.jsonl",
@@ -63,6 +78,7 @@ BANK_NAMES = (
 ACCOUNT_RE = re.compile(
     rf"{BANK_NAMES}[^\d]{{0,20}}\d{{3,6}}[-\s]\d{{2,6}}[-\s]\d{{2,8}}(?:[-\s]\d{{2,6}})?"
 )
+VALID_LENGTH_BUCKETS = {"xs", "sm", "md", "lg", "xl", "xxl"}
 
 MINOR_RE = re.compile(
     "|".join(
@@ -250,11 +266,15 @@ def validate_dataset(kind: str, path: Path) -> dict[str, Any]:
 
     kind_counts: Counter[str] = Counter()
     bucket_counts: Counter[str] = Counter()
+    invalid_bucket_counts: Counter[str] = Counter()
     for row in rows:
         if "kind" in row:
             kind_counts[str(row.get("kind"))] += 1
         if "length_bucket" in row:
-            bucket_counts[str(row.get("length_bucket"))] += 1
+            bucket = str(row.get("length_bucket"))
+            bucket_counts[bucket] += 1
+            if bucket not in VALID_LENGTH_BUCKETS:
+                invalid_bucket_counts[bucket] += 1
 
     severe: list[str] = []
     warn: list[str] = []
@@ -262,6 +282,10 @@ def validate_dataset(kind: str, path: Path) -> dict[str, Any]:
         severe.append(f"{path.name}: invalid JSONL rows={len(errors)}")
     if missing_required:
         severe.append(f"{path.name}: missing required keys rows={missing_required}")
+    if invalid_bucket_counts:
+        severe.append(
+            f"{path.name}: invalid length_bucket values {dict(invalid_bucket_counts)}"
+        )
     if not rows:
         severe.append(f"{path.name}: no valid rows")
     if pii["phone_like"] or pii["email_like"] or pii["rrn_like"]:
@@ -294,6 +318,7 @@ def validate_dataset(kind: str, path: Path) -> dict[str, Any]:
         "key_counts": dict(key_counter.most_common()),
         "kind_counts": dict(kind_counts.most_common()),
         "length_bucket_counts": dict(bucket_counts.most_common()),
+        "invalid_length_bucket_counts": dict(invalid_bucket_counts.most_common()),
         "char_stats": compact_stats(lengths),
         "approx_token_stats": compact_stats([max(1, round(x / 2.2)) for x in lengths]),
         "duplicates": duplicate_count,
@@ -587,6 +612,16 @@ def main() -> int:
     parser.add_argument("--sec-per-step", type=float, default=18.43)
     parser.add_argument("--hourly-usd", type=float, default=0.79)
     parser.add_argument("--budget-usd", type=float, default=30.0)
+    parser.add_argument(
+        "--cpt-epochs",
+        type=int,
+        default=int(os.environ.get("CPT_NUM_EPOCHS", "1")),
+    )
+    parser.add_argument(
+        "--sft-epochs",
+        type=int,
+        default=int(os.environ.get("SFT_NUM_EPOCHS", "2")),
+    )
     parser.add_argument("--strict", action="store_true")
     parser.add_argument(
         "--profile",
@@ -618,6 +653,8 @@ def main() -> int:
         sft_pair_rows=sft_rows,
         sec_per_step=args.sec_per_step,
         hourly_usd=args.hourly_usd,
+        cpt_epochs=args.cpt_epochs,
+        sft_epochs=args.sft_epochs,
     )
     # Profile-aware budget gating.
     # default: full CPT+SFT vs budget (warn only, since the operator may pick a sub-profile).

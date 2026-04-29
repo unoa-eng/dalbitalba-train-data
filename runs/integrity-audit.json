@@ -1,0 +1,107 @@
+{
+  "timestamp": "2026-04-28T18:43:16",
+  "json_validity": [
+    {
+      "file": "cpt_enriched",
+      "total_lines": 56576,
+      "valid_lines": 56576,
+      "parse_errors": 0,
+      "error_details": [],
+      "passed": true
+    },
+    {
+      "file": "sft_enriched",
+      "total_lines": 32852,
+      "valid_lines": 32852,
+      "parse_errors": 0,
+      "error_details": [],
+      "passed": true
+    },
+    {
+      "file": "sft_pairs_enriched_compat",
+      "total_lines": 32852,
+      "valid_lines": 32852,
+      "parse_errors": 0,
+      "error_details": [],
+      "passed": true
+    },
+    {
+      "file": "cpt_context_stream",
+      "total_lines": 42137,
+      "valid_lines": 42137,
+      "parse_errors": 0,
+      "error_details": [],
+      "passed": true
+    },
+    {
+      "file": "val_set",
+      "total_lines": 2451,
+      "valid_lines": 2451,
+      "parse_errors": 0,
+      "error_details": [],
+      "passed": true
+    }
+  ],
+  "leakage_checks": [
+    {
+      "train_file": "cpt_enriched",
+      "train_text_count": 56339,
+      "val_text_count": 2451,
+      "text_overlap_count": 0,
+      "text_overlap_examples": [],
+      "train_id_count": 11247,
+      "val_id_count": 566,
+      "source_id_overlap_count": 562,
+      "source_id_text_leak_count": 0,
+      "source_id_text_leak_examples": [],
+      "note_source_id_overlap": "source_id overlap is expected: CPT rows share source_id with val but text differs due to CPT bucket-metadata prefix. id_leak_passed checks for actual text identity, not just id match.",
+      "text_leak_passed": true,
+      "id_leak_passed": true
+    },
+    {
+      "train_file": "cpt_context_stream",
+      "train_text_count": 42137,
+      "val_text_count": 2451,
+      "text_overlap_count": 0,
+      "text_overlap_examples": [],
+      "train_id_count": 11383,
+      "val_id_count": 566,
+      "source_id_overlap_count": 0,
+      "source_id_text_leak_count": 0,
+      "source_id_text_leak_examples": [],
+      "note_source_id_overlap": "source_id overlap is expected: CPT rows share source_id with val but text differs due to CPT bucket-metadata prefix. id_leak_passed checks for actual text identity, not just id match.",
+      "text_leak_passed": true,
+      "id_leak_passed": true
+    }
+  ],
+  "duplicate_checks": [
+    {
+      "file": "cpt_enriched",
+      "total_texts": 56576,
+      "unique_texts": 56339,
+      "duplicate_count": 237,
+      "duplicate_ratio": 0.004189,
+      "duplicate_pct": 0.4189,
+      "threshold_pct": 2.0,
+      "passed": true
+    }
+  ],
+  "summary": {
+    "json_validity_passed": true,
+    "leakage_text_passed": true,
+    "leakage_id_passed": true,
+    "duplicates_passed": true,
+    "local_verification_severe_zero": true,
+    "overall_passed": true,
+    "verdict": "PASS"
+  },
+  "local_verification": {
+    "ran": true,
+    "severe": 0,
+    "warnings": 1,
+    "verdict": "WARN",
+    "report_path": "/Users/unoa/projects/dalbitalba-train-data/runs/local-verification-20260428-094318/report.md",
+    "passed": true,
+    "stdout": "{\"verdict\": \"WARN\", \"report\": \"/Users/unoa/projects/dalbitalba-train-data/runs/local-verification-20260428-094318/report.md\"}"
+  }
+}

@@ -1,0 +1,238 @@
+{
+  "timestamp": "2026-04-27T08:33:26Z",
+  "files": {
+    "val": "val_set.v2.jsonl",
+    "v2": "cpt_corpus.v2.jsonl",
+    "patch": "cpt_patch_gap_repair_dedup.jsonl",
+    "v3": "cpt_corpus.v3.jsonl"
+  },
+  "val": {
+    "rows": 2451,
+    "unique_source_ids": 566,
+    "unique_thread_ids": 566
+  },
+  "patch_before": {
+    "rows": 1269
+  },
+  "patch_removed": {
+    "rows": 71,
+    "reason_counts": {
+      "thread_root_source_id": 71
+    },
+    "kind_counts": {
+      "comment": 71
+    },
+    "unique_threads": 44
+  },
+  "patch_after": {
+    "rows": 1198,
+    "residual_exact_source_id_overlap": 0,
+    "residual_thread_overlap": 0
+  },
+  "v3_after": {
+    "rows": 48054,
+    "expected_rows_from_v2_plus_patch_after": 48054
+  },
+  "removed_rows_preview": [
+    {
+      "source_id": "1201556:comment:8",
+      "thread_id": "1201556",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "❣️개인 밀착케어 갯수보장❣️"
+    },
+    {
+      "source_id": "1201528:comment:2",
+      "thread_id": "1201528",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "갯수보장/출퇴비 지원/매점비 지원/ 첫 출근시 헤메비 지원 등등 다양한 이벤트 있으니 궁금하신 점이나 옮기실 생각 있으시면 언제든 연락주세요"
+    },
+    {
+      "source_id": "1201528:comment:2",
+      "thread_id": "1201528",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "오픈~ 마감 풀상주 풀케어 하고 퇴근시 갯수 확인 후"
+    },
+    {
+      "source_id": "1201528:comment:3",
+      "thread_id": "1201528",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "케어 자신있습니다~갯수 확실히나오게끔 도와드려요"
+    },
+    {
+      "source_id": "1201526:comment:5",
+      "thread_id": "1201526",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "제 아가씨들 한분한분 제가 24시 풀상주 풀케어 하겠습니다."
+    },
+    {
+      "source_id": "1201526:comment:5",
+      "thread_id": "1201526",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "실장치고 어린나이라 케어면에선 자신있습니다."
+    },
+    {
+      "source_id": "1201526:comment:5",
+      "thread_id": "1201526",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "우선 하이퍼블릭 TC 9시 이전 11만원"
+    },
+    {
+      "source_id": "1201526:comment:5",
+      "thread_id": "1201526",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "셔츠룸 TC 9시 이전 13만원"
+    },
+    {
+      "source_id": "1201525:comment:3",
+      "thread_id": "1201525",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "하퍼티씨는짜지만 그래도 은근여기로많이점프하셔요.또 24시라 손님계속들어와서 갯수치기하시는데 좋으실거예여^^"
+    },
+    {
+      "source_id": "1201519:comment:5",
+      "thread_id": "1201519",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "항상 언니들 갯수에 신경쓰겠습니다"
+    },
+    {
+      "source_id": "1201489:comment:2",
+      "thread_id": "1201489",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "밀빵 충분히 가능합니다."
+    },
+    {
+      "source_id": "1201484:comment:5",
+      "thread_id": "1201484",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "하이퍼블릭=속가슴 터치 가게입니다"
+    },
+    {
+      "source_id": "1201484:comment:7",
+      "thread_id": "1201484",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "제 케어가 불만족시 바로 담당"
+    },
+    {
+      "source_id": "1201445:comment:3",
+      "thread_id": "1201445",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "연락주세요 1:1로 케어 확실히 해드립니다"
+    },
+    {
+      "source_id": "1201445:comment:11",
+      "thread_id": "1201445",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "차별x 남다른 풀케어 만족도 100% 믿구오세요!"
+    },
+    {
+      "source_id": "1201445:comment:12",
+      "thread_id": "1201445",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "방치랑 180도 반대인 담당입니다 출근부터 퇴근까지 풀케어합니다 한번 연락주시면 정말 잘 챙기겠습니다 :)"
+    },
+    {
+      "source_id": "1201445:comment:17",
+      "thread_id": "1201445",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "아쉬움이 남는 담당 말고 도파민 G팀 하유호 믿고 찾아주시는 건 어떠실까요?"
+    },
+    {
+      "source_id": "1201434:comment:2",
+      "thread_id": "1201434",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "123 짱구 3 진범 (선 ㅡㅡ"
+    },
+    {
+      "source_id": "1201434:comment:8",
+      "thread_id": "1201434",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "6~7 정도가 딱 평균 갯수 인것 같아영"
+    },
+    {
+      "source_id": "1201433:comment:15",
+      "thread_id": "1201433",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "갯수 마구 찍어드릴게요~"
+    },
+    {
+      "source_id": "1201257:comment:3",
+      "thread_id": "1201257",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "1~10까지 케어해드릴게요"
+    },
+    {
+      "source_id": "1201248:comment:1",
+      "thread_id": "1201248",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "현실적으로 일찍만 출근가능하시면 어느정도 갯수 쉽습니다 밀방 신경쓰겠습니다 한번만 찾아주세요!!"
+    },
+    {
+      "source_id": "1201165:comment:5",
+      "thread_id": "1201165",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "밀빵 원하는게 아니라도 손님 많은 담당이면 그래도 자기 방에 자기 아가씨 넣어주려고 신경 많이 써서 방보는게 수월하기는 합니다."
+    },
+    {
+      "source_id": "1201143:comment:8",
+      "thread_id": "1201143",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "2부까지손님많아요 퇴근까지 풀케어해드립니다"
+    },
+    {
+      "source_id": "1201139:comment:2",
+      "thread_id": "1201139",
+      "kind": "comment",
+      "source_field": "comment",
+      "reason": "thread_root_source_id",
+      "text": "8인1팀으로 언니케어쪽은 4명이서 로테이션으로"
+    }
+  ]
+}

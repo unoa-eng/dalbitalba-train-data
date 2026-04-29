@@ -5,9 +5,10 @@ train_cpt.py — v2 — Continued pretraining on raw Korean community text.
 Recipe (2026-04, fixed from 9-voice research consensus):
   - Base:    Qwen/Qwen3-8B-Base       (BBPE 151K, KMMLU 52.54, Apache-2.0)
   - LoRA:    r=64, alpha=64, use_rslora=True, target_modules="all-linear"
-  - LR:      2e-4 cosine, warmup 3%, weight_decay 0.01
+             + optional embed_tokens/lm_head when CPT_LORA_EMBED=1
+  - LR:      1e-4 cosine, warmup 3%, weight_decay 0.01
   - seq_len: 1024
-  - batch:   1 x grad_accum 16 (eff 16)
+  - batch:   1 x grad_accum 16 (eff 16), epochs=2 by default
   - bf16 + gradient_checkpointing (use_reentrant=False) + flash-attn 2
   - Data:    cpt_corpus.v2.jsonl (raw continuation text, no template)
   - Val:     val_set.v2.jsonl (5% held-out, time-split)
@@ -66,10 +67,10 @@ SEED = int(os.environ.get("TRAIN_SEED", "42"))
 MAX_SEQ_LEN = int(os.environ.get("CPT_MAX_SEQ_LEN", "1024"))
 BATCH_SIZE = int(os.environ.get("CPT_BATCH_SIZE", "1"))
 GRAD_ACCUM = int(os.environ.get("CPT_GRAD_ACCUM", "16"))
-LR = float(os.environ.get("CPT_LR", "2e-4"))
+LR = float(os.environ.get("CPT_LR", "1e-4"))
 WARMUP_RATIO = float(os.environ.get("CPT_WARMUP_RATIO", "0.03"))
 WEIGHT_DECAY = float(os.environ.get("CPT_WEIGHT_DECAY", "0.01"))
-NUM_EPOCHS = int(os.environ.get("CPT_NUM_EPOCHS", "1"))
+NUM_EPOCHS = int(os.environ.get("CPT_NUM_EPOCHS", "2"))
 MAX_STEPS_OVERRIDE = int(os.environ.get("CPT_MAX_STEPS", "0") or "0")
 SAVE_STEPS = int(os.environ.get("CPT_SAVE_STEPS", "50"))
 SAVE_TOTAL_LIMIT = int(os.environ.get("CPT_SAVE_TOTAL_LIMIT", "3"))
@@ -83,6 +84,7 @@ LORA_ALPHA = int(os.environ.get("CPT_LORA_ALPHA", "64"))
 LORA_DROPOUT = float(os.environ.get("CPT_LORA_DROPOUT", "0.0"))
 USE_RSLORA = os.environ.get("CPT_USE_RSLORA", "1") == "1"
 USE_DORA = os.environ.get("CPT_USE_DORA", "0") == "1"
+USE_LORA_EMBED = os.environ.get("CPT_LORA_EMBED", "0") == "1"
 
 FLASH_ATTN = os.environ.get("CPT_FLASH_ATTN", "flash_attention_2")
 
@@ -109,6 +111,37 @@ def set_all_seeds(seed: int) -> None:
         pass
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+
+
+def resolve_lora_target_modules(model) -> str | list[str]:
+    if not USE_LORA_EMBED:
+        return "all-linear"
+
+    linear_types: list[type] = [torch.nn.Linear]
+    try:
+        import bitsandbytes as bnb
+
+        for name in ("Linear4bit", "Linear8bitLt"):
+            cls = getattr(bnb.nn, name, None)
+            if cls is not None:
+                linear_types.append(cls)
+    except Exception as exc:
+        logger.warning(f"bitsandbytes linear class inspection 실패, torch.nn.Linear만 사용: {exc}")
+
+    target_modules: set[str] = set()
+    for module_name, module in model.named_modules():
+        leaf_name = module_name.rsplit(".", 1)[-1]
+        if isinstance(module, tuple(linear_types)):
+            target_modules.add(leaf_name)
+        if leaf_name == "embed_tokens" and isinstance(module, torch.nn.Embedding):
+            target_modules.add(leaf_name)
+
+    # Keep the default all-linear path unless the caller explicitly asks for
+    # extra adaptation on token embeddings / output head.
+    target_modules.add("lm_head")
+    resolved = sorted(target_modules)
+    logger.info("CPT_LORA_EMBED=1 -> target_modules=%s", ",".join(resolved))
+    return resolved
 
 
 def load_corpus(path: str) -> Dataset:
@@ -212,11 +245,14 @@ def main() -> None:
         model, use_gradient_checkpointing=True
     )
 
+    target_modules = resolve_lora_target_modules(model)
+    logger.info(f"LoRA target_modules={target_modules}")
+
     lora_config = LoraConfig(
         r=LORA_R,
         lora_alpha=LORA_ALPHA,
         lora_dropout=LORA_DROPOUT,
-        target_modules="all-linear",
+        target_modules=target_modules,
         task_type=TaskType.CAUSAL_LM,
         bias="none",
         use_rslora=USE_RSLORA,

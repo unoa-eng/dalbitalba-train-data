@@ -1,0 +1,241 @@
+{
+  "timestamp": "2026-04-28T07:52:10Z",
+  "task": "worker-1 final corpus cleanup",
+  "strip_regex": "^\\[(\\d+(?:-\\d+)*)\\]\\s*",
+  "promo_patterns": {
+    "PHONE_RE": "01\\d[-\\s]?\\d{3,4}[-\\s]?\\d{4}",
+    "URL_RE": "(https?://|open\\.kakao|텔레|카톡|라인)",
+    "PROMO_KW_RE": "(문의|카톡|텔레|라인|지원금|TC|실장|부장|출근문의|픽업|풀상주|면접|당일지급|지명비|이벤트|광고)"
+  },
+  "files": {
+    "cpt_corpus.v3.jsonl": {
+      "path": "cpt_corpus.v3.jsonl",
+      "initial_rows": 48054,
+      "final_rows": 42473,
+      "initial_kind_counts": {
+        "comment": 37584,
+        "post": 10470
+      },
+      "final_kind_counts": {
+        "comment": 32410,
+        "post": 10063
+      },
+      "tag_candidates": 36386,
+      "tag_stripped": 36387,
+      "tag_present_but_kept": 0,
+      "rows_removed": 5581,
+      "removed_kind_counts": {
+        "comment": 5174,
+        "post": 407
+      },
+      "removed_examples": [
+        {
+          "kind": "comment",
+          "source_id": "1186948",
+          "text": "여기하퍼로오세욧^^!!!!\n\n강남 퍼펙트 \"동생이사\"\n\n폰-[전화번호]\n\n카카오톡-keroro25\n\n!!️개인이벤트중!!️\n\n언제든지 문의 환영!"
+        },
+        {
+          "kind": "comment",
+          "source_id": "1193136",
+          "text": "?01월 19일 월요일?\n강남구 대치동 890-38번지\n➖➖➖➖➖➖➖➖➖➖\n\n301 인성 ㅃ1 철주\n212 인성 5 무등\n125 진구 ㅃ1 이경 ㄷㅊ\n102 동훈 ㅃ1 태식 ㄷㅊ\n305 동훈 7 태식 ㄷㅊ\n205 오성윤 ㅃ1 뚱이\n101 정현빈 3 용인\n310 동훈 3 무등 ㄷㅊ\n210 도실장 3 용인\n128 바다 3 태"
+        },
+        {
+          "kind": "comment",
+          "source_id": "1186979",
+          "text": "??? 엘.리.트 ???\n  ?1월 12일 월요일?\n강남구 대치동 890-38번지\n➖➖➖➖➖➖➖➖➖➖\n\n109 기명 ㅃ2 꼬막 ㄷㅊ\n210 장미 ㅃ1 용인\n101 준이 ㅃ2 태식 ㄷㅊ\n102 동훈 ㅇㅎㅃ1 동우 ㅡ\n115 진우 ㅃ1 꼬막 ㄷㅊ\n218 강남 1 철주\n103 기명 2 용인 ㄷㅊ\n202 엄실장 ㅃ1 해방 ㄷㅊ\n"
+        },
+        {
+          "kind": "post",
+          "source_id": "1194750",
+          "text": "언주역 인근 프린세스 렌탈샵 월요일~일요일14:00 ~2:00 !!\n인스타그램 princess_rental_에서 더많은 의상정보 다양한 이벤트 확인 가능합니다 \n\n월요일~일요일 오후2시부터 새벽2시까지 가게내부 헤메샵 배달권 배송 새벽1시까지 가능합니다!"
+        },
+        {
+          "kind": "comment",
+          "source_id": "1189771",
+          "text": "보스턴 [전화번호]\n\n1년 365일 연중무휴 (공휴일 일요일 정상영업)\n영업시간 저녁8시~다음날오후2시 (선수들은 저녁10시쯤 출근해요)\n\n절대 총 안 쏘고 정직하게 오픈하고 장사합니다\n강남 호빠 17년 경력 업계 최고라 자부합니다\n가게에 항시 상주해있으며, 무책임하게 손님만 보내놓고 돈벌지 않습니다\n초이스부터 계산까지 "
+        }
+      ],
+      "second_pass_tag_stripped": 1,
+      "remaining_tagged_comments_after_cleanup": 0,
+      "short_comment_trim": {
+        "applied": true,
+        "length_lt": 12,
+        "rows_removed": 3420,
+        "examples": [
+          {
+            "source_id": "1191981",
+            "length": 9,
+            "text": "업종이 뭔데요??"
+          },
+          {
+            "source_id": "1197368",
+            "length": 8,
+            "text": "놀러와서 깟을껄"
+          },
+          {
+            "source_id": "1189749",
+            "length": 9,
+            "text": "본인 일이나 하쇼"
+          },
+          {
+            "source_id": "1191440",
+            "length": 9,
+            "text": "언니 ㅉㅉ을 가요"
+          },
+          {
+            "source_id": "1195007",
+            "length": 11,
+            "text": "오글거린다 못생이들아"
+          },
+          {
+            "source_id": "1194683",
+            "length": 7,
+            "text": "차량지원없는데"
+          },
+          {
+            "source_id": "1191668",
+            "length": 8,
+            "text": "비강남어디애용?"
+          },
+          {
+            "source_id": "1192102",
+            "length": 10,
+            "text": "삭제된 댓글입니다."
+          },
+          {
+            "source_id": "1189504",
+            "length": 9,
+            "text": "ㅋㅋㅋㅋㅋㅋ두쫀쿠"
+          },
+          {
+            "source_id": "1197701",
+            "length": 10,
+            "text": "삭제된 댓글입니다."
+          }
+        ]
+      }
+    },
+    "cpt_context_stream.jsonl": {
+      "path": "cpt_context_stream.jsonl",
+      "initial_rows": 48054,
+      "final_rows": 43635,
+      "initial_kind_counts": {
+        "comment": 25570,
+        "post": 10470,
+        "context_comment": 12014
+      },
+      "final_kind_counts": {
+        "comment": 21558,
+        "post": 10063,
+        "context_comment": 12014
+      },
+      "tag_candidates": 24372,
+      "tag_stripped": 24373,
+      "tag_present_but_kept": 0,
+      "rows_removed": 4419,
+      "removed_kind_counts": {
+        "comment": 4012,
+        "post": 407
+      },
+      "removed_examples": [
+        {
+          "kind": "comment",
+          "source_id": "1186948",
+          "text": "여기하퍼로오세욧^^!!!!\n\n강남 퍼펙트 \"동생이사\"\n\n폰-[전화번호]\n\n카카오톡-keroro25\n\n!!️개인이벤트중!!️\n\n언제든지 문의 환영!"
+        },
+        {
+          "kind": "comment",
+          "source_id": "1193136",
+          "text": "?01월 19일 월요일?\n강남구 대치동 890-38번지\n➖➖➖➖➖➖➖➖➖➖\n\n301 인성 ㅃ1 철주\n212 인성 5 무등\n125 진구 ㅃ1 이경 ㄷㅊ\n102 동훈 ㅃ1 태식 ㄷㅊ\n305 동훈 7 태식 ㄷㅊ\n205 오성윤 ㅃ1 뚱이\n101 정현빈 3 용인\n310 동훈 3 무등 ㄷㅊ\n210 도실장 3 용인\n128 바다 3 태"
+        },
+        {
+          "kind": "comment",
+          "source_id": "1186979",
+          "text": "??? 엘.리.트 ???\n  ?1월 12일 월요일?\n강남구 대치동 890-38번지\n➖➖➖➖➖➖➖➖➖➖\n\n109 기명 ㅃ2 꼬막 ㄷㅊ\n210 장미 ㅃ1 용인\n101 준이 ㅃ2 태식 ㄷㅊ\n102 동훈 ㅇㅎㅃ1 동우 ㅡ\n115 진우 ㅃ1 꼬막 ㄷㅊ\n218 강남 1 철주\n103 기명 2 용인 ㄷㅊ\n202 엄실장 ㅃ1 해방 ㄷㅊ\n"
+        },
+        {
+          "kind": "post",
+          "source_id": "1194750",
+          "text": "언주역 인근 프린세스 렌탈샵 월요일~일요일14:00 ~2:00 !!\n인스타그램 princess_rental_에서 더많은 의상정보 다양한 이벤트 확인 가능합니다 \n\n월요일~일요일 오후2시부터 새벽2시까지 가게내부 헤메샵 배달권 배송 새벽1시까지 가능합니다!"
+        },
+        {
+          "kind": "comment",
+          "source_id": "1189771",
+          "text": "보스턴 [전화번호]\n\n1년 365일 연중무휴 (공휴일 일요일 정상영업)\n영업시간 저녁8시~다음날오후2시 (선수들은 저녁10시쯤 출근해요)\n\n절대 총 안 쏘고 정직하게 오픈하고 장사합니다\n강남 호빠 17년 경력 업계 최고라 자부합니다\n가게에 항시 상주해있으며, 무책임하게 손님만 보내놓고 돈벌지 않습니다\n초이스부터 계산까지 "
+        }
+      ],
+      "second_pass_tag_stripped": 1,
+      "remaining_tagged_comments_after_cleanup": 0,
+      "short_comment_trim": {
+        "applied": true,
+        "length_lt": 12,
+        "rows_removed": 2258,
+        "examples": [
+          {
+            "source_id": "1197368",
+            "length": 8,
+            "text": "놀러와서 깟을껄"
+          },
+          {
+            "source_id": "1191440",
+            "length": 9,
+            "text": "언니 ㅉㅉ을 가요"
+          },
+          {
+            "source_id": "1195007",
+            "length": 11,
+            "text": "오글거린다 못생이들아"
+          },
+          {
+            "source_id": "1194683",
+            "length": 7,
+            "text": "차량지원없는데"
+          },
+          {
+            "source_id": "1191668",
+            "length": 8,
+            "text": "비강남어디애용?"
+          },
+          {
+            "source_id": "1192102",
+            "length": 10,
+            "text": "삭제된 댓글입니다."
+          },
+          {
+            "source_id": "1189504",
+            "length": 9,
+            "text": "ㅋㅋㅋㅋㅋㅋ두쫀쿠"
+          },
+          {
+            "source_id": "1192325",
+            "length": 8,
+            "text": "도파민 나가용?"
+          },
+          {
+            "source_id": "1194346",
+            "length": 11,
+            "text": "화장실에선 안대여ㅜㅜ"
+          },
+          {
+            "source_id": "1194359",
+            "length": 10,
+            "text": "진짜 얼굴 작다.."
+          }
+        ]
+      }
+    }
+  },
+  "final_validation": {
+    "tag_cleanup_second_pass_applied": true,
+    "short_comment_trim_applied": true
+  },
+  "verification": {
+    "command": "python3 scripts/local_verification_loop.py --profile budget30",
+    "verdict": "PASS",
+    "report_json": "runs/local-verification-20260428-075155/report.json",
+    "report_md": "runs/local-verification-20260428-075155/report.md",
+    "warnings": [],
+    "severe": [],
+    "cpt_rows_used_by_verifier": 42473
+  }
+}

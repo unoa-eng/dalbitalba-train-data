@@ -1,0 +1,420 @@
+{
+  "meta": {
+    "date": "2026-04-28",
+    "total_train_records": 57103,
+    "source_posts": 11288,
+    "source_note": "은어-사전.md (11288 crawl posts), 댓글-패턴-심층.md (55849 comments)",
+    "chosung_source_note": "Task-provided reference percentages (per-item % of records/posts containing pattern)"
+  },
+  "chosung_comparison": {
+    "ㅋㅋ": {
+      "source_pct": 9.73,
+      "train_pct": 17.5648,
+      "diff": 7.8348,
+      "ratio_train_vs_source": 1.8052,
+      "status": "HIGH"
+    },
+    "ㅠㅠ": {
+      "source_pct": 4.74,
+      "train_pct": 11.4407,
+      "diff": 6.7007,
+      "ratio_train_vs_source": 2.4136,
+      "status": "HIGH"
+    },
+    "ㄹㅇ": {
+      "source_pct": 1.22,
+      "train_pct": 2.9683,
+      "diff": 1.7483,
+      "ratio_train_vs_source": 2.433,
+      "status": "OK"
+    },
+    "ㅇㅈ": {
+      "source_pct": 1.27,
+      "train_pct": 2.7004,
+      "diff": 1.4304,
+      "ratio_train_vs_source": 2.1263,
+      "status": "OK"
+    },
+    "ㅎㅎ": {
+      "source_pct": 1.87,
+      "train_pct": 1.9596,
+      "diff": 0.0896,
+      "ratio_train_vs_source": 1.0479,
+      "status": "OK"
+    }
+  },
+  "slang_top30_comparison": [
+    {
+      "word": "언니",
+      "source_count": 3849,
+      "source_per_post": 0.340982,
+      "train_count": 27080,
+      "train_per_record": 0.474231,
+      "coverage_records": 18710,
+      "coverage_pct": 32.7654,
+      "gap_per_record": 0.133249,
+      "ratio_train_vs_source": 1.3908
+    },
+    {
+      "word": "언니들",
+      "source_count": 2634,
+      "source_per_post": 0.233345,
+      "train_count": 15826,
+      "train_per_record": 0.277148,
+      "coverage_records": 12376,
+      "coverage_pct": 21.6731,
+      "gap_per_record": 0.043803,
+      "ratio_train_vs_source": 1.1877
+    },
+    {
+      "word": "손님",
+      "source_count": 1417,
+      "source_per_post": 0.125532,
+      "train_count": 10274,
+      "train_per_record": 0.17992,
+      "coverage_records": 7666,
+      "coverage_pct": 13.4249,
+      "gap_per_record": 0.054388,
+      "ratio_train_vs_source": 1.4333
+    },
+    {
+      "word": "출근",
+      "source_count": 1332,
+      "source_per_post": 0.118001,
+      "train_count": 7744,
+      "train_per_record": 0.135615,
+      "coverage_records": 5989,
+      "coverage_pct": 10.4881,
+      "gap_per_record": 0.017614,
+      "ratio_train_vs_source": 1.1493
+    },
+    {
+      "word": "바",
+      "source_count": 1278,
+      "source_per_post": 0.113218,
+      "train_count": 8863,
+      "train_per_record": 0.155211,
+      "coverage_records": 6839,
+      "coverage_pct": 11.9766,
+      "gap_per_record": 0.041993,
+      "ratio_train_vs_source": 1.3709
+    },
+    {
+      "word": "하퍼",
+      "source_count": 1189,
+      "source_per_post": 0.105333,
+      "train_count": 8788,
+      "train_per_record": 0.153897,
+      "coverage_records": 6463,
+      "coverage_pct": 11.3181,
+      "gap_per_record": 0.048564,
+      "ratio_train_vs_source": 1.4611
+    },
+    {
+      "word": "텐",
+      "source_count": 837,
+      "source_per_post": 0.07415,
+      "train_count": 5882,
+      "train_per_record": 0.103007,
+      "coverage_records": 3572,
+      "coverage_pct": 6.2554,
+      "gap_per_record": 0.028857,
+      "ratio_train_vs_source": 1.3892
+    },
+    {
+      "word": "쩜",
+      "source_count": 800,
+      "source_per_post": 0.070872,
+      "train_count": 5679,
+      "train_per_record": 0.099452,
+      "coverage_records": 3964,
+      "coverage_pct": 6.9418,
+      "gap_per_record": 0.02858,
+      "ratio_train_vs_source": 1.4033
+    },
+    {
+      "word": "담당",
+      "source_count": 697,
+      "source_per_post": 0.061747,
+      "train_count": 5666,
+      "train_per_record": 0.099224,
+      "coverage_records": 4020,
+      "coverage_pct": 7.0399,
+      "gap_per_record": 0.037477,
+      "ratio_train_vs_source": 1.6069
+    },
+    {
+      "word": "초이스",
+      "source_count": 666,
+      "source_per_post": 0.059001,
+      "train_count": 4892,
+      "train_per_record": 0.08567,
+      "coverage_records": 4109,
+      "coverage_pct": 7.1958,
+      "gap_per_record": 0.026669,
+      "ratio_train_vs_source": 1.452
+    },
+    {
+      "word": "물",
+      "source_count": 665,
+      "source_per_post": 0.058912,
+      "train_count": 4268,
+      "train_per_record": 0.074742,
+      "coverage_records": 3574,
+      "coverage_pct": 6.2589,
+      "gap_per_record": 0.01583,
+      "ratio_train_vs_source": 1.2687
+    },
+    {
+      "word": "강남",
+      "source_count": 640,
+      "source_per_post": 0.056697,
+      "train_count": 5260,
+      "train_per_record": 0.092114,
+      "coverage_records": 3977,
+      "coverage_pct": 6.9646,
+      "gap_per_record": 0.035417,
+      "ratio_train_vs_source": 1.6247
+    },
+    {
+      "word": "사이즈",
+      "source_count": 619,
+      "source_per_post": 0.054837,
+      "train_count": 4722,
+      "train_per_record": 0.082693,
+      "coverage_records": 3718,
+      "coverage_pct": 6.511,
+      "gap_per_record": 0.027856,
+      "ratio_train_vs_source": 1.508
+    },
+    {
+      "word": "업진",
+      "source_count": 578,
+      "source_per_post": 0.051205,
+      "train_count": 3921,
+      "train_per_record": 0.068665,
+      "coverage_records": 3171,
+      "coverage_pct": 5.5531,
+      "gap_per_record": 0.01746,
+      "ratio_train_vs_source": 1.341
+    },
+    {
+      "word": "텐카",
+      "source_count": 410,
+      "source_per_post": 0.036322,
+      "train_count": 2555,
+      "train_per_record": 0.044744,
+      "coverage_records": 1702,
+      "coverage_pct": 2.9806,
+      "gap_per_record": 0.008422,
+      "ratio_train_vs_source": 1.2319
+    },
+    {
+      "word": "성형",
+      "source_count": 390,
+      "source_per_post": 0.03455,
+      "train_count": 2342,
+      "train_per_record": 0.041014,
+      "coverage_records": 1793,
+      "coverage_pct": 3.1399,
+      "gap_per_record": 0.006464,
+      "ratio_train_vs_source": 1.1871
+    },
+    {
+      "word": "언니들은",
+      "source_count": 314,
+      "source_per_post": 0.027817,
+      "train_count": 1835,
+      "train_per_record": 0.032135,
+      "coverage_records": 1711,
+      "coverage_pct": 2.9963,
+      "gap_per_record": 0.004318,
+      "ratio_train_vs_source": 1.1552
+    },
+    {
+      "word": "퇴근",
+      "source_count": 312,
+      "source_per_post": 0.02764,
+      "train_count": 2194,
+      "train_per_record": 0.038422,
+      "coverage_records": 1786,
+      "coverage_pct": 3.1277,
+      "gap_per_record": 0.010782,
+      "ratio_train_vs_source": 1.3901
+    },
+    {
+      "word": "손놈",
+      "source_count": 300,
+      "source_per_post": 0.026577,
+      "train_count": 1571,
+      "train_per_record": 0.027512,
+      "coverage_records": 1370,
+      "coverage_pct": 2.3992,
+      "gap_per_record": 0.000935,
+      "ratio_train_vs_source": 1.0352
+    },
+    {
+      "word": "화류",
+      "source_count": 281,
+      "source_per_post": 0.024894,
+      "train_count": 2072,
+      "train_per_record": 0.036285,
+      "coverage_records": 1674,
+      "coverage_pct": 2.9315,
+      "gap_per_record": 0.011391,
+      "ratio_train_vs_source": 1.4576
+    },
+    {
+      "word": "팁",
+      "source_count": 267,
+      "source_per_post": 0.023653,
+      "train_count": 2875,
+      "train_per_record": 0.050348,
+      "coverage_records": 2508,
+      "coverage_pct": 4.3921,
+      "gap_per_record": 0.026695,
+      "ratio_train_vs_source": 2.1286
+    },
+    {
+      "word": "티씨",
+      "source_count": 246,
+      "source_per_post": 0.021793,
+      "train_count": 2031,
+      "train_per_record": 0.035567,
+      "coverage_records": 1719,
+      "coverage_pct": 3.0103,
+      "gap_per_record": 0.013774,
+      "ratio_train_vs_source": 1.632
+    },
+    {
+      "word": "신림",
+      "source_count": 231,
+      "source_per_post": 0.020464,
+      "train_count": 1451,
+      "train_per_record": 0.02541,
+      "coverage_records": 1063,
+      "coverage_pct": 1.8615,
+      "gap_per_record": 0.004946,
+      "ratio_train_vs_source": 1.2417
+    },
+    {
+      "word": "쩜오",
+      "source_count": 227,
+      "source_per_post": 0.02011,
+      "train_count": 1919,
+      "train_per_record": 0.033606,
+      "coverage_records": 1523,
+      "coverage_pct": 2.6671,
+      "gap_per_record": 0.013496,
+      "ratio_train_vs_source": 1.6711
+    },
+    {
+      "word": "마담",
+      "source_count": 226,
+      "source_per_post": 0.020021,
+      "train_count": 1766,
+      "train_per_record": 0.030927,
+      "coverage_records": 1325,
+      "coverage_pct": 2.3204,
+      "gap_per_record": 0.010906,
+      "ratio_train_vs_source": 1.5447
+    },
+    {
+      "word": "부장",
+      "source_count": 214,
+      "source_per_post": 0.018958,
+      "train_count": 1322,
+      "train_per_record": 0.023151,
+      "coverage_records": 1049,
+      "coverage_pct": 1.837,
+      "gap_per_record": 0.004193,
+      "ratio_train_vs_source": 1.2212
+    },
+    {
+      "word": "오빠",
+      "source_count": 212,
+      "source_per_post": 0.018781,
+      "train_count": 1572,
+      "train_per_record": 0.027529,
+      "coverage_records": 1261,
+      "coverage_pct": 2.2083,
+      "gap_per_record": 0.008748,
+      "ratio_train_vs_source": 1.4658
+    },
+    {
+      "word": "퀸",
+      "source_count": 205,
+      "source_per_post": 0.018161,
+      "train_count": 1576,
+      "train_per_record": 0.027599,
+      "coverage_records": 1379,
+      "coverage_pct": 2.4149,
+      "gap_per_record": 0.009438,
+      "ratio_train_vs_source": 1.5197
+    },
+    {
+      "word": "실장",
+      "source_count": 201,
+      "source_per_post": 0.017807,
+      "train_count": 1999,
+      "train_per_record": 0.035007,
+      "coverage_records": 1301,
+      "coverage_pct": 2.2783,
+      "gap_per_record": 0.0172,
+      "ratio_train_vs_source": 1.9659
+    },
+    {
+      "word": "윤곽",
+      "source_count": 191,
+      "source_per_post": 0.016921,
+      "train_count": 1104,
+      "train_per_record": 0.019333,
+      "coverage_records": 848,
+      "coverage_pct": 1.485,
+      "gap_per_record": 0.002412,
+      "ratio_train_vs_source": 1.1425
+    }
+  ],
+  "natural_context_samples": [
+    {
+      "text_snippet": "제목: 쩜오 성병도는곳어디에여 피하게여\n원글: ㄱㄱㄷ맞나여? ㅆㄷㅇ?\n댓글: 그런거 없습니다\n\n구구단\n[전화번호]\n카톡999dan",
+      "record_type": "comment"
+    },
+    {
+      "text_snippet": "제목: ㅎㅍ언니들이나 로우업종\n원글: ㅊㅌ 만들었는데 들어오실래여?? 다른업종이여도 저랑 같은 ㅎㅍ점프 가끔 하셔도 좋아여 같은업종언니들끼리 얘기해야 잘통해서ㅠㅠ\n댓글: 말의 해를 맞아 모든 계획이 힘차게 실현되길 바랍니다. 팁길만 걸으세요~",
+      "record_type": "comment"
+    },
+    {
+      "text_snippet": "제목: 퍼펙 언니들 ㅅㅇㅈ 내려갔다는거\n원글: 다른 하퍼 번갈아 나가다가 오랜만에 ㅍㅍ 나가봤는데 ㄹㅇ 뭐예요 다들 개 예쁘던데;;\n댓글: ㄷㅌ로 와요!!!",
+      "record_type": "comment"
+    },
+    {
+      "text_snippet": "제목: 언니들은 어느얼굴이좋아요?\n원글: 1번vs2번\n댓글: 전 닥1",
+      "record_type": "comment"
+    },
+    {
+      "text_snippet": "제목: 언니들 하퍼 한군데서 ㄱㅊ게되면\n원글: 거기만 다니는게 낫죠? 여러군데가면 얼굴 팔리겟죠\n댓글: 전 여러군데 가보는거 ㅊㅊ\n얼굴이야 아차피 강남바닥이라서 팔리고말고는 다 돌고돌아서 의미없다고 봐여\n지금 잘 맞으면 다니는데 좋은데 딴데가 더 맞을수도 있으니까요?",
+      "record_type": "comment"
+    },
+    {
+      "text_snippet": "[조회수:소수|댓글:활발] 상황좋은가게 어디잇어여?\nㅉㅈ이나 하퍼 상관없이여ㅠ\n일안끊기는곳으로ㅠ",
+      "record_type": "post"
+    },
+    {
+      "text_snippet": "제목: ㄷㅍㅁ 은성\n원글: 잔 왜부신거래요? 깔방한거에요? 그건 아니라고 다른글에나와잇든데\n그럼 걍 손님방 드가서 냅다 컵이랑 다 던진거임 ?\n부모댓글: 자기가 받은손님방에서 같이마시다가\n남자인손님이랑 다툼일어난거구요\n가게 언니피해없었습니다\n잘알지 못하시면 무작정 까내리지마세여\n댓글: 도파민이승기사장  님 대체 무슨해결함? 그남자한테사과라도함?ㅋㅋㅋㅋㅋ",
+      "record_type": "context_comment"
+    },
+    {
+      "text_snippet": "제목: 가락 방에서 수위올리는 언니\n원글: 가락 요즘 방에서 수위 올리는 언니즐 왜케 많음? ㅡㅡ\n댓글: 오죽하면그럴까하고.....걍 냅둠",
+      "record_type": "comment"
+    },
+    {
+      "text_snippet": "[조회수:인기|댓글:활발] 30대 언니들 나이 몇살로 감아요?\n32살 됐는데 29살로 감으면 무난하겠죠?\n어차피 손놈들이 저 20대로 보긴하는데 양심상 못감았었음\n가게 옮기면 나이 감으려고해서",
+      "record_type": "post"
+    },
+    {
+      "text_snippet": "제목: 아는 남자연습생 데뷔 했는데\n원글: 폭로글 쓸까요 말까요\n얘 다른 남자동생연습생 따돌리고 다른 친구들 연습 하고 있는데 개무시하고 연습실 들어와서 스피커 꽃고 지 연습곡 존나 크게 틀어버림\n그리고 여자연습생한테 치킨\n댓글: 근데 이거 폭로해서 언니한테 뭔 도움이 돼여? 직접적인 피해자도 아니고 다 주변 지인이구만 ㅋㅋㅋㅋㅋ괜히 나서지 말고 언니 인생 살아요.. 폭로를 해도 피해자들이 해야지",
+      "record_type": "comment"
+    }
+  ]
+}

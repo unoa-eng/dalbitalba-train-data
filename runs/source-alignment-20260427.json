@@ -1,0 +1,65 @@
+{
+  "raw": {
+    "raw_dir": "/Users/unoa/Downloads/crawled-data-v2",
+    "post_count": 10931,
+    "comment_count": 55849,
+    "source_id_count": 11288
+  },
+  "cpt": {
+    "path": "/Users/unoa/projects/dalbitalba-train-data/cpt_corpus.v2.jsonl",
+    "row_count": 92407,
+    "kinds": {
+      "comment": 78119,
+      "post": 14288
+    },
+    "post_exact_match": {
+      "matched": 0,
+      "total": 14288,
+      "rate": 0.0
+    },
+    "comment_normalized_match": {
+      "matched": 0,
+      "total": 78119,
+      "rate": 0.0
+    },
+    "comment_unmatched_examples": [
+      "[2-3] 루이비통♥[루비  아 제가 강서구에서 저 일을 당한거에요",
+      "[23] 언니 성격이 주관없고 우유부단하죠? 그러니까 저런 남자한테 질질 끌려다니면서 행동수칙 카톡이나 받는거임",
+      "[8] 일요일 도파민 헤메 무료입니다~~\n\n도파민은 어떠신가요?\n365일 24시 입니다\n\n1부~3부 2인1조로 풀상주중\n사고처리확실 스타트톡 개수톡 퇴근시칼수금!! 일하실때 필요한 비품 없는거 없어요 !!\n(스팀다리미, 꼬리빗, 숙취해소제,핫팩,담요)등\n\n아가씨 케어 정말 잘합니다\n밀빵 가능 갯수는 정점 찍을거에요~!!\n한번만 믿고 연락주세요~\n\n출근문의\n도파민은 석준 [전화번호]\n카카오톡 : June.mk\n3부: 태선 [전화번호]\n카카오톡 : sun8163",
+      "[3] 어제 ᄅᄋ 개술방...진짜 하",
+      "[3] 근데 오래다님 본명도 어느정도 아는데 얘는 ᄅᄋ 모르겟어서 더신기해욬ᄏᄏᄏᄏᄏᄏ",
+      "[1] 위험하시네요",
+      "[1] 손이랑 화장실 ᄉᄇ ᄏᄏᄏᄏ ᅲᅲ",
+      "[1-1] 이유는요?"
+    ]
+  },
+  "sft": {
+    "path": "/Users/unoa/projects/dalbitalba-train-data/sft_pairs.v2.jsonl",
+    "row_count": 78119,
+    "pair_types": {
+      "null": 78119
+    },
+    "post_exact_match": {
+      "matched": 0,
+      "total": 0,
+      "rate": 0.0
+    },
+    "comment_instruction_match": {
+      "matched": 0,
+      "total": 0,
+      "rate": 0.0
+    },
+    "comment_output_match": {
+      "matched": 0,
+      "total": 0,
+      "rate": 0.0
+    },
+    "comment_reply_pair_match": {
+      "matched": 0,
+      "total": 0,
+      "rate": 0.0
+    },
+    "missing_source_id_examples": [],
+    "comment_unmatched_examples": []
+  }
+}

@@ -1,0 +1,320 @@
+{
+  "vault_root": "obsidian_cache",
+  "candidate_files": [
+    "구현/페르소나-설계/30인-요약.md"
+  ],
+  "personas_aggregated_count": 22,
+  "personas_accepted_count": 30,
+  "personas": [
+    {
+      "id": 1,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "강남3년차",
+      "tone": "존댓말",
+      "mood": "resigned",
+      "particles": "ㅋㅋ, ㅠ, ㅠㅠ, ㅇㅇ",
+      "trait": "경력자 체념 톤",
+      "source": "p-table"
+    },
+    {
+      "id": 2,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "서면텐5년",
+      "tone": "존댓말",
+      "mood": "industry_info",
+      "particles": "-",
+      "trait": "실무 질문 주축",
+      "source": "p-table"
+    },
+    {
+      "id": 3,
+      "name": "강남(가명)",
+      "tone": "존댓말",
+      "mood": "anxious",
+      "particles": "ㅋㅋ, ㅠ",
+      "trait": "신입경력자 placeholder",
+      "source": "synthesized-placeholder",
+      "files": [
+        "(placeholder; cycle-2 imports apps/web/lib/ai/persona-data.json)"
+      ],
+      "body_excerpt": "placeholder: 강남(가명) / 존댓말 / anxious"
+    },
+    {
+      "id": 4,
+      "name": "역삼(가명)",
+      "tone": "존댓말",
+      "mood": "seeking_empathy",
+      "particles": "ㅠㅠ",
+      "trait": "단문 익명 placeholder",
+      "source": "synthesized-placeholder",
+      "files": [
+        "(placeholder; cycle-2 imports apps/web/lib/ai/persona-data.json)"
+      ],
+      "body_excerpt": "placeholder: 역삼(가명) / 존댓말 / seeking_empathy"
+    },
+    {
+      "id": 5,
+      "name": "선릉(가명)",
+      "tone": "혼용",
+      "mood": "industry_info",
+      "particles": "-",
+      "trait": "정보공유 placeholder",
+      "source": "synthesized-placeholder",
+      "files": [
+        "(placeholder; cycle-2 imports apps/web/lib/ai/persona-data.json)"
+      ],
+      "body_excerpt": "placeholder: 선릉(가명) / 혼용 / industry_info"
+    },
+    {
+      "id": 6,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "강남셔츠룸",
+      "source": "inline"
+    },
+    {
+      "id": 7,
+      "name": "논현(가명)",
+      "tone": "존댓말",
+      "mood": "money_worry",
+      "particles": "ㅠ",
+      "trait": "수익 고민 placeholder",
+      "source": "synthesized-placeholder",
+      "files": [
+        "(placeholder; cycle-2 imports apps/web/lib/ai/persona-data.json)"
+      ],
+      "body_excerpt": "placeholder: 논현(가명) / 존댓말 / money_worry"
+    },
+    {
+      "id": 8,
+      "name": "압구정(가명)",
+      "tone": "존댓말",
+      "mood": "self_image",
+      "particles": "ㅋ",
+      "trait": "외모/이미지 placeholder",
+      "source": "synthesized-placeholder",
+      "files": [
+        "(placeholder; cycle-2 imports apps/web/lib/ai/persona-data.json)"
+      ],
+      "body_excerpt": "placeholder: 압구정(가명) / 존댓말 / self_image"
+    },
+    {
+      "id": 9,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "대전3번가",
+      "tone": "존댓말",
+      "mood": "depressed",
+      "particles": "ㅠㅠ, 어...",
+      "trait": "새벽 감성",
+      "source": "p-table"
+    },
+    {
+      "id": 10,
+      "name": "수원(가명)",
+      "tone": "반말",
+      "mood": "angry",
+      "particles": "-",
+      "trait": "단문 분노 placeholder",
+      "source": "synthesized-placeholder",
+      "files": [
+        "(placeholder; cycle-2 imports apps/web/lib/ai/persona-data.json)"
+      ],
+      "body_excerpt": "placeholder: 수원(가명) / 반말 / angry"
+    },
+    {
+      "id": 11,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "인천라운지",
+      "source": "inline"
+    },
+    {
+      "id": 12,
+      "name": "분당(가명)",
+      "tone": "존댓말",
+      "mood": "depressed",
+      "particles": "ㅠㅠ",
+      "trait": "새벽 감성 placeholder",
+      "source": "synthesized-placeholder",
+      "files": [
+        "(placeholder; cycle-2 imports apps/web/lib/ai/persona-data.json)"
+      ],
+      "body_excerpt": "placeholder: 분당(가명) / 존댓말 / depressed"
+    },
+    {
+      "id": 13,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "ㅇㅇ",
+      "tone": "반말",
+      "mood": "seeking_empathy",
+      "particles": "ㅠ",
+      "trait": "단문 공감호소",
+      "source": "p-table"
+    },
+    {
+      "id": 14,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "ㅇ",
+      "tone": "반말",
+      "mood": "angry",
+      "particles": "ㅠ",
+      "trait": "짧은 분노",
+      "source": "p-table"
+    },
+    {
+      "id": 15,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "ㅂ",
+      "source": "inline"
+    },
+    {
+      "id": 16,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "ㅁ",
+      "source": "inline"
+    },
+    {
+      "id": 17,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "야",
+      "tone": "반말",
+      "mood": "angry",
+      "particles": "-",
+      "trait": "거친 톤",
+      "source": "p-table"
+    },
+    {
+      "id": 18,
+      "name": "ㅎ",
+      "tone": "반말",
+      "mood": "seeking_empathy",
+      "particles": "ㅋ",
+      "trait": "단문자 익명 placeholder",
+      "source": "synthesized-placeholder",
+      "files": [
+        "(placeholder; cycle-2 imports apps/web/lib/ai/persona-data.json)"
+      ],
+      "body_excerpt": "placeholder: ㅎ / 반말 / seeking_empathy"
+    },
+    {
+      "id": 19,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "익명",
+      "source": "inline"
+    },
+    {
+      "id": 20,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "지나가던",
+      "tone": "존댓말",
+      "mood": "positive",
+      "particles": "ㅠ",
+      "trait": "가벼운 톤",
+      "source": "p-table"
+    },
+    {
+      "id": 21,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "ㅎㅇ",
+      "source": "inline"
+    },
+    {
+      "id": 22,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "그냥글",
+      "source": "inline"
+    },
+    {
+      "id": 23,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "잠못자",
+      "source": "inline"
+    },
+    {
+      "id": 24,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "고민많음",
+      "source": "inline"
+    },
+    {
+      "id": 25,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "새벽감성",
+      "source": "inline"
+    },
+    {
+      "id": 26,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "뭐든물어봐",
+      "source": "inline"
+    },
+    {
+      "id": 27,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "가끔씩",
+      "source": "inline"
+    },
+    {
+      "id": 28,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "퇴근후",
+      "source": "inline"
+    },
+    {
+      "id": 29,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "낮에사는언니",
+      "source": "inline"
+    },
+    {
+      "id": 30,
+      "files": [
+        "구현/페르소나-설계/30인-요약.md"
+      ],
+      "name": "불금언니",
+      "source": "inline"
+    }
+  ],
+  "free_form_persona_files": [],
+  "placeholder_note": "p-003,004,005,007,008,010,012,018 are synthesized placeholders. Real archetypes live at apps/web/lib/ai/persona-data.json (sister Next.js repo). Cycle-2 must import that JSON; cycle-1 uses placeholders for ID-coverage only."
+}

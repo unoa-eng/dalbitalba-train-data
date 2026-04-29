@@ -1,0 +1,10 @@
+{
+  "model": "Qwen/Qwen3-0.6B",
+  "device": "mps",
+  "n_baseline": 100,
+  "n_sft": 100,
+  "baseline_elapsed_sec": 149.22906804084778,
+  "sft_elapsed_sec": 198.3107271194458,
+  "max_new_tokens": 120,
+  "note": "post-sft is few-shot simulation. Real SFT requires RunPod GPU pod (out of session scope)."
+}

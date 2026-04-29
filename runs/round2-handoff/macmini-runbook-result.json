@@ -1,0 +1,74 @@
+{
+  "machine": "mac-mini-01",
+  "completed_at": "2026-04-29T03:22:07Z",
+  "baseline_artifact": {
+    "path": "runs/round2-local-smoke/baseline.jsonl",
+    "sample_count": 100,
+    "kind_counts": {
+      "post": 20,
+      "comment": 80
+    }
+  },
+  "smoke_stats": {
+    "model": "Qwen/Qwen3-0.6B",
+    "device": "mps",
+    "n_baseline": 100,
+    "n_sft": 100,
+    "baseline_elapsed_sec": 149.22906804084778,
+    "sft_elapsed_sec": 198.3107271194458,
+    "max_new_tokens": 120,
+    "note": "post-sft is few-shot simulation. Real SFT requires RunPod GPU pod (out of session scope)."
+  },
+  "post_sft_metrics": {
+    "n_ai": 100,
+    "n_raw": 2451,
+    "bigram_jsd": 0.5000340924785803,
+    "length_kl": 1.9512146370046293,
+    "digit_density_delta": 0.049997063343549954,
+    "english_density_delta": 0.015903015419005205,
+    "domain_keyword_alignment": 0.0,
+    "tone_distribution_match": 0.1466299469604243,
+    "mauve_score": null
+  },
+  "post_sft_gate": {
+    "verdict": "FAIL",
+    "violations": [
+      "bigram_jsd=0.5000 > 0.08",
+      "length_kl=1.9512 > 0.1",
+      "digit_density_delta=0.0500 > 0.03",
+      "domain_keyword_alignment=0.0000 < 0.5"
+    ]
+  },
+  "v2_metrics": {
+    "punct_ratio_match_max": 0.25,
+    "choseong_marker_match_max": 0.22321428571428573,
+    "reply_depth_kl": 39.86313713864979,
+    "persona_consistency": 1.0,
+    "cross_machine_agreement": 0.0
+  },
+  "overall_gate": {
+    "verdict": "FAIL",
+    "violations": [
+      "bigram_jsd=0.5000 > 0.08",
+      "length_kl=1.9512 > 0.1",
+      "digit_density_delta=0.0500 > 0.03",
+      "domain_keyword_alignment=0.0000 < 0.5",
+      "punct_ratio_match_max=0.2500 > 0.15",
+      "choseong_marker_match_max=0.2232 > 0.2",
+      "reply_depth_kl=39.8631 > 0.2"
+    ]
+  },
+  "direction_confirmed": null,
+  "direction_note": "No baseline eval JSON was produced by Phase F; summary uses baseline.jsonl artifact counts plus post-sft-eval-v2.json metrics.",
+  "phase_status": "A=0;B=0;C=0;D=0;E=0;F=0;G=0;H=0;",
+  "phase_status_detail": {
+    "A": 0,
+    "B": 0,
+    "C": 0,
+    "D": 0,
+    "E": 0,
+    "F": 0,
+    "G": 0,
+    "H": 0
+  }
+}

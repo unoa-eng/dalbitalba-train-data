@@ -1,0 +1,546 @@
+{
+  "timestamp": "2026-04-27T14:08:24.747077",
+  "cpt_file": "/Users/unoa/projects/dalbitalba-train-data/cpt_corpus.v2.jsonl",
+  "val_file": "/Users/unoa/projects/dalbitalba-train-data/val_set.v2.jsonl",
+  "original_val_count": 2880,
+  "removed_count": 67,
+  "kept_count": 2813,
+  "removed_rows": [
+    {
+      "text": "[4] 썸데이 G팀 마동석입니다\n전지역 픽업가능\n첫출 각종이벤트\n한분한분 최선을다해모실게요\n[전화번호]\n편하게 연락주세요",
+      "kind": "comment",
+      "source_id": "1201257",
+      "source_field": "comment",
+      "length_bucket": "md",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[10] 광고 권한이 없습니다.",
+      "kind": "comment",
+      "source_id": "1201257",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[1] 삭제된 댓글입니다.",
+      "kind": "comment",
+      "source_id": "1201251",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[1] 안녕하세요 ᄒᄒ 요즘 날씨가 추워졌는데\n감기 조심하시구 고생하시는 만큼\n많이 벌어가시길 바라겠습니다 !!\n연락 한번 주세요 :)\n\n썸데이 하유호\n[전화번호]\n카카오 ha1922\n\n강남 쩜오 하유호\n[URL]\n\n썸데이 G팀 하루평균 10방이상\n밀빵 확실하게 해드립니다.\n강남 쩜오중 언니 젤 적은 가게\n잘 적응하시게 도와드리겠습니다.",
+      "kind": "comment",
+      "source_id": "1201239",
+      "source_field": "comment",
+      "length_bucket": "lg",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[1-2] ᄏᄏᄏᄏ",
+      "kind": "comment",
+      "source_id": "1201225",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[2] 연락 한번 주세요 :)\n\n썸데이 하유호\n[전화번호]\n카카오 ha1922\n\n강남 쩜오 하유호\n[URL]\n\n썸데이 G팀 하루평균 10방이상\n밀빵 확실하게 해드립니다.\n강남 쩜오중 언니 젤 적은 가게\n잘 적응하시게 도와드리겠습니다.",
+      "kind": "comment",
+      "source_id": "1201208",
+      "source_field": "comment",
+      "length_bucket": "lg",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[8] 광고 권한이 없습니다.",
+      "kind": "comment",
+      "source_id": "1201208",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[1] 신고에 의해 블라인드 처리 되었습니다..",
+      "kind": "comment",
+      "source_id": "1201206",
+      "source_field": "comment",
+      "length_bucket": "sm",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[1] 연락주세요 언니\n\n오늘도 꿀방 팁길만 걸으세요.\n\n[전화번호]\n카카오 kai1922\n강남 세이렌\n당일 수금 원칙\n손님 많은 재범\n3인 1조",
+      "kind": "comment",
+      "source_id": "1201198",
+      "source_field": "comment",
+      "length_bucket": "md",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[5-1] 삭제된 댓글입니다.",
+      "kind": "comment",
+      "source_id": "1201198",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[1] 안녕하세요:) 저희도 한번 생각해주세요~~\n술X 초이스X 최저수위 갯수만땅 페이보장 해드려요!\n로드샵으로 실장,사장 항시 상주하며 절대 안전비밀보장!!\n오전11시부터 새벽까지 쉬는날 없이 영업합니다♡\n손님한테 대우받으며 스트레스 없이 일하세요^^\n\n카카오톡 aaa.098\n라인 aaa_098\n텔레 zz9_09",
+      "kind": "comment",
+      "source_id": "1201197",
+      "source_field": "comment",
+      "length_bucket": "lg",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[3] 안녕하세요 ᄒᄒ 요즘 날씨가 추워졌는데\n감기 조심하시구 고생하시는 만큼\n많이 벌어가시길 바라겠습니다 !!\n연락 한번 주세요 :)\n\n썸데이 하유호\n[전화번호]\n카카오 ha1922\n\n강남 쩜오 하유호\n[URL]\n\n썸데이 G팀 하루평균 10방이상\n밀빵 확실하게 해드립니다.\n강남 쩜오중 언니 젤 적은 가게\n잘 적응하시게 도와드리겠습니다.",
+      "kind": "comment",
+      "source_id": "1201196",
+      "source_field": "comment",
+      "length_bucket": "lg",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[1-1]\n[전화번호]\n서울 강남 호빠 보스턴\n직원100~150명 출근\n\n총쏘지않고 양심적으로\n오픈하고 장사합니다!\n\n강남 최저가\n양주 16만원\n잘생긴남자 6만원\n웨이터팁 5만원\n\n영업시간\n1년365일 연중무휴\n공휴일 일요일 정상영업\n저녁8시~다음날오후2시\n\n24시간 전화 카톡 문자\n문의 환영:)\n\n[전화번호]\n\n[전화번호]\n\n[전화번호]",
+      "kind": "comment",
+      "source_id": "1201195",
+      "source_field": "comment",
+      "length_bucket": "lg",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[5] 안녕하세요:) 저희도 한번 생각해주세요~~\n술X 초이스X 최저수위 갯수만땅 페이보장 해드려요!\n로드샵으로 실장,사장 항시 상주하며 절대 안전비밀보장!!\n오전11시부터 새벽까지 쉬는날 없이 영업합니다♡\n손님한테 대우받으며 스트레스 없이 일하세요^^\n\n카카오톡 aaa.098\n라인 aaa_098\n텔레 zz9_09",
+      "kind": "comment",
+      "source_id": "1201178",
+      "source_field": "comment",
+      "length_bucket": "lg",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[4] 세이렌 신규오픈쩜오 1등팀\n하루에20ᅳ25팀받습니다.\n\n선릉역10번출구 도보1분거리\n룸갯수 35개 단층1개\n- 쩜오 - TC\n- 2시간 스타트 4개 40만원\n- 5시간 8개 80만원\n- 이후로는 100만원ᅳ 풀묶\n6시간30까지 완티\n\n퇴근시 당일지급!\n지원금200-300면접후결정!\n\n\n자세한 문의는 카톡 및 전화\n전화 [전화번호]\n카톡ID jungho1499\n처음이신분 초보 하실수있습니다.",
+      "kind": "comment",
+      "source_id": "1201165",
+      "source_field": "comment",
+      "length_bucket": "xl",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[2] 썸데이로 오세요 언니\n[전화번호]\n카카오dowoo1111\n\n오픈 채팅 익명성 보장 됩니다!\n[URL]\n\n단층 룸 33개\n강남 쩜오 중 가장 언니 적은 가게\n하루 평균 G팀 10방이상\n썸데이 개인 1등 구좌 1등 G팀",
+      "kind": "comment",
+      "source_id": "1201160",
+      "source_field": "comment",
+      "length_bucket": "lg",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[7] 안녕하세요:) 저희도 한번 생각해주세요~~\n술X 초이스X 최저수위 갯수만땅 페이보장 해드려요!\n로드샵으로 실장,사장 항시 상주하며 절대 안전비밀보장!!\n오전11시부터 새벽까지 쉬는날 없이 영업합니다♡\n손님한테 대우받으며 스트레스 없이 일하세요^^\n\n카카오톡 aaa.098\n라인 aaa_098\n텔레 zz9_09",
+      "kind": "comment",
+      "source_id": "1201154",
+      "source_field": "comment",
+      "length_bucket": "lg",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[3] 삭제된 댓글입니다.",
+      "kind": "comment",
+      "source_id": "1201153",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[2] 엘리트 승철&경이 (구.사라있네)\n\n1. 칼스타트 풀상주\n\n2. 당일수금 현금 이체 칼수금\n\n3. 매점 카페 자율이용 . 모든 물풀 구비\n\n4. 출.퇴근 강요 X 사적인 연락 절대 X\n\n5. 개인 이벤트중 편하게 문의주세요!\n\n6. 백마디 말보다 행동이 중요하다고 생각합니다. 믿음에 보답하겠습니다.\n\n2인1조 풀상주.풀케어 오픈.미들 라운딩\n\n손님 제일 많이 받는 진우팀 메인조판\n방보는거 언제든 도와드리겠습니다\n\n1부 라운딩 승철 [전화번호]\n카카오톡 : ssin456\n\n2부 라운딩 경이 [전화번호]\n카카오톡 : dudrud9",
+      "kind": "comment",
+      "source_id": "1201151",
+      "source_field": "comment",
+      "length_bucket": "xl",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[5] 삭제된 댓글입니다.",
+      "kind": "comment",
+      "source_id": "1201126",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[1] 광고 권한이 없습니다.",
+      "kind": "comment",
+      "source_id": "1201111",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[2] 삭제된 댓글입니다.",
+      "kind": "comment",
+      "source_id": "1201082",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[1-1] 보스턴 강남 호빠\n정직하게 총 안쏘고 초이스 부터 계산 까지 직접 케어합니다\n가게에 항시 상주해있으며 , 무책임하게 손님만 보내놓고 돈벌지 않습니다 100%케어\n\n전화카톡문자 24시간 환영\n\n담당:한팀장\n문의 [전화번호]",
+      "kind": "comment",
+      "source_id": "1201073",
+      "source_field": "comment",
+      "length_bucket": "lg",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[2] 광고 권한이 없습니다.",
+      "kind": "comment",
+      "source_id": "1201061",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[5] 광고 권한이 없습니다.",
+      "kind": "comment",
+      "source_id": "1201028",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[4-1]  Δ \"움직이는 글자\"   【터치】\n면접비 / 소개비 / 만근비 이벤트 확인 가능\n\n◆ 엘리트 《구.사라있네》 【메인.총괄 성준이사】\n\n◆ 1시간. 9시이전 10만원 / 9시 이후 09만원\n\n◆ 밤 일 10년 이상 쌓아온 풍부한 경험 지식 신뢰!\n언니와 소통이 항상 최우선! 부당함 불편함 ZERO!\n\n◆ 1.2.3부 전부 18~20시간 '직접' 상주합니다\n언니가 원하신다면 밀빵도 적시적소 언제든지 OK!\n\n《팀총괄 조판이어서, 가게가 끝나야지 퇴근합니다\n눈치 NO! 언니들 목표만큼 편하게 일하세요 ^^》\n\n◆ '글램팜 판고데기' / '보다나 봉고데기'\n'상비 의약품' / '비상용 구두' / '비상용 홀복'\n\n◆ '슈퍼 초강력 숙취 해소제 3종 세트' 기타 등등\n필요 모든 물품 언제든 즉시 준비 중입니다\n================================§\n✨ \"항상 초심으로 감사하며 열심히 하겠습니다\"\n\n☀️ 【현.엘리트 성준】 카카오톡 : jun3963\n☎  【구.사라있네 성준】 연락처 : [전화번호]\n\n\"커뮤니티 게시판\" 식샤를 합시다 ◀ 검색\n언니분들 위한 각종 해장&힐링 맛집 다수 촬영",
+      "kind": "comment",
+      "source_id": "1201023",
+      "source_field": "comment",
+      "length_bucket": "xxl",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[1-1] 삭제된 댓글입니다.",
+      "kind": "comment",
+      "source_id": "1200997",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[1-2] 보스턴 호빠 [전화번호]\n\n절대 총 안 쏘고 정직하게 오픈하고 장사합니다\n\n강아지 동반 환영 (가게에 취하면 댕댕이 친구들 많아요)\n혼자오는 손님 환영 (땁 비율60%이상)\n한병만 마셔도 환영 (부담 갖지마세요)\n선수 안 앉히고 노셔도 환영 (지인들끼리 노셔도 됩니다)\n아베크 환영 (여자 보도 아가씨 불러드려요)\n\n정직하게 총 안쏘고 초이스 부터 계산 까지 직접 케어합니다\n가게에 항시 상주해있으며 , 무책임하게 손님만 보내놓고 돈벌지 않습니다 100%케어\n\n전화카톡문자 24시간 환영\n\nps. PM9시~PM10시 운동 중이라 부재 시 카톡&문자 남겨주세요 :)\n\n담당:한팀장\n문의 [전화번호]",
+      "kind": "comment",
+      "source_id": "1200996",
+      "source_field": "comment",
+      "length_bucket": "xl",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[3] 광고 권한이 없습니다.",
+      "kind": "comment",
+      "source_id": "1200982",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[1-4] 삭제된 댓글입니다.",
+      "kind": "comment",
+      "source_id": "1200974",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[2-1] 삭제된 댓글입니다.",
+      "kind": "comment",
+      "source_id": "1200974",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[4] 삭제된 댓글입니다.",
+      "kind": "comment",
+      "source_id": "1200974",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[6] 삭제된 댓글입니다.",
+      "kind": "comment",
+      "source_id": "1200970",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[2-2] 삭제된 댓글입니다.",
+      "kind": "comment",
+      "source_id": "1200968",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[3] 유앤미 G팀 승리입니다.\n24시간, 제가 잘하겠습니다.\n\nT/C\n18시 - 21시 전 출근자 : 10\n21시 후 출근자 : 9\n(지명비 + 1)\n[전화번호]\n(kakaotalk : aiomio2005)",
+      "kind": "comment",
+      "source_id": "1200959",
+      "source_field": "comment",
+      "length_bucket": "lg",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[1] 케어에 진심인 팀 입니다 ! 편히 연락주세요 !!\n\n유앤미 팀 바나나 윤규 입니다\n\n[전화번호]\n\n24시간 3인 1조 풀상주\n\n\n필요한 비품 준비되어 있지만 없는거라면\n밖에 나가서 사올게요!\n매점 지원 배고프지않게 해드릴게요\n빠른 스타트톡 약속하겠습니다\n칼 수금 도 당연하구요!\n\n가장중요한.\n제 언니가 방중에 일어난 사고에 있어\n부당하다면 제 일처럼 나서서 싸워드리겠습니다\n일하면서 그런일 하나에 언니들 멘탈나간거 보는 제가 더 마음아픕니다\n언니들 얘기 잘들어드리는거 약속드릴게요\n\n수위오버,술강요 정리 해드리겠습니다!\n\n기본적인것은 물론 언니들이 일에만 집중할수있게 최대한 지원 하겠습니다!\n편하게 연락주세요!\n\n9시 이전 출근 : 10\n9시 이후 출근 : 9\n지명비 : 매타임 +1\n\n팀 바나나\n[전화번호] 태강\n[전화번호] 세민\n[전화번호] 윤규",
+      "kind": "comment",
+      "source_id": "1200929",
+      "source_field": "comment",
+      "length_bucket": "xl",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[3] 신고에 의해 블라인드 처리 되었습니다..",
+      "kind": "comment",
+      "source_id": "1200886",
+      "source_field": "comment",
+      "length_bucket": "sm",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[2] ❤️선택에 후회없게 최선을 다해 모시겠습니다❤️\n\n서울 강서구청 ᄂᄃ 대형사무실\n능력있는 젊은 실장이 가족처럼\n일하실 공주님들 마감까지 같이\n풀케어 해드려요.\n\n양심적으로 그리고 일하시는 동안\n스트레스 안받고 돈버는데\n집중할 수 있게 해드립니다.\n\n■365일 연중무휴 일요일영업(일많음)\n●20대-40대 초보자가능\n■친구와함께 가능\n●텃세 X 떼초 X 순번확실!\n■점프가능! 찍먹가능! 출퇴자유!\n●인근지역 출퇴차가능\n■거리멀면 왕복차비지원 (8시출근기준)\n●대기가게보유 1번콜 다수보유\n■걷지마세요 발보도X 차로이동!\n●TC 찡떼5 고정6 룸티시11 당일지급!\n■사이즈 상관없음 어떻든 환영!\n●퇴근과 동시에 칼 정산!!\n\n오랜 영업으로 걸르고 걸러서 깔끔하고 편한 손님들 방에만\n넣어드릴려고 최선을 다하겠습니다 !\n24시 언제든 편하게 문의주세요 !\n혹시 바로 답없어도 믿고 조금만\n기다려주시면 성실히 답변드려요:)\n\nKaTalk : tint2040\n※ [전화번호]",
+      "kind": "comment",
+      "source_id": "1200863",
+      "source_field": "comment",
+      "length_bucket": "xl",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[2] 신고에 의해 블라인드 처리 되었습니다..",
+      "kind": "comment",
+      "source_id": "1200824",
+      "source_field": "comment",
+      "length_bucket": "sm",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[4] 안녕하세요 ᄒᄒ 요즘 날씨가 추워졌는데\n감기 조심하시구 고생하시는 만큼\n많이 벌어가시길 바라겠습니다 !!\n연락 한번 주세요 :)\n\n썸데이 하유호\n[전화번호]\n카카오 ha1922\n\n강남 쩜오 하유호\n[URL]\n\n썸데이 G팀 하루평균 10방이상\n밀빵 확실하게 해드립니다.\n강남 쩜오중 언니 젤 적은 가게\n잘 적응하시게 도와드리겠습니다.",
+      "kind": "comment",
+      "source_id": "1200800",
+      "source_field": "comment",
+      "length_bucket": "lg",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[3-1] 삭제된 댓글입니다.",
+      "kind": "comment",
+      "source_id": "1200776",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[3] 여기로오세용^^~~\n\n강남 도파민 \"동생\"\n\n폰-[전화번호]\n\n카카오톡-keroro25\n\n!!️개인이벤트중!!️\n\n언제든지 문의 환영!",
+      "kind": "comment",
+      "source_id": "1200764",
+      "source_field": "comment",
+      "length_bucket": "md",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[4] 광고 권한이 없습니다.",
+      "kind": "comment",
+      "source_id": "1200762",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[1-1] 신고에 의해 블라인드 처리 되었습니다..",
+      "kind": "comment",
+      "source_id": "1200756",
+      "source_field": "comment",
+      "length_bucket": "sm",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[4] 도파민은 어떠신가요?\n365일 24시 입니다\n\n1부~3부 2인1조로 풀상주중\n사고처리확실 스타트톡 개수톡 퇴근시칼수금!! 일하실때 필요한 비품 없는거 없어요 !!\n(스팀다리미, 꼬리빗, 숙취해소제,핫팩,담요)등\n\n아가씨 케어 정말 잘합니다\n밀빵 가능 갯수는 정점 찍을거에요~!!\n한번만 믿고 연락주세요~\n\n출근문의\n도파민은 석준 [전화번호]\n카카오톡 : June.mk\n3부: 태선 [전화번호]\n카카오톡 : sun8163",
+      "kind": "comment",
+      "source_id": "1200750",
+      "source_field": "comment",
+      "length_bucket": "xl",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[1-1] 보스턴 호빠 [전화번호]\n\n절대 총 안 쏘고 정직하게 오픈하고 장사합니다\n\n강아지 동반 환영 (가게에 취하면 댕댕이 친구들 많아요)\n혼자오는 손님 환영 (땁 비율60%이상)\n한병만 마셔도 환영 (부담 갖지마세요)\n선수 안 앉히고 노셔도 환영 (지인들끼리 노셔도 됩니다)\n아베크 환영 (여자 보도 아가씨 불러드려요)\n\n정직하게 총 안쏘고 초이스 부터 계산 까지 직접 케어합니다\n가게에 항시 상주해있으며 , 무책임하게 손님만 보내놓고 돈벌지 않습니다 100%케어\n\n전화카톡문자 24시간 환영\n\nps. PM9시~PM10시 운동 중이라 부재 시 카톡&문자 남겨주세요 :)\n\n담당:한팀장\n문의 [전화번호]",
+      "kind": "comment",
+      "source_id": "1200748",
+      "source_field": "comment",
+      "length_bucket": "xl",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[6] 광고 권한이 없습니다.",
+      "kind": "comment",
+      "source_id": "1200744",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[7] 광고 권한이 없습니다.",
+      "kind": "comment",
+      "source_id": "1200729",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[2] 요즘 날씨가 추워져가지구\n전체적으로 살짝 줄어든 건 맞지만\n썸데이는 오늘도 예약손님 많고 상황 좋습니다 !\n감기 조심하시구 고생하시는 만큼\n많이 벌어가시길 바라겠습니다 !!\n연락 한번 주세요 :)\n\n썸데이 하유호\n[전화번호]\n카카오 ha1922\n\n강남 쩜오 하유호\n[URL]\n\n썸데이 G팀 하루평균 10방이상\n밀빵 확실하게 해드립니다.\n강남 쩜오중 언니 젤 적은 가게\n잘 적응하시게 도와드리겠습니다.",
+      "kind": "comment",
+      "source_id": "1200695",
+      "source_field": "comment",
+      "length_bucket": "xl",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[3] 하퍼 도파민\n쩜오 썸데이 마동석입니다\n각종지원 이벤트 중\n[전화번호]\n편하게 연락주세요\n열심히 잘 모실게요",
+      "kind": "comment",
+      "source_id": "1200695",
+      "source_field": "comment",
+      "length_bucket": "md",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[3-1] 감사합니다 ᅮᅮ",
+      "kind": "comment",
+      "source_id": "1200661",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[8] 삭제된 댓글입니다.",
+      "kind": "comment",
+      "source_id": "1200657",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[1] 오늘도 꿀방 팁길만 걸으세요.\n\n[전화번호]\n카카오 kai1922\n강남 세이렌\n당일 수금 원칙\n손님 많은 재범\n3인 1조",
+      "kind": "comment",
+      "source_id": "1200598",
+      "source_field": "comment",
+      "length_bucket": "md",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[1-1] 보스턴 [전화번호]\n\n1년 365일 연중무휴 (공휴일 일요일 정상영업)\n영업시간 저녁8시~다음날오후2시 (선수들은 저녁10시쯤 출근해요)\n\n절대 총 안 쏘고 정직하게 오픈하고 장사합니다\n강남 호빠 17년 경력 업계 최고라 자부합니다\n가게에 항시 상주해있으며, 무책임하게 손님만 보내놓고 돈벌지 않습니다\n초이스부터 계산까지 제가 직접 진행합니다\n\n주대\n기본 위스키 최저가 판매 종류별 16만~22만\n고급 위스키 최저가 판매 종류별 70만~200만\n샴페인 최저가 판매 종류별 40만~220만\n현금가 (카드 결제 시 15% VAT 별도)\n티씨\n잘생긴 선수 시간당 6만 원\n웨이터 팁 기본 5만 원\n\n서비스\n과일 음료 기본 제공!\n맥주 탄산수 요청 시 서비스!!\n룸티 받지 않습니다!!!\n\nps. PM9시~PM10시 운동 중이라 부재 시 카톡&문자 남겨주세요 :)\n\n담당:한팀장\n[전화번호]",
+      "kind": "comment",
+      "source_id": "1200597",
+      "source_field": "comment",
+      "length_bucket": "xl",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[7] 건대W 프리미엄\n\n투명 친절 진심으로 고객 응대 진행을 맡아주실 실장님만 참여가 가능하며\n검증된 실장님들과의 연결을 도와드리는 건대 호빠 대표번호입니다.\n\n[전화번호]\n\n1. 정찰제 주대 운영\n2. 고객과의 카톡을 기반으로 한 투명한 시간 관리 (티씨 시간 체크)\n3. 술추가 강요X\n4. 실장교체 가능O\n\n진심을 다해 진행해 주실 실장님들만 참여가 가능합니다\n\n투명 · 친절 · 진심을 모토로\n끝까지 책임지는 확실한 케어를 약속드립니다.\n\nᅳᅳᅳᅳᅳᅳᅳᅳᅳᅳᅳᅳᅳᅳᅳ\n정찰제 기본 주대\n\n윈저 아이스 : 14\n골든블루 사피루스 : 15\n웨이터 : 5 (1회 고정)\n선수 T.C : 5 (2026년 기준)\n그 외 주류 다양 별도 문의\nᅳᅳᅳᅳᅳᅳᅳᅳᅳᅳᅳᅳᅳᅳᅳ\n서울 전 지역 픽업 가능하며\n오시는 길 택시비를 전액 지원해 드립니다",
+      "kind": "comment",
+      "source_id": "1200597",
+      "source_field": "comment",
+      "length_bucket": "xl",
+      "date": "2026-01-29T00:00:00"
+    },
+    {
+      "text": "[10] 삭제된 댓글입니다.",
+      "kind": "comment",
+      "source_id": "1201558",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-30T00:00:00"
+    },
+    {
+      "text": "[1-1] ᄏᄏᄏᄏᄏᄏᄏᄏᄏᄏᄏᄏᄏᄏᄏᄏ",
+      "kind": "comment",
+      "source_id": "1201523",
+      "source_field": "comment",
+      "length_bucket": "sm",
+      "date": "2026-01-30T00:00:00"
+    },
+    {
+      "text": "[6-2] 삭제된 댓글입니다.",
+      "kind": "comment",
+      "source_id": "1201501",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-30T00:00:00"
+    },
+    {
+      "text": "[3] 요기는 어떠세용 ᄒᄒ\n\n썸데이로 오세요 언니\n[전화번호]\n카카오dowoo1111\n\n오픈 채팅 익명성 보장 됩니다!\n[URL]\n\n단층 룸 33개\n강남 쩜오 중 가장 언니 적은 가게\n하루 평균 G팀 10방이상\n썸데이 개인 1등 구좌 1등 G팀",
+      "kind": "comment",
+      "source_id": "1201489",
+      "source_field": "comment",
+      "length_bucket": "lg",
+      "date": "2026-01-30T00:00:00"
+    },
+    {
+      "text": "[2-2] 비회원 [2-1]  넵..!!",
+      "kind": "comment",
+      "source_id": "1201464",
+      "source_field": "comment",
+      "length_bucket": "sm",
+      "date": "2026-01-30T00:00:00"
+    },
+    {
+      "text": "[6] 신고에 의해 블라인드 처리 되었습니다..",
+      "kind": "comment",
+      "source_id": "1201461",
+      "source_field": "comment",
+      "length_bucket": "sm",
+      "date": "2026-01-30T00:00:00"
+    },
+    {
+      "text": "[6-1] 삭제된 댓글입니다.",
+      "kind": "comment",
+      "source_id": "1201461",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-30T00:00:00"
+    },
+    {
+      "text": "[1-2] 신고에 의해 블라인드 처리 되었습니다..",
+      "kind": "comment",
+      "source_id": "1201448",
+      "source_field": "comment",
+      "length_bucket": "sm",
+      "date": "2026-01-30T00:00:00"
+    },
+    {
+      "text": "[2-1] 신고에 의해 블라인드 처리 되었습니다..",
+      "kind": "comment",
+      "source_id": "1201448",
+      "source_field": "comment",
+      "length_bucket": "sm",
+      "date": "2026-01-30T00:00:00"
+    },
+    {
+      "text": "[2] 오늘 비오려나",
+      "kind": "comment",
+      "source_id": "1201437",
+      "source_field": "comment",
+      "length_bucket": "xs",
+      "date": "2026-01-30T00:00:00"
+    },
+    {
+      "text": "[1-1] 강남 블랙홀 호빠 절대 총 안쏘고 집중케어 무한초이스❤️\n\n강남 No.1 호빠 선수\n(구)플러팅 -블랙홀-ᄇᄅᄒ\n역삼동 832-7번지 ᄒᄈ\n\n가람사장❤️ O1O.96O7.4O99 ❤️\n\n카카오톡 OB477\n\n처음오신분 OK환영!!\n혼자오시는분 많습니다!! OK환영!!\n단체생일파티 OK환영!!\n\n1. 맥주 + 탄산수 요청시 서비스!!\n2. 시간당 룸티 없습니다!!\n3. 강남권픽업 oK!\n4. 강남주클럽대!\n5. 강남수요비 강남여성시대 어게인 보스턴\nᄋᄀᄋ ᄇᄉᄐ\n\n든든한 지원군이 되어드리겠습니다.\n믿을수있는 가람이 되겠습니다.!!\n\n담당- 가람사장\n문의-✅ O1O.96O7.4O99 ✅",
+      "kind": "comment",
+      "source_id": "1201435",
+      "source_field": "comment",
+      "length_bucket": "xl",
+      "date": "2026-01-30T00:00:00"
+    },
+    {
+      "text": "[3-1]  Δ \"움직이는 글자\"   【터치】\n면접비 / 소개비 / 만근비 이벤트 확인 가능\n\n◆ 엘리트 《구.사라있네》 【메인.총괄 성준이사】\n\n◆ 1시간. 9시이전 10만원 / 9시 이후 09만원\n\n◆ 밤 일 10년 이상 쌓아온 풍부한 경험 지식 신뢰!\n언니와 소통이 항상 최우선! 부당함 불편함 ZERO!\n\n◆ 1.2.3부 전부 18~20시간 '직접' 상주합니다\n언니가 원하신다면 밀빵도 적시적소 언제든지 OK!\n\n《팀총괄 조판이어서, 가게가 끝나야지 퇴근합니다\n눈치 NO! 언니들 목표만큼 편하게 일하세요 ^^》\n\n◆ '글램팜 판고데기' / '보다나 봉고데기'\n'상비 의약품' / '비상용 구두' / '비상용 홀복'\n\n◆ '슈퍼 초강력 숙취 해소제 3종 세트' 기타 등등\n필요 모든 물품 언제든 즉시 준비 중입니다\n================================§\n✨ \"항상 초심으로 감사하며 열심히 하겠습니다\"\n\n☀️ 【현.엘리트 성준】 카카오톡 : jun3963\n☎  【구.사라있네 성준】 연락처 : [전화번호]\n\n\"커뮤니티 게시판\" 식샤를 합시다 ◀ 검색\n언니분들 위한 각종 해장&힐링 맛집 다수 촬영",
+      "kind": "comment",
+      "source_id": "1201434",
+      "source_field": "comment",
+      "length_bucket": "xxl",
+      "date": "2026-01-30T00:00:00"
+    }
+  ]
+}

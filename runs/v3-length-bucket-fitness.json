@@ -1,0 +1,225 @@
+{
+  "generated_at": "2026-04-27T08:02:58Z",
+  "source_files": {
+    "base": "cpt_corpus.v2.jsonl",
+    "patch": "cpt_patch_gap_repair.jsonl",
+    "merged": "cpt_corpus.v3.jsonl",
+    "raw_dir": "/Users/unoa/Downloads/crawled-data-v2"
+  },
+  "bucket_definition": {
+    "xs": {
+      "min_chars": 0,
+      "max_chars": 19
+    },
+    "sm": {
+      "min_chars": 20,
+      "max_chars": 49
+    },
+    "md": {
+      "min_chars": 50,
+      "max_chars": 99
+    },
+    "lg": {
+      "min_chars": 100,
+      "max_chars": 199
+    },
+    "xl": {
+      "min_chars": 200,
+      "max_chars": 499
+    },
+    "xxl": {
+      "min_chars": 500,
+      "max_chars": 1000000000
+    }
+  },
+  "target_distribution": {
+    "xs": 0.26,
+    "sm": 0.35,
+    "md": 0.18,
+    "lg": 0.09,
+    "xl": 0.11,
+    "xxl": 0.01
+  },
+  "pre_fix_invalid_bucket_rows": {
+    "cpt_patch_gap_repair.jsonl": 14794,
+    "cpt_corpus.v3.jsonl": 14794
+  },
+  "datasets": {
+    "v2": {
+      "name": "v2",
+      "path": "cpt_corpus.v2.jsonl",
+      "rows": 46856,
+      "chars": 2824452,
+      "avg_chars": 60.28,
+      "bucket_counts": {
+        "xs": 7351,
+        "sm": 22022,
+        "md": 11285,
+        "lg": 4120,
+        "xl": 1993,
+        "xxl": 85
+      },
+      "bucket_ratios": {
+        "xs": 0.1569,
+        "sm": 0.47,
+        "md": 0.2408,
+        "lg": 0.0879,
+        "xl": 0.0425,
+        "xxl": 0.0018
+      },
+      "bucket_char_ratios": {
+        "xs": 0.0417,
+        "sm": 0.2514,
+        "md": 0.2759,
+        "lg": 0.1949,
+        "xl": 0.2139,
+        "xxl": 0.0222
+      },
+      "delta_vs_target": {
+        "xs": -0.1031,
+        "sm": 0.12,
+        "md": 0.0608,
+        "lg": -0.0021,
+        "xl": -0.0675,
+        "xxl": -0.0082
+      },
+      "short_share_rows": 0.6269,
+      "long_share_rows": 0.1323,
+      "tv_distance_from_target": 0.1808,
+      "invalid_length_bucket_rows": 0
+    },
+    "patch": {
+      "name": "patch",
+      "path": "cpt_patch_gap_repair.jsonl",
+      "rows": 14794,
+      "chars": 343467,
+      "avg_chars": 23.22,
+      "bucket_counts": {
+        "xs": 6485,
+        "sm": 7921,
+        "md": 329,
+        "lg": 58,
+        "xl": 1,
+        "xxl": 0
+      },
+      "bucket_ratios": {
+        "xs": 0.4384,
+        "sm": 0.5354,
+        "md": 0.0222,
+        "lg": 0.0039,
+        "xl": 0.0001,
+        "xxl": 0.0
+      },
+      "bucket_char_ratios": {
+        "xs": 0.2973,
+        "sm": 0.6209,
+        "md": 0.061,
+        "lg": 0.0201,
+        "xl": 0.0007,
+        "xxl": 0.0
+      },
+      "delta_vs_target": {
+        "xs": 0.1784,
+        "sm": 0.1854,
+        "md": -0.1578,
+        "lg": -0.0861,
+        "xl": -0.1099,
+        "xxl": -0.01
+      },
+      "short_share_rows": 0.9738,
+      "long_share_rows": 0.004,
+      "tv_distance_from_target": 0.3638,
+      "invalid_length_bucket_rows": 0
+    },
+    "v3": {
+      "name": "v3",
+      "path": "cpt_corpus.v3.jsonl",
+      "rows": 61650,
+      "chars": 3167919,
+      "avg_chars": 51.39,
+      "bucket_counts": {
+        "xs": 13836,
+        "sm": 29943,
+        "md": 11614,
+        "lg": 4178,
+        "xl": 1994,
+        "xxl": 85
+      },
+      "bucket_ratios": {
+        "xs": 0.2244,
+        "sm": 0.4857,
+        "md": 0.1884,
+        "lg": 0.0678,
+        "xl": 0.0323,
+        "xxl": 0.0014
+      },
+      "bucket_char_ratios": {
+        "xs": 0.0694,
+        "sm": 0.2914,
+        "md": 0.2526,
+        "lg": 0.1759,
+        "xl": 0.1908,
+        "xxl": 0.0198
+      },
+      "delta_vs_target": {
+        "xs": -0.0356,
+        "sm": 0.1357,
+        "md": 0.0084,
+        "lg": -0.0222,
+        "xl": -0.0777,
+        "xxl": -0.0086
+      },
+      "short_share_rows": 0.7101,
+      "long_share_rows": 0.1015,
+      "tv_distance_from_target": 0.1441,
+      "invalid_length_bucket_rows": 0
+    }
+  },
+  "delta_v3_vs_v2": {
+    "rows_added_by_bucket": {
+      "xs": 6485,
+      "sm": 7921,
+      "md": 329,
+      "lg": 58,
+      "xl": 1,
+      "xxl": 0
+    },
+    "bucket_ratio_delta": {
+      "xs": 0.0675,
+      "sm": 0.0157,
+      "md": -0.0524,
+      "lg": -0.0201,
+      "xl": -0.0102,
+      "xxl": -0.0004
+    },
+    "bucket_char_ratio_delta": {
+      "xs": 0.0277,
+      "sm": 0.04,
+      "md": -0.0233,
+      "lg": -0.019,
+      "xl": -0.0231,
+      "xxl": -0.0024
+    },
+    "short_share_rows_delta": 0.0832,
+    "long_share_rows_delta": -0.0308,
+    "tv_distance_delta": -0.0367
+  },
+  "readiness": {
+    "verdict": "ready_with_warning",
+    "blocking_issues": [],
+    "warnings": [
+      "Rows >=100 chars remain underrepresented versus target (v3 long-share rows 10.15% vs target 21.00%).",
+      "Repair patch is overwhelmingly short-form (97.38% xs+sm by rows); this is acceptable for gap repair but will skew row-level sampling if additional short patches are appended without rebalance."
+    ],
+    "notes": [
+      "Canonical length_bucket labels are now consistent with text length in patch and merged v3 artifacts.",
+      "Patch contributes 24.00% of v3 rows but only 10.84% of v3 characters, so token-weighted training impact is materially smaller than row share."
+    ],
+    "actions_taken": [
+      "Regenerated cpt_patch_gap_repair.jsonl with canonical length_bucket values derived from text length.",
+      "Regenerated cpt_corpus.v3.jsonl from v2 + fixed patch rows.",
+      "Patched scripts/sanitize_context.py to emit canonical buckets instead of the literal label \"패치\".",
+      "Patched scripts/local_verification_loop.py to fail on invalid length_bucket values."
+    ]
+  }
+}

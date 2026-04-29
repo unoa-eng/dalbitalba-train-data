@@ -1,0 +1,265 @@
+{
+  "generated_at": "2026-04-28",
+  "reply_chain": {
+    "total": 23023,
+    "sample_size": 20,
+    "sample_connected": 20,
+    "sample_connection_rate": "20/20",
+    "verdict": "PASS",
+    "samples": [
+      {
+        "source_id": "1187864",
+        "parent": "유앤미 기준  일잘하는게 뭔데요? 마인드?",
+        "child": "신경 안써여",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1199142",
+        "parent": "단발에 마른언니??",
+        "child": "ㅋㅋㄱㅋㄱㅋㄱㅋㄱㅋㄱㄱㄱㄱㄱㄱㄷㅋㅋㅋ",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1186194",
+        "parent": "감사합니다\n혹시 조명밝으면 손님들이 알아보진않나여?",
+        "child": "저 인비절끼고일하는데 먼저 말 안하면 몰라요",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1192943",
+        "parent": "와 이뿌다 ㅎ 이제 안크겠죠~~\n아니다 다리길면 더 크긴할텐데 ㅎ",
+        "child": "푸들 섞여서 글츄 ㅋㅋㅋ",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1193480",
+        "parent": "저 이번달 첫주 쉬구 250",
+        "child": "700이용..\n근데 남아있는 돈 300ㅜㅜ",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1194020",
+        "parent": "친구해요...ㅋㅋㅋㅋㅋㅋㅋㅋ",
+        "child": "저도 이쪽인데 아는 언니 없어요...ㅋㅋㅋ 일반인들 속여서 만나기는 그렇고",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1195817",
+        "parent": "ㅠㅠ 어디나 진상은 많지만 제가 확실히 케어해드릴게요",
+        "child": "MESSE사장놈  말만 함 ㅋㅋ",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1196575",
+        "parent": "퀸처럼 ㅈㅂ 쓸대없눈 뷴위기 없음",
+        "child": "저도 너무궁금\n여기 너무 정신이없어요ㅠ",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1187099",
+        "parent": "요새 패스 없는사람두 잇누?",
+        "child": "없다!",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1189647",
+        "parent": "네 변해여 그냥 오래일하지마요 이쁜얼굴 다 망칠라 내가 다 무서움",
+        "child": "딱 1년계획 세워놨는데 이정도면 오래인지.. 도 모르겠어요..",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1196928",
+        "parent": "인사성 바른 유부초밥",
+        "child": "화팅 맨날 웃상인데 가끔 표정 안좋으면 걱정돼여ㅜ 몬일있나 하궁",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1188741",
+        "parent": "플러팅 어게인 없어지고 보스턴 블랙홀로 바꼈어요",
+        "child": "플러팅 보다 요즘 대세는 보스턴 인거 아시죠??\n퀸에서 조금만 검색해 봐요 손님들 모두다 보스턴으로 오세요!!ㅎㅎ\n초이스만 보고 가셔도 좋으니 한번 와서 보고 가세용!!",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1200983",
+        "parent": "7시반?-8시 출 5시-5시반?마감 까지 일해여",
+        "child": "금요일에 3방 보구 16개 나오던디",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1186082",
+        "parent": "언닌 이향수 좋아하세요?전 진짜 못맡겠아요",
+        "child": "옛날엔 최애향수였는데 지금은 취향이 바껴서 그닥 ㅜㅜ",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1186119",
+        "parent": "말안해도 알거같음ㅋㅋ\n정병관종색히 존나피곤하네",
+        "child": "저도요 ㅈㄴ 싫음 알지도 못하는 저도 이런데 주변사람들은 오죽할꺼 싶음",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1196758",
+        "parent": "이런적 처음이라 충격받아서 출근못하고있어요ㅠㅠ\n사대가 안맞는날이었나봐요…",
+        "child": "뭐 저런 걸로 충격을 ㅋㅋㅋㅋ 생리 영향 큼",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1194134",
+        "parent": "작성자 [1-1]  그냥 무시하려고 노력해요..ㅠ 차피 작은가슴 앉히는 놈들은 얼빠니까 없는거 알고 앉히는 놈들이에요",
+        "child": "저도 궁금 ㅜ 전 일단 빳빳한거 안입어용.. ㅈㄴ 더 작아보야서",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1193802",
+        "parent": "ㅠ금욜만 나가영ㅋㅋ",
+        "child": "파이팅입니다! 멋지신거같아요 ㅎㅎ",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1190339",
+        "parent": "담당옮겨서",
+        "child": "이유야 많죠 보통 경고로 넘어가는경우가 더 많은데 진짜 쉴드불가일정도 사유면 잘리겠죠 아가씨끼리 크게싸운경우(본인잘못100) 금전문제, 방에서 손님한테 크게실수 등등",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      },
+      {
+        "source_id": "1188473",
+        "parent": "병오년 새해, 가정에 평안과 웃음이 가득하길 바랍니다.\n팁길만 걸으세요~",
+        "child": "광고 권한이 없습니다.",
+        "connected": true,
+        "note": "parent non-empty and child non-empty"
+      }
+    ]
+  },
+  "context_comment_parent_ref": {
+    "total": 12901,
+    "has_parent_tag": 12901,
+    "parent_meaningful": 12318,
+    "parent_empty": 0,
+    "parent_too_short": 583,
+    "meaningful_rate": "12318/12901 (95.5%)",
+    "verdict": "PASS",
+    "short_parent_examples": [
+      {
+        "parent": "퀸 셋",
+        "source_id": "1186747"
+      },
+      {
+        "parent": "2222",
+        "source_id": "1186738"
+      },
+      {
+        "parent": "브압",
+        "source_id": "1186686"
+      },
+      {
+        "parent": "2",
+        "source_id": "1186643"
+      },
+      {
+        "parent": "2",
+        "source_id": "1186643"
+      }
+    ],
+    "note": "too_short(<5chars) are legitimate ultra-short community replies (e.g. 2222, 퀸 셋)"
+  },
+  "raw_reply_tag_residual": {
+    "count": 232,
+    "target": 0,
+    "pass": false,
+    "verdict": "FAIL",
+    "analysis": "모두 reply_chain kind. 작성자 [N-N] 패턴 - 원글 작성자가 댓글 번호를 인용하는 커뮤니티 관행. raw 태그 아닌 실제 사용자 텍스트 일 수 있음.",
+    "examples": [
+      {
+        "source_id": "1186692",
+        "kind": "reply_chain",
+        "output_snippet": "작성자 [1-1]  ㅠㅜ그래도 손님 많아야 하니깐요 초이스 보시져 아니면 ㅍㅍ도 괜찮구요",
+        "note": "author tag pattern e.g. 작성자 [1-1]"
+      },
+      {
+        "source_id": "1186671",
+        "kind": "reply_chain",
+        "output_snippet": "작성자 [1-1]  넵 연락한번 주셔요 :)",
+        "note": "author tag pattern e.g. 작성자 [1-1]"
+      },
+      {
+        "source_id": "1186532",
+        "kind": "reply_chain",
+        "output_snippet": "작성자 [1-1]  수위 낮은 방도 많아요 ㅠㅠ 오셔요 언니@+@",
+        "note": "author tag pattern e.g. 작성자 [1-1]"
+      },
+      {
+        "source_id": "1186492",
+        "kind": "reply_chain",
+        "output_snippet": "작성자 [1-1]  지금 폭설은 아니라서 이상태면 택시 잘잡아져요",
+        "note": "author tag pattern e.g. 작성자 [1-1]"
+      },
+      {
+        "source_id": "1186450",
+        "kind": "reply_chain",
+        "output_snippet": "작성자 [3-1]  어디예요? ㅇㅍㅌ?? 저 정쩜수니인데 상탈도 그방분위기 재밌어서 딱한번 해보고 아예 수위방 자체가 별로없는데.. 강요라니 너무 충격",
+        "note": "author tag pattern e.g. 작성자 [1-1]"
+      },
+      {
+        "source_id": "1186384",
+        "kind": "reply_chain",
+        "output_snippet": "작성자 [1-1]  약 덜깻냐??",
+        "note": "author tag pattern e.g. 작성자 [1-1]"
+      },
+      {
+        "source_id": "1186292",
+        "kind": "reply_chain",
+        "output_snippet": "작성자 [2-1]  걍 쿠팡야간 한달 ㄱㄱ\n의지생길수있음!",
+        "note": "author tag pattern e.g. 작성자 [1-1]"
+      },
+      {
+        "source_id": "1186284",
+        "kind": "reply_chain",
+        "output_snippet": "작성자 [1-1]  보스턴 [전화번호]\n\n1년 365일 연중무휴 (공휴일 일요일 정상영업)\n영업시간 저녁8시~다음날오후2시 (선수들은 저녁10시쯤 출근해요)\n\n절대 총 안 쏘고 정직하게 오픈하고 장사합니다\n강남 호빠",
+        "note": "author tag pattern e.g. 작성자 [1-1]"
+      },
+      {
+        "source_id": "1186266",
+        "kind": "reply_chain",
+        "output_snippet": "작성자 [1-1]  아하 술은 즐기면 독약 이라고 합니다ㅜㅜ",
+        "note": "author tag pattern e.g. 작성자 [1-1]"
+      },
+      {
+        "source_id": "1186262",
+        "kind": "reply_chain",
+        "output_snippet": "작성자 [2-1]  까내리는의도는 아닌거같은데\n30대후반에 자취방이라는말은 안쓸거같아요ㅋㅋㅋ\n저는33인데 저런단어를 쓰질않아서\n뭔가 어른들이 대학교들어가는 어린학생들한테\n자취방구했니? 이런 느낌이라ㅋㅋㅋ",
+        "note": "author tag pattern e.g. 작성자 [1-1]"
+      }
+    ]
+  },
+  "output_length_distribution": {
+    "count": 32852,
+    "mean": 43.49,
+    "median": 24,
+    "p5": 5,
+    "p25": 12,
+    "p75": 46,
+    "p95": 135,
+    "min": 3,
+    "max": 1161,
+    "note": "community comment characteristic: short outputs are normal (median=24 chars)"
+  }
+}

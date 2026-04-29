@@ -1,0 +1,276 @@
+{
+  "level_1_distribution": {
+    "bigram_jsd": 0.231791,
+    "bigram_jsd_pass": false,
+    "length_kl": 0.037107,
+    "length_kl_pass": false
+  },
+  "level_2_style_fingerprint": {
+    "reference": {
+      "count": 42137,
+      "chosung_rate": 23.2,
+      "laugh_rate": 9.6,
+      "cry_rate": 6.8,
+      "question_rate": 40.5,
+      "ellipsis_rate": 28.1,
+      "exclaim_rate": 6.2,
+      "jondaetmal_rate": 28.5,
+      "avg_length": 82.8,
+      "median_length": 52,
+      "slang_density": {
+        "하퍼": 6.66,
+        "초이스": 4.16,
+        "밀빵": 0.82,
+        "쩜오": 1.36,
+        "수위": 3.53,
+        "업진": 3.48,
+        "진상": 0.96,
+        "텐카": 1.97,
+        "셔츠": 0.94,
+        "상띠": 1.87,
+        "퍼블": 0.84,
+        "손놈": 1.72,
+        "보도": 0.33,
+        "가라": 0.98,
+        "노도": 1.14,
+        "하띠": 1.2,
+        "뺑이": 1.33,
+        "골타": 0.43,
+        "유흥": 0.14,
+        "실장": 0.75,
+        "마담": 1.31,
+        "부장": 0.85,
+        "TC": 0.07
+      }
+    },
+    "generated": {
+      "count": 45230,
+      "chosung_rate": 31.1,
+      "laugh_rate": 14.1,
+      "cry_rate": 8.6,
+      "question_rate": 26.8,
+      "ellipsis_rate": 18.8,
+      "exclaim_rate": 4.8,
+      "jondaetmal_rate": 20.9,
+      "avg_length": 80.3,
+      "median_length": 63,
+      "slang_density": {
+        "하퍼": 4.12,
+        "초이스": 2.96,
+        "밀빵": 0.5,
+        "쩜오": 0.7,
+        "수위": 2.38,
+        "업진": 2.2,
+        "진상": 0.88,
+        "텐카": 1.4,
+        "셔츠": 0.7,
+        "상띠": 1.21,
+        "퍼블": 0.51,
+        "손놈": 1.14,
+        "보도": 0.31,
+        "가라": 0.61,
+        "노도": 0.75,
+        "하띠": 0.82,
+        "뺑이": 0.81,
+        "골타": 0.29,
+        "유흥": 0.1,
+        "실장": 0.77,
+        "마담": 1.01,
+        "부장": 0.87,
+        "TC": 0.03
+      }
+    },
+    "comparison": {
+      "chosung_rate": {
+        "reference": 23.2,
+        "generated": 31.1,
+        "deviation_pct": 34.1,
+        "pass": false
+      },
+      "laugh_rate": {
+        "reference": 9.6,
+        "generated": 14.1,
+        "deviation_pct": 46.9,
+        "pass": false
+      },
+      "cry_rate": {
+        "reference": 6.8,
+        "generated": 8.6,
+        "deviation_pct": 26.5,
+        "pass": true
+      },
+      "question_rate": {
+        "reference": 40.5,
+        "generated": 26.8,
+        "deviation_pct": -33.8,
+        "pass": false
+      },
+      "ellipsis_rate": {
+        "reference": 28.1,
+        "generated": 18.8,
+        "deviation_pct": -33.1,
+        "pass": false
+      },
+      "exclaim_rate": {
+        "reference": 6.2,
+        "generated": 4.8,
+        "deviation_pct": -22.6,
+        "pass": true
+      },
+      "jondaetmal_rate": {
+        "reference": 28.5,
+        "generated": 20.9,
+        "deviation_pct": -26.7,
+        "pass": true
+      },
+      "avg_length": {
+        "reference": 82.8,
+        "generated": 80.3,
+        "deviation_pct": -3.0,
+        "pass": true
+      },
+      "median_length": {
+        "reference": 52,
+        "generated": 63,
+        "deviation_pct": 21.2,
+        "pass": true
+      },
+      "slang_density": {
+        "하퍼": {
+          "ref": 6.66,
+          "gen": 4.12,
+          "dev": -38.1,
+          "pass": true
+        },
+        "초이스": {
+          "ref": 4.16,
+          "gen": 2.96,
+          "dev": -28.8,
+          "pass": true
+        },
+        "밀빵": {
+          "ref": 0.82,
+          "gen": 0.5,
+          "dev": -39.0,
+          "pass": true
+        },
+        "쩜오": {
+          "ref": 1.36,
+          "gen": 0.7,
+          "dev": -48.5,
+          "pass": true
+        },
+        "수위": {
+          "ref": 3.53,
+          "gen": 2.38,
+          "dev": -32.6,
+          "pass": true
+        },
+        "업진": {
+          "ref": 3.48,
+          "gen": 2.2,
+          "dev": -36.8,
+          "pass": true
+        },
+        "진상": {
+          "ref": 0.96,
+          "gen": 0.88,
+          "dev": -8.3,
+          "pass": true
+        },
+        "텐카": {
+          "ref": 1.97,
+          "gen": 1.4,
+          "dev": -28.9,
+          "pass": true
+        },
+        "셔츠": {
+          "ref": 0.94,
+          "gen": 0.7,
+          "dev": -25.5,
+          "pass": true
+        },
+        "상띠": {
+          "ref": 1.87,
+          "gen": 1.21,
+          "dev": -35.3,
+          "pass": true
+        },
+        "퍼블": {
+          "ref": 0.84,
+          "gen": 0.51,
+          "dev": -39.3,
+          "pass": true
+        },
+        "손놈": {
+          "ref": 1.72,
+          "gen": 1.14,
+          "dev": -33.7,
+          "pass": true
+        },
+        "보도": {
+          "ref": 0.33,
+          "gen": 0.31,
+          "dev": -6.1,
+          "pass": true
+        },
+        "가라": {
+          "ref": 0.98,
+          "gen": 0.61,
+          "dev": -37.8,
+          "pass": true
+        },
+        "노도": {
+          "ref": 1.14,
+          "gen": 0.75,
+          "dev": -34.2,
+          "pass": true
+        },
+        "하띠": {
+          "ref": 1.2,
+          "gen": 0.82,
+          "dev": -31.7,
+          "pass": true
+        },
+        "뺑이": {
+          "ref": 1.33,
+          "gen": 0.81,
+          "dev": -39.1,
+          "pass": true
+        },
+        "골타": {
+          "ref": 0.43,
+          "gen": 0.29,
+          "dev": -32.6,
+          "pass": true
+        },
+        "유흥": {
+          "ref": 0.14,
+          "gen": 0.1,
+          "dev": -28.6,
+          "pass": true
+        },
+        "실장": {
+          "ref": 0.75,
+          "gen": 0.77,
+          "dev": 2.7,
+          "pass": true
+        },
+        "마담": {
+          "ref": 1.31,
+          "gen": 1.01,
+          "dev": -22.9,
+          "pass": true
+        },
+        "부장": {
+          "ref": 0.85,
+          "gen": 0.87,
+          "dev": 2.4,
+          "pass": true
+        }
+      }
+    },
+    "pass_rate": "5/9"
+  },
+  "overall_verdict": "NEEDS_IMPROVEMENT"
+}

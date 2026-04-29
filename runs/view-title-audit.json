@@ -1,0 +1,110 @@
+{
+  "total_records": 57103,
+  "total_posts": 11250,
+  "view_bucket_distribution": {
+    "note": "post records only (comments/context_comment excluded)",
+    "buckets": {
+      "신규": {
+        "count": 67,
+        "pct": 0.6,
+        "target_min": 0,
+        "target_max": 10,
+        "in_target": true
+      },
+      "소수": {
+        "count": 4123,
+        "pct": 36.65,
+        "target_min": 30,
+        "target_max": 40,
+        "in_target": true
+      },
+      "보통": {
+        "count": 3749,
+        "pct": 33.32,
+        "target_min": 30,
+        "target_max": 40,
+        "in_target": true
+      },
+      "인기": {
+        "count": 3272,
+        "pct": 29.08,
+        "target_min": 15,
+        "target_max": 25,
+        "in_target": false
+      },
+      "핫": {
+        "count": 39,
+        "pct": 0.35,
+        "target_min": 0,
+        "target_max": 3,
+        "in_target": true
+      }
+    }
+  },
+  "view_range": {
+    "all_records_min": 3,
+    "all_records_max": 591,
+    "posts_min": 3,
+    "posts_max": 591,
+    "out_of_range_below_2": 0,
+    "out_of_range_above_500": 275,
+    "range_ok": false
+  },
+  "title_length": {
+    "posts_analyzed": 11250,
+    "mean": 13.97,
+    "median": 14.0,
+    "target_mean": 14,
+    "target_median": 14,
+    "mean_diff_pct": 0.2,
+    "median_diff_pct": 0.0,
+    "mean_within_20pct": true,
+    "median_within_20pct": true
+  },
+  "title_anomalies": {
+    "short_title_lte1_count": 90,
+    "anomaly_rate_pct": 0.8,
+    "samples": [
+      {
+        "source_id": "1186555",
+        "title": "."
+      },
+      {
+        "source_id": "1186394",
+        "title": "."
+      },
+      {
+        "source_id": "1185773",
+        "title": "."
+      },
+      {
+        "source_id": "1197886",
+        "title": "ㅇ"
+      },
+      {
+        "source_id": "1197422",
+        "title": "1"
+      },
+      {
+        "source_id": "1197367",
+        "title": "E"
+      },
+      {
+        "source_id": "1197305",
+        "title": "ㅇ"
+      },
+      {
+        "source_id": "1197041",
+        "title": "ㅇ"
+      },
+      {
+        "source_id": "1196851",
+        "title": "펑"
+      },
+      {
+        "source_id": "1199149",
+        "title": "."
+      }
+    ]
+  }
+}

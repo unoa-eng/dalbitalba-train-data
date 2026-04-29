@@ -1,0 +1,42 @@
+{
+  "timestamp": "2026-04-28T17:28:44.510440",
+  "input_path": "/Users/unoa/projects/dalbitalba-train-data/cpt_context_stream.jsonl",
+  "output_path": "/Users/unoa/projects/dalbitalba-train-data/cpt_context_stream.jsonl",
+  "before_total": 43635,
+  "after_total": 42516,
+  "before_counts": {
+    "comment": 21558,
+    "post": 10063,
+    "context_comment": 12014
+  },
+  "after_counts": {
+    "comment": 20554,
+    "post": 10063,
+    "context_comment": 11899
+  },
+  "tag_stripped_rows": 2087,
+  "tag_stripped_occurrences": 2087,
+  "promo_removed": 956,
+  "dedup_removed": 69,
+  "boilerplate_removed": 10,
+  "short_after_tag_removed": 84,
+  "removed_total": 1119,
+  "removal_breakdown": {
+    "promo": 956,
+    "boilerplate": 10,
+    "short_after_tag": 84,
+    "dedup": 69
+  },
+  "removed_by_kind": {
+    "comment": 1004,
+    "context_comment": 115
+  },
+  "verification": {
+    "run_dir": "runs/local-verification-20260428-082911",
+    "timestamp": "2026-04-28T08:29:11Z",
+    "verdict": "PASS",
+    "severe_count": 0,
+    "warning_count": 0,
+    "latest_json": "/Users/unoa/projects/dalbitalba-train-data/runs/latest-local-verification.json"
+  }
+}

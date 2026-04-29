@@ -1,0 +1,732 @@
+{
+  "raw_dir": "/Users/unoa/Downloads/crawled-data-v2",
+  "diagnostic": "runs/refinement-20260427-163226/cycle-1/diagnostic.json",
+  "summary": {
+    "raw_posts": 11288,
+    "raw_comments": 55849,
+    "promo_comments": 12041,
+    "hybrid_split_candidates": 9782,
+    "recovered_valid_comments": 6372,
+    "promo_comments_without_split": 2259,
+    "hybrid_invalid_user_parts": 3410,
+    "blocked_comments": 1557
+  },
+  "split_reason_counts": {
+    "explicit_separator": 1051,
+    "promo_header": 8731
+  },
+  "invalid_reason_counts": {
+    "too_short": 1813,
+    "still_promo": 1583,
+    "no_korean": 26
+  },
+  "gap_term_recovery": {
+    "쩜오": {
+      "gap_ratio": 0.3979,
+      "recovered_comments": 297,
+      "recovered_occurrences": 315,
+      "samples": [
+        {
+          "source_file": "cb2_밤문화이야기_batch_102_2026-02-10T05-50-28.json",
+          "source_id": "1186328",
+          "comment_index": 2,
+          "comment_key": "3",
+          "split_reason": "promo_header",
+          "user_part": "스펙이 딱 저희쩜오랑 잘맞을꺼같습니다 !\n한번와주시져~^^"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_103_2026-02-10T06-30-52.json",
+          "source_id": "1186170",
+          "comment_index": 16,
+          "comment_key": "6",
+          "split_reason": "promo_header",
+          "user_part": "텐카보단 쩜오가 잘맞으실꺼같아요"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_104_2026-02-10T06-59-21.json",
+          "source_id": "1186043",
+          "comment_index": 2,
+          "comment_key": "3",
+          "split_reason": "promo_header",
+          "user_part": "아무래도 보여지는 직업이니깐요 ^^* 혹시 쩜 관심 있으시면 연락주세요 ^^\n\n쩜오 블렌딩 차대표\n당일 지급 첫 헤메 지원 출근비 지원 매점비 지원 가게 풀 상주\n차대표 가게 출근 6시 퇴근 6~7시\n차대표를 선택하는 순간 최고의 선택이 됩니다 감사합니다 ^^*"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_105_2026-02-10T07-26-28.json",
+          "source_id": "1185934",
+          "comment_index": 1,
+          "comment_key": "2",
+          "split_reason": "promo_header",
+          "user_part": "기본적으로 담당으로서 예의 아닐까요?\n\n하띠든 상띠든 내 새끼이니 최대한 맞춰 줄려고 하는거 같아요\n항상 파트너쉽 마음으로 예의 있게 하는게 젤 좋은거 같아요\n\n쩜오 블렌딩 차대표\n당일 지급 첫 헤메 지원 출근비 지원 매점비 지원 가게 풀 상주\n차대표 가게 출근 6시 퇴근 6~7시\n차대표를 선택하는 순간 최고의 선택이 됩니다 감사합니다 ^^*"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_105_2026-02-10T07-26-28.json",
+          "source_id": "1185916",
+          "comment_index": 10,
+          "comment_key": "4",
+          "split_reason": "promo_header",
+          "user_part": "남규리 이상형인대 ㅋㅋㅋ 보고 싶네요 ~ ^^*\n\n쩜오 블렌딩 차대표\n당일 지급 첫 헤메 지원 출근비 지원 매점비 지원 가게 풀 상주\n차대표 가게 출근 6시 퇴근 6~7시\n차대표를 선택하는 순간 최고의 선택이 됩니다 감사합니다 ^^*"
+        }
+      ]
+    },
+    "도파민": {
+      "gap_ratio": 0.4992,
+      "recovered_comments": 790,
+      "recovered_occurrences": 946,
+      "samples": [
+        {
+          "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+          "source_id": "1186751",
+          "comment_index": 1,
+          "comment_key": "2",
+          "split_reason": "explicit_separator",
+          "user_part": "손님 가장 많은 하퍼 도파민입니다\n괜찮으시면 연락주세요"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+          "source_id": "1186727",
+          "comment_index": 14,
+          "comment_key": "11",
+          "split_reason": "promo_header",
+          "user_part": "방바방이에요 이쁜언니들은 공주놀이도 하는듯여\n\n도파민은 어떠신가요?\n365일 24시 입니다"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+          "source_id": "1186706",
+          "comment_index": 2,
+          "comment_key": "2",
+          "split_reason": "promo_header",
+          "user_part": "엘리트는 방에서 안터졌던거 같아요 ㅠㅠ\n도파민 전층 와이파이 가능합니다!!"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+          "source_id": "1186693",
+          "comment_index": 9,
+          "comment_key": "4",
+          "split_reason": "promo_header",
+          "user_part": "할재 70% 젊손 30%\n\n도파민은 어떠신가요?\n365일 24시 입니다"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+          "source_id": "1186672",
+          "comment_index": 0,
+          "comment_key": "1",
+          "split_reason": "promo_header",
+          "user_part": "언니한테는 출근 강요 해드릴게요!\n\n도파민으로 오세요:)"
+        }
+      ]
+    },
+    "하이퍼": {
+      "gap_ratio": 0.3486,
+      "recovered_comments": 0,
+      "recovered_occurrences": 0,
+      "samples": []
+    },
+    "TC": {
+      "gap_ratio": 0.1048,
+      "recovered_comments": 0,
+      "recovered_occurrences": 0,
+      "samples": []
+    },
+    "밀빵": {
+      "gap_ratio": 0.2289,
+      "recovered_comments": 184,
+      "recovered_occurrences": 184,
+      "samples": [
+        {
+          "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+          "source_id": "1186725",
+          "comment_index": 1,
+          "comment_key": "2",
+          "split_reason": "promo_header",
+          "user_part": "오시는 길 불편하지 않게 차량 보내드릴게용\nㅡㅡ\n\n라운딩 제가 직접 돌기도 하고, 라운딩 전용 톡방 운영중입니다\n누구보다 빠른 진상방 거르기 , 밀빵 ( 원할 시 )"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+          "source_id": "1186693",
+          "comment_index": 10,
+          "comment_key": "5",
+          "split_reason": "promo_header",
+          "user_part": "팀에 젊은손님 위주로 많이 받는 팀원도 있고 나이대 있는 손님받는 팀원도 다 있습니다 저희팀방은 편하게 밀빵 넣어드리니 언제든 찾아주세요~"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_101_2026-02-10T05-21-48.json",
+          "source_id": "1186545",
+          "comment_index": 6,
+          "comment_key": "3",
+          "split_reason": "promo_header",
+          "user_part": "수위,술방 없다고 생각듭니다\n\n텐카페 베이직 !\n가게 상주하며 직접 초이스 보여드립니다\n언니들 많이 출근하지만 그만큼 손님 많고\n직접 밀빵 해드립니다\n\n2부까지 손님 많아요!"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_101_2026-02-10T05-21-48.json",
+          "source_id": "1186524",
+          "comment_index": 5,
+          "comment_key": "3",
+          "split_reason": "promo_header",
+          "user_part": "텐카페 베이직 !\n가게 상주하며 직접 초이스 보여드립니다\n언니들 많이 출근하지만 그만큼 손님 많고\n직접 밀빵 해드립니다\n\n2부까지 손님 많아요!"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_101_2026-02-10T05-21-48.json",
+          "source_id": "1186493",
+          "comment_index": 1,
+          "comment_key": "2",
+          "split_reason": "promo_header",
+          "user_part": "텐카페 베이직 !\n가게 상주하며 직접 초이스 보여드립니다\n언니들 많이 출근하지만 그만큼 손님 많고\n직접 밀빵 해드립니다\n\n2부까지 손님 많아요!!"
+        }
+      ]
+    },
+    "케어": {
+      "gap_ratio": 0.2564,
+      "recovered_comments": 515,
+      "recovered_occurrences": 591,
+      "samples": [
+        {
+          "source_file": "cb2_밤문화이야기_batch_101_2026-02-10T05-21-48.json",
+          "source_id": "1186570",
+          "comment_index": 1,
+          "comment_key": "2",
+          "split_reason": "promo_header",
+          "user_part": "플러팅이 없어진건 아니고 그자리에\n간판만 바뀐걸로 들었어요\n\n\n\n\n보스턴 강남 호빠\n정직하게 총 안쏘고 초이스 부터 계산 까지 직접 케어합니다\n가게에 항시 상주해있으며 , 무책임하게 손님만 보내놓고 돈벌지 않습니다 100%케어"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_101_2026-02-10T05-21-48.json",
+          "source_id": "1186485",
+          "comment_index": 9,
+          "comment_key": "9",
+          "split_reason": "promo_header",
+          "user_part": "처음부터 끝까지 잘 알려드리고 잘케어 해드릴게요\n걱정안하셔도됩니다!!"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_102_2026-02-10T05-50-28.json",
+          "source_id": "1186480",
+          "comment_index": 1,
+          "comment_key": "1-1",
+          "split_reason": "promo_header",
+          "user_part": "보스턴 강남 호빠\n정직하게 총 안쏘고 초이스 부터 계산 까지 직접 케어합니다\n가게에 항시 상주해있으며 , 무책임하게 손님만 보내놓고 돈벌지 않습니다 100%케어"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_102_2026-02-10T05-50-28.json",
+          "source_id": "1186457",
+          "comment_index": 1,
+          "comment_key": "1-1",
+          "split_reason": "promo_header",
+          "user_part": "보스턴 강남 호빠!!\n정직하게 총 안쏘고 초이스 부터 계산 까지 직접 케어합니다\n가게에 항시 상주해있으며 , 무책임하게 손님만 보내놓고 돈벌지 않습니다 100%케어"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_103_2026-02-10T06-30-52.json",
+          "source_id": "1186260",
+          "comment_index": 1,
+          "comment_key": "2",
+          "split_reason": "promo_header",
+          "user_part": "문제 될거 하나도 없습니다\n맘 편하게 연락주세요!!\n\n⭐️전층 거래⭐️\n⭐️골타에서 가장 바쁜가게⭐️\n\n⭐️아가씨 풀케어 담당⭐️\n⭐️퇴근 즉시 정산⭐️\n⭐️핫팩, 생리대, 컨디션 등 물품 구비⭐️"
+        }
+      ]
+    },
+    "갯수": {
+      "gap_ratio": 0.4588,
+      "recovered_comments": 271,
+      "recovered_occurrences": 280,
+      "samples": [
+        {
+          "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+          "source_id": "1186711",
+          "comment_index": 6,
+          "comment_key": "6",
+          "split_reason": "promo_header",
+          "user_part": "저희쪽 오셔서 편하게 원하시는거 초이스 보시고\n갯수 많이하고 가셔요 ㅎㅎㅎㅎㅎ\n연락주시면 자세히 설명해드려요!\n\n\n✴️ 마곡유일 1종유흥건물 ✴️\n✴️ 1등가게 Ace 홀릭팀 ✴️\n✴️ 반고정스타일 ✴️\n✴️ 계좌 현금 원하는대로 지급!!! ✴️"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+          "source_id": "1186711",
+          "comment_index": 10,
+          "comment_key": "10",
+          "split_reason": "promo_header",
+          "user_part": "저 찍고 출근해주시면 갯수 다 찍어드릴게요\n최선으로 모시겠습니다 감사합니다"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_101_2026-02-10T05-21-48.json",
+          "source_id": "1186485",
+          "comment_index": 6,
+          "comment_key": "6",
+          "split_reason": "promo_header",
+          "user_part": "강북 수유 입니다!\n\n처음이셔도 너무 걱정마세요 잘하실 수 있을꺼에요\n항상 좋은방 들어가시고 팁방 많이 많이 들어가시길!\n\n항상 콜 많이있습니다 언니들 갯수 만족하고 가실 수 있게 노력하겠습니다!\n\n언니들 니즈에 맞게 콜 잘잡아드리구 잘 걸러서 잡아드려요"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_102_2026-02-10T05-50-28.json",
+          "source_id": "1186477",
+          "comment_index": 3,
+          "comment_key": "4",
+          "split_reason": "promo_header",
+          "user_part": "갯수 잘 나옵니다\n\n텐카페 베이직 !\n가게 상주하며 직접 초이스 보여드립니다\n언니들 많이 출근하지만 그만큼 손님 많고\n직접 밀빵 해드립니다\n\n2부까지 손님 많아요!"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_102_2026-02-10T05-50-28.json",
+          "source_id": "1186462",
+          "comment_index": 4,
+          "comment_key": "5",
+          "split_reason": "promo_header",
+          "user_part": "저희는 뺑이치거나 대기할 시간이 거의 없어요 !!\n연락주시면 갯수 많이 하실수있도록 신경써드려요\n연락주세요!\n\n\n✴️ 마곡유일 1종유흥건물 ✴️\n✴️ 1등가게 Ace 홀릭팀 ✴️\n✴️ 반고정스타일 ✴️\n✴️ 계좌 현금 원하는대로 지급!!! ✴️"
+        }
+      ]
+    },
+    "선릉": {
+      "gap_ratio": 0.398,
+      "recovered_comments": 9,
+      "recovered_occurrences": 9,
+      "samples": [
+        {
+          "source_file": "cb2_밤문화이야기_batch_21_2026-01-27T11-46-34.json",
+          "source_id": "1196266",
+          "comment_index": 3,
+          "comment_key": "4",
+          "split_reason": "promo_header",
+          "user_part": "선릉권 저희.가게 한번 찾아주셔요\n찍먹하셔두 대요!!\n\n\n엘리트 승철&경이 (구.사라있네)"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_32_2026-01-27T16-06-14.json",
+          "source_id": "1194541",
+          "comment_index": 7,
+          "comment_key": "8",
+          "split_reason": "promo_header",
+          "user_part": "안녕하세요 :)\n극초1부는 아무래도 직장권 선릉이 더 많은 편입니다.\n1부 후ㅡ2부는 날바날 경우가 많고"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_58_2026-01-28T01-32-23.json",
+          "source_id": "1190725",
+          "comment_index": 2,
+          "comment_key": "3",
+          "split_reason": "promo_header",
+          "user_part": "손님 9시면 풀방차고 초이스 20명넘지 않게 돌아요!\n\n다들 개성 있으시지만 객관적으로 사이즈 높은 분들은 많지는 않아요!\n\n선릉역 인근이고 와보시면 후회 안하실거같아요~!\n\n7시부터 마감까지 상주합니다 ㅎㅎ\n\n연락처"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_58_2026-01-28T01-32-23.json",
+          "source_id": "1190583",
+          "comment_index": 3,
+          "comment_key": "4",
+          "split_reason": "promo_header",
+          "user_part": "도파민 선릉권 강남에서 손님 가장 많습니다 !!\n\n도파민은 어떠신가요?\n365일 24시 입니다"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_61_2026-02-09T03-04-21.json",
+          "source_id": "1201348",
+          "comment_index": 2,
+          "comment_key": "2",
+          "split_reason": "promo_header",
+          "user_part": "네네.선릉이구 차비지원됩니다^^연락주세여~~\n\n강남 도파민 \"동생\""
+        }
+      ]
+    },
+    "ㅡㅡ": {
+      "gap_ratio": 0.4915,
+      "recovered_comments": 54,
+      "recovered_occurrences": 63,
+      "samples": [
+        {
+          "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+          "source_id": "1186725",
+          "comment_index": 1,
+          "comment_key": "2",
+          "split_reason": "promo_header",
+          "user_part": "오시는 길 불편하지 않게 차량 보내드릴게용\nㅡㅡ\n\n라운딩 제가 직접 돌기도 하고, 라운딩 전용 톡방 운영중입니다\n누구보다 빠른 진상방 거르기 , 밀빵 ( 원할 시 )"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_106_2026-02-10T07-58-00.json",
+          "source_id": "1185720",
+          "comment_index": 0,
+          "comment_key": "1",
+          "split_reason": "promo_header",
+          "user_part": "제 아기새들 다 이뻐용\n일요일 상주하고 있습니당\nㅡㅡ\n\n라운딩 제가 직접 돌기도 하고, 라운딩 전용 톡방 운영중입니다\n누구보다 빠른 진상방 거르기 , 밀빵 ( 원할 시 )"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_13_2026-01-27T09-00-12.json",
+          "source_id": "1197469",
+          "comment_index": 4,
+          "comment_key": "5",
+          "split_reason": "promo_header",
+          "user_part": "수도꼭지 돌리거나 원액 주진 않아서 다행입니다ㅜㅜ\nㅡㅡ\n원액x , 공식수위까지만\n\n라운딩 제가 직접 돌기도 하고, 라운딩 전용 톡방 운영중입니다\n누구보다 빠른 진상방 거르기 , 밀빵 ( 원할 시 )"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_15_2026-01-27T09-48-27.json",
+          "source_id": "1197085",
+          "comment_index": 7,
+          "comment_key": "5",
+          "split_reason": "promo_header",
+          "user_part": "닦달 해드릴게용\nㅡㅡ\n원액x , 공식수위까지만"
+        },
+        {
+          "source_file": "cb2_밤문화이야기_batch_16_2026-01-27T10-18-30.json",
+          "source_id": "1197030",
+          "comment_index": 1,
+          "comment_key": "1-1",
+          "split_reason": "promo_header",
+          "user_part": "성형 안해도 많이 벌어가용\n방 많이 넣어드릴게요 !\nㅡㅡ\n원액x , 공식수위까지만"
+        }
+      ]
+    }
+  },
+  "split_reason_samples": {
+    "explicit_separator": [
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186751",
+        "comment_index": 1,
+        "comment_key": "2",
+        "separator": "ㅡㅡㅡ",
+        "user_part": "손님 가장 많은 하퍼 도파민입니다\n괜찮으시면 연락주세요"
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186727",
+        "comment_index": 1,
+        "comment_key": "1-1",
+        "separator": "ㅡㅡㅡ",
+        "user_part": "방 마다 다릅니다. 물론 터는 방도 있긴 하죠"
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186717",
+        "comment_index": 0,
+        "comment_key": "1",
+        "separator": "ㅡㅡㅡ",
+        "user_part": "강남 괜찮으시면 연락주세요~\n손님 계속 들어오고 있습니다"
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186711",
+        "comment_index": 4,
+        "comment_key": "4-1",
+        "separator": "ㅡㅡㅡ",
+        "user_part": "손님 가장 많은 하퍼입니다\n연락주세요~"
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186698",
+        "comment_index": 0,
+        "comment_key": "1",
+        "separator": "ㅡㅡㅡ",
+        "user_part": "불편하시지 않게 제가 콜 보내드리고 핫팩 드릴게용"
+      }
+    ],
+    "promo_header": [
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186749",
+        "comment_index": 0,
+        "comment_key": "1",
+        "separator": "달리는토끼 W팀 — 여실장 우연",
+        "user_part": "기다리고있을게요~!"
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186747",
+        "comment_index": 5,
+        "comment_key": "5",
+        "separator": "또한 빠른 피드백 풀케어! 풀상주! 맞춤케어 해드립니다!",
+        "user_part": "달토로 모십니다! 잘챙기겠습니다!\n\n\"명실상부 달토 1등 하대표\" 직계동생 기용입니다!\n하대표 직속 아가씨 이사입니다!\n\n빠르고 깔끔한 사고처리 가능하며\n하대표 이름 자체로 혜택보실수있게 도와드리겠습니다"
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186727",
+        "comment_index": 14,
+        "comment_key": "11",
+        "separator": "1부~3부 2인1조로 풀상주중",
+        "user_part": "방바방이에요 이쁜언니들은 공주놀이도 하는듯여\n\n도파민은 어떠신가요?\n365일 24시 입니다"
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186725",
+        "comment_index": 1,
+        "comment_key": "2",
+        "separator": "♾️ 손님 가장 많은 팀",
+        "user_part": "오시는 길 불편하지 않게 차량 보내드릴게용\nㅡㅡ\n\n라운딩 제가 직접 돌기도 하고, 라운딩 전용 톡방 운영중입니다\n누구보다 빠른 진상방 거르기 , 밀빵 ( 원할 시 )"
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186718",
+        "comment_index": 0,
+        "comment_key": "1",
+        "separator": "달리는토끼 W팀 — 여실장 우연",
+        "user_part": "오늘도 화이팅입니다!"
+      }
+    ]
+  },
+  "invalid_reason_samples": {
+    "too_short": [
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186749",
+        "comment_index": 0,
+        "comment_key": "1",
+        "separator": "달리는토끼 W팀 — 여실장 우연",
+        "user_part": "기다리고있을게요~!"
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186718",
+        "comment_index": 0,
+        "comment_key": "1",
+        "separator": "달리는토끼 W팀 — 여실장 우연",
+        "user_part": "오늘도 화이팅입니다!"
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186717",
+        "comment_index": 3,
+        "comment_key": "4",
+        "separator": "카톡 kl118",
+        "user_part": "콜 연락주세요."
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186714",
+        "comment_index": 7,
+        "comment_key": "5",
+        "separator": "달리는토끼 W팀 — 여실장 우연",
+        "user_part": "퇴근길도 조심하셔요ㅠㅠ!"
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186711",
+        "comment_index": 0,
+        "comment_key": "1",
+        "separator": "달리는토끼 W팀 — 여실장 우연",
+        "user_part": "넵 연락주세요~~!"
+      }
+    ],
+    "still_promo": [
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186648",
+        "comment_index": 1,
+        "comment_key": "1-1",
+        "separator": "가라오케/퍼블릭)",
+        "user_part": "예약건 많습니당-!!\n언니들 출포많아서 기대기대!!\n\n청담동 룸보도 가장 큰 팀!!\n1부타임 주력을 시작으로 아침까지 쭉 진행!!\n-술강요X, 스킨쉽X (공식수위 NO)\n-초이스 수월. 떼초X\n-편한 출/퇴근, 퇴근까지 풀케어!!\n-점프가능!!(가게에서 픽업&가게로 드랍)\n-365일 항시 진행!!!\n\n멤버쉽 bar)\n60분:8만원"
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186648",
+        "comment_index": 5,
+        "comment_key": "4",
+        "separator": "가라오케/퍼블릭)",
+        "user_part": "체크되는 예약건들은 많아요-\n언니부족이라 갯수괜찮을거같은데욤\n\n청담동 룸보도 가장 큰 팀!!\n1부타임 주력을 시작으로 아침까지 쭉 진행!!\n-술강요X, 스킨쉽X (공식수위 NO)\n-초이스 수월. 떼초X\n-편한 출/퇴근, 퇴근까지 풀케어!!\n-점프가능!!(가게에서 픽업&가게로 드랍)\n-365일 항시 진행!!!\n\n멤버쉽 bar)\n60분:8만원"
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186648",
+        "comment_index": 6,
+        "comment_key": "5",
+        "separator": "24시간 실장 직접 운영",
+        "user_part": "가락동은어떠신가요?\n안녕하세요 가락동 그린 옹박입니다\n언니들이 안전하고 편하게 일할 수 있도록\n항상 세심하게 케어합니다\n\n서울 전지역집 앞 ↔ 집 앞\n편안한 출퇴근 차량 운영 중!\n2시간 기준 10만 원 (팁 별도)\n초보 / 점프 / 출퇴근 자유"
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186648",
+        "comment_index": 9,
+        "comment_key": "8",
+        "separator": "010 6569 5276",
+        "user_part": "수유 콜 많아요 평균8개 하고갑니다 문의주세요\n\n다른 사무실 모르겠고 저희\n언니들 기준 8개는 무난하게 찍어요"
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+        "source_id": "1186648",
+        "comment_index": 10,
+        "comment_key": "9",
+        "separator": "퇴근과 동시에 현금입금, 계좌이체!!!",
+        "user_part": "까치산 지금 언니들 너무 부족해요.\n오시면 갯수 많이 보세요~~~\n\n까치산에서 편하게 일해보세요~~\n불경기에도 되는 곳은 됩니다.\n바로 까치산입니다!!!\n오늘도 계속 콜은 울리고 언니들은 모자라네요... ㅠㅠ\n\n24시간 운영해서 편한시간 아무때나 출퇴근 가능하세요.\n술 안마셔도 OK!! 수위 높이면 박차고 나오면 됩니다!! TC 다 받아드립니다.\n카페베네 방에서 음료수 홀짝홀짝 마시며 대화나 하다 나오시면 됩니다.\n지루해서 노래한곡 뽑고 싶다하면 시원하게 한곡 뽑고~~\n손님들 말 잘듣는 꿀방으로만 모시겠습니다.\n\n점프도 좋고 찍먹도 환영입니다.\n일하고 싶으신 분들 화곡 까치산 관심한번 가져주세요~~~\n\n술안마시면서 일할 수 있고, 발보도X, 떼초X\n편하게 일하실 수 있도록 최선을 다해 모시겠습니다.\n\n카페베네 처럼 앉아서 대화만 하면서 돈벌어가세요~~"
+      }
+    ],
+    "no_korean": [
+      {
+        "source_file": "cb2_밤문화이야기_batch_19_2026-01-27T11-06-26.json",
+        "source_id": "1196507",
+        "comment_index": 1,
+        "comment_key": "2",
+        "separator": "⭕️ 3인1조 월요일~일요일 풀상주 ⭕️",
+        "user_part": "."
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_29_2026-01-27T14-46-56.json",
+        "source_id": "1194979",
+        "comment_index": 0,
+        "comment_key": "1",
+        "separator": "??1월 21일 수요일??",
+        "user_part": "?Running Rabbit ?"
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_2_2026-01-27T05-28-39.json",
+        "source_id": "1199015",
+        "comment_index": 5,
+        "comment_key": "6",
+        "separator": "??1월 26일 월요일??",
+        "user_part": "?Running Rabbit ?"
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_2_2026-01-27T05-28-39.json",
+        "source_id": "1199010",
+        "comment_index": 0,
+        "comment_key": "1",
+        "separator": "ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ",
+        "user_part": "."
+      },
+      {
+        "source_file": "cb2_밤문화이야기_batch_2_2026-01-27T05-28-39.json",
+        "source_id": "1198958",
+        "comment_index": 4,
+        "comment_key": "5",
+        "separator": "??1월 26일 월요일??",
+        "user_part": "?Running Rabbit ?"
+      }
+    ]
+  },
+  "recovered_samples": [
+    {
+      "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+      "source_id": "1186751",
+      "comment_index": 1,
+      "comment_key": "2",
+      "separator": "ㅡㅡㅡ",
+      "user_part": "손님 가장 많은 하퍼 도파민입니다\n괜찮으시면 연락주세요",
+      "split_reason": "explicit_separator",
+      "promo_excerpt": "라운딩 제가 직접 돌기도 하고, 라운딩 전용 톡방 운영중입니다\n누구보다 빠른 진상방 거르기 , 밀빵 ( 원할 시 )\n\n♾️ 손님 가장 많은 팀\n♾️ 언니가 마감찍으면 저도 마감 찍습니다\n♾️ 가게 오픈 ~ 마감 풀상주\n3인체제( 찐으로 풀상주 )입니다.\n\n1시간 TC 9 / 9시 이전 출근 시 10 지급\n지명비 타임당 +1 / 이벤트도 있습니다\n\n▪️ㅅㅌㅌ톡 및 비품 등은 당연한 것이니\n굳이 적진 않겠습니다\n\n항상 제가 힘들어"
+    },
+    {
+      "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+      "source_id": "1186747",
+      "comment_index": 5,
+      "comment_key": "5",
+      "separator": "또한 빠른 피드백 풀케어! 풀상주! 맞춤케어 해드립니다!",
+      "user_part": "달토로 모십니다! 잘챙기겠습니다!\n\n\"명실상부 달토 1등 하대표\" 직계동생 기용입니다!\n하대표 직속 아가씨 이사입니다!\n\n빠르고 깔끔한 사고처리 가능하며\n하대표 이름 자체로 혜택보실수있게 도와드리겠습니다",
+      "split_reason": "promo_header",
+      "promo_excerpt": "또한 빠른 피드백 풀케어! 풀상주! 맞춤케어 해드립니다!\n오셔서 후회할일 절대 없으실겁니다.\n\n○ 출퇴근 자유\n○ 스타트톡 팀톡방 최신화\n○ 숙취해소제 및 매점 , 개인사물함\n○ 수금 당일지급\n\n힘든 방이나 진상 방일경우 조용히 나와서 얘기해주시면 다 빼드리겠습니다 억울한 피해 절대없도록 약속드립니다 그리고 대기실에 있을 시간없게 편하고 좋은방 밀빵해드리겠습니다.\n편한날, 오시고 싶은 시간에 오셔서 일하시면 됩니다 초보자 경력"
+    },
+    {
+      "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+      "source_id": "1186727",
+      "comment_index": 1,
+      "comment_key": "1-1",
+      "separator": "ㅡㅡㅡ",
+      "user_part": "방 마다 다릅니다. 물론 터는 방도 있긴 하죠",
+      "split_reason": "explicit_separator",
+      "promo_excerpt": "라운딩 제가 직접 돌기도 하고, 라운딩 전용 톡방 운영중입니다\n누구보다 빠른 진상방 거르기 , 밀빵 ( 원할 시 )\n\n♾️ 손님 가장 많은 팀\n♾️ 언니가 마감찍으면 저도 마감 찍습니다\n♾️ 가게 오픈 ~ 마감 풀상주\n3인체제( 찐으로 풀상주 )입니다.\n\n1시간 TC 9 / 9시 이전 출근 시 10 지급\n지명비 타임당 +1 / 이벤트도 있습니다\n\n▪️ㅅㅌㅌ톡 및 비품 등은 당연한 것이니\n굳이 적진 않겠습니다\n\n항상 제가 힘들어"
+    },
+    {
+      "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+      "source_id": "1186727",
+      "comment_index": 14,
+      "comment_key": "11",
+      "separator": "1부~3부 2인1조로 풀상주중",
+      "user_part": "방바방이에요 이쁜언니들은 공주놀이도 하는듯여\n\n도파민은 어떠신가요?\n365일 24시 입니다",
+      "split_reason": "promo_header",
+      "promo_excerpt": "1부~3부 2인1조로 풀상주중\n사고처리확실 스타트톡 개수톡 퇴근시칼수금!! 일하실때 필요한 비품 없는거 없어요 !!\n(스팀다리미, 꼬리빗, 숙취해소제,핫팩,담요)등\n\n아가씨 케어 정말 잘합니다\n밀빵 가능 갯수는 정점 찍을거에요~!!\n한번만 믿고 연락주세요~\n\n출근문의\n도파민은 석준 010 9249 9564\n카카오톡 : June.mk\n3부: 태선 010 3096 8163\n카카오톡 : sun8163"
+    },
+    {
+      "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+      "source_id": "1186725",
+      "comment_index": 1,
+      "comment_key": "2",
+      "separator": "♾️ 손님 가장 많은 팀",
+      "user_part": "오시는 길 불편하지 않게 차량 보내드릴게용\nㅡㅡ\n\n라운딩 제가 직접 돌기도 하고, 라운딩 전용 톡방 운영중입니다\n누구보다 빠른 진상방 거르기 , 밀빵 ( 원할 시 )",
+      "split_reason": "promo_header",
+      "promo_excerpt": "♾️ 손님 가장 많은 팀\n♾️ 언니가 마감찍으면 저도 마감 찍습니다\n♾️ 가게 오픈 ~ 마감 풀상주\n3인체제( 찐으로 풀상주 )입니다.\n\n1시간 TC 9 / 9시 이전 출근 시 10 지급\n지명비 타임당 +1 / 이벤트도 있습니다\n\n▪️ㅅㅌㅌ톡 및 비품 등은 당연한 것이니\n굳이 적진 않겠습니다\n\n항상 제가 힘들어야 언니들이 편해진다는\n마음가짐으로 일하고 있습니다\n저 찍고 나와준 언니들 모두 감사하게도\n제 마음을 알아주셨는지 꾸준"
+    },
+    {
+      "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+      "source_id": "1186717",
+      "comment_index": 0,
+      "comment_key": "1",
+      "separator": "ㅡㅡㅡ",
+      "user_part": "강남 괜찮으시면 연락주세요~\n손님 계속 들어오고 있습니다",
+      "split_reason": "explicit_separator",
+      "promo_excerpt": "라운딩 제가 직접 돌기도 하고, 라운딩 전용 톡방 운영중입니다\n누구보다 빠른 진상방 거르기 , 밀빵 ( 원할 시 )\n\n♾️ 손님 가장 많은 팀\n♾️ 언니가 마감찍으면 저도 마감 찍습니다\n♾️ 가게 오픈 ~ 마감 풀상주\n3인체제( 찐으로 풀상주 )입니다.\n\n1시간 TC 9 / 9시 이전 출근 시 10 지급\n지명비 타임당 +1 / 이벤트도 있습니다\n\n▪️ㅅㅌㅌ톡 및 비품 등은 당연한 것이니\n굳이 적진 않겠습니다\n\n항상 제가 힘들어"
+    },
+    {
+      "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+      "source_id": "1186714",
+      "comment_index": 2,
+      "comment_key": "2",
+      "separator": "010 2994 1922",
+      "user_part": "안다치셔서 천만다행입니다ㅠㅠ\n\n오늘도 꿀방 팁길만 걸으세요",
+      "split_reason": "promo_header",
+      "promo_excerpt": "010 2994 1922\n카카오 kai1922\n강남 세이렌\n당일 수금 원칙\n손님 많은 재범\n3인 1조"
+    },
+    {
+      "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+      "source_id": "1186711",
+      "comment_index": 4,
+      "comment_key": "4-1",
+      "separator": "ㅡㅡㅡ",
+      "user_part": "손님 가장 많은 하퍼입니다\n연락주세요~",
+      "split_reason": "explicit_separator",
+      "promo_excerpt": "라운딩 제가 직접 돌기도 하고, 라운딩 전용 톡방 운영중입니다\n누구보다 빠른 진상방 거르기 , 밀빵 ( 원할 시 )\n\n♾️ 손님 가장 많은 팀\n♾️ 언니가 마감찍으면 저도 마감 찍습니다\n♾️ 가게 오픈 ~ 마감 풀상주\n3인체제( 찐으로 풀상주 )입니다.\n\n1시간 TC 9 / 9시 이전 출근 시 10 지급\n지명비 타임당 +1 / 이벤트도 있습니다\n\n▪️ㅅㅌㅌ톡 및 비품 등은 당연한 것이니\n굳이 적진 않겠습니다\n\n항상 제가 힘들어"
+    },
+    {
+      "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+      "source_id": "1186711",
+      "comment_index": 5,
+      "comment_key": "5",
+      "separator": "시간당 2-3명 풀상주 7인1조",
+      "user_part": "강남 달토 환영이십니다 :)\n달리는토끼 W팀<은호>",
+      "split_reason": "promo_header",
+      "promo_excerpt": "시간당 2-3명 풀상주 7인1조\n9시이전출근 tc 시간당 10\n9시이후출근 tc 시간당 9\n지명비 +1(지명방 시간갯수당)\n출퇴근 차량지원\n매점,음료,비품 등등 지원\n1-3부 직접 풀상주 풀케어 대충x 확실히\n컨디션체크 일중에도 항시 하는중\n최대한 소속아가씨 의견수렴\n스타일링 더 잘어울리는것들 리서치 + 같이 컨펌\n최대한 배려하면서 편안하게 갯수많이나오게 지원합니다.\n\n은호 : 01031919774\n카톡: kkkwidid\n연락"
+    },
+    {
+      "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+      "source_id": "1186711",
+      "comment_index": 6,
+      "comment_key": "6",
+      "separator": "✴️ 하퍼 11 퍼블 12 셔츠 13 실지급! ✴️",
+      "user_part": "저희쪽 오셔서 편하게 원하시는거 초이스 보시고\n갯수 많이하고 가셔요 ㅎㅎㅎㅎㅎ\n연락주시면 자세히 설명해드려요!\n\n\n✴️ 마곡유일 1종유흥건물 ✴️\n✴️ 1등가게 Ace 홀릭팀 ✴️\n✴️ 반고정스타일 ✴️\n✴️ 계좌 현금 원하는대로 지급!!! ✴️",
+      "split_reason": "promo_header",
+      "promo_excerpt": "✴️ 하퍼 11 퍼블 12 셔츠 13 실지급! ✴️\n✴️ 하퍼,셔츠 60분!✴️퍼블 90분!✴️\n✴️ 쉴새없는초이스(전체룸100개) ✴️\n✴️ 면접문의시 ✴️\n✴️ 건물&가게 초이스톡 실시간인증 ✴️\n✴️ 언제든 문의주세요! ✴️\n\n▶️ 010 7406 0736 ◀️\n▶️카톡 : H0736◀️"
+    },
+    {
+      "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+      "source_id": "1186711",
+      "comment_index": 7,
+      "comment_key": "7",
+      "separator": "ෆ*₊ 선릉 24시 대형하퍼 도파민 ෆ*₊",
+      "user_part": "강남 하퍼 항상 손님 많습니다!!",
+      "split_reason": "promo_header",
+      "promo_excerpt": "ෆ*₊ 선릉 24시 대형하퍼 도파민 ෆ*₊\n\n❤ 빠른 스타트톡 , 퇴근시 칼수금\n❤ (남2 여1) 3인 1조 풀상주!!\n❤ 사물함 보건증 소개비 지급 해드려용\n❤ 일요일 헤메지원 ❤\n\n출근해서 1원도 쓰지마세요!\n모두 다 지원 해드립니다!!! ◍•ᴗ•◍ ❤\n\n출근문의 010.5863.3969\nKakao. chea3969"
+    },
+    {
+      "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+      "source_id": "1186711",
+      "comment_index": 10,
+      "comment_key": "10",
+      "separator": "✨도파민 1등 G팀 800-1000방 팀사장✨",
+      "user_part": "저 찍고 출근해주시면 갯수 다 찍어드릴게요\n최선으로 모시겠습니다 감사합니다",
+      "split_reason": "promo_header",
+      "promo_excerpt": "✨도파민 1등 G팀 800-1000방 팀사장✨\n✨가게 24시 풀상주 풀케어 초톡방 운영중✨\n✨일요일,공휴일 포함 1-3부 6명 24시케어✨\n\n✨안녕하세요 도파민 1등✨\n✨<하정우+유호>입니다✨\n✨Tel:010-4301-1922✨\n✨Kakao ID:uho3265✨\n\n✨도파민 명실상부 1등 하유호만 찾으시면✨\n✨꽃길만 걸으시리라 꼭 약속드리겠습니다!✨\n✨담당의 차이가 무엇인지 증명하겠습니다✨"
+    },
+    {
+      "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+      "source_id": "1186711",
+      "comment_index": 13,
+      "comment_key": "13",
+      "separator": "2인1조 풀상주 !",
+      "user_part": "그정도 안하셔도 하퍼 충분히가능해여\n\n엘리트(구.사라있네) No.1 홍탁",
+      "split_reason": "promo_header",
+      "promo_excerpt": "2인1조 풀상주 !\n\n만근비/소개비 등\n각종 개인 이벤트 진행중입니다\n\n거두절미하고 믿고 연락주신다면\n돈 많이 버실 수 있게\n적극 서포터 하겠습니다\n\n편하게 연락주세요\n\n☞연락처 010 8418 3213\n☞카톡 : jeju3213"
+    },
+    {
+      "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+      "source_id": "1186711",
+      "comment_index": 14,
+      "comment_key": "14",
+      "separator": "마곡 골타 발리팀 우빈부장 입니다!",
+      "user_part": "강서구 골타로 모시겠습니다~~~",
+      "split_reason": "promo_header",
+      "promo_excerpt": "마곡 골타 발리팀 우빈부장 입니다!\n\n❤️퍼블+12(90분)\n❤️하퍼+11(60분)\n❤️셔츠+13(60분) 상주 룸\n\n❤️5~8층 중 6,7층 25개룸 이상 가지고 있는 대형팀\n(전층 초이스 가능)\n\n❤️상주중인 같은 영업진팀 20-30명\n\n❤️1대1 전문케어 가능\n\n❤️페이 당일 지급 (현금, 이체가능)\n\n❤️자세한 문의는 밑에 연락처 남겨둘께요!\n\n라인 : wb0812\n카톡 : wb0812\n연락처 : 010-5788-997"
+    },
+    {
+      "source_file": "cb2_밤문화이야기_batch_100_2026-02-10T04-56-58.json",
+      "source_id": "1186706",
+      "comment_index": 2,
+      "comment_key": "2",
+      "separator": "ෆ*₊ 선릉 24시 대형하퍼 도파민 ෆ*₊",
+      "user_part": "엘리트는 방에서 안터졌던거 같아요 ㅠㅠ\n도파민 전층 와이파이 가능합니다!!",
+      "split_reason": "promo_header",
+      "promo_excerpt": "ෆ*₊ 선릉 24시 대형하퍼 도파민 ෆ*₊\n\n❤ 빠른 스타트톡 , 퇴근시 칼수금\n❤ (남2 여1) 3인 1조 풀상주!!\n❤ 사물함 보건증 소개비 지급 해드려용\n❤ 일요일 헤메지원 ❤\n\n출근해서 1원도 쓰지마세요!\n모두 다 지원 해드립니다!!! ◍•ᴗ•◍ ❤\n\n출근문의 010.5863.3969\nKakao. chea3969"
+    }
+  ]
+}

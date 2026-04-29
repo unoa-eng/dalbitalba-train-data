@@ -1,0 +1,790 @@
+{
+  "seed": 20260428,
+  "counts": {
+    "raw_posts_total": 11288,
+    "raw_comments_total": 55849,
+    "v3_rows_total": 48054,
+    "v3_posts_total": 10470,
+    "v3_comments_total": 37584,
+    "ctx_rows_total": 48054,
+    "context_comment_rows_total": 12014,
+    "val_rows_total": 2451,
+    "val_thread_ids_total": 566
+  },
+  "post_sample": {
+    "sample_size": 50,
+    "pass_count": 47,
+    "fail_count": 3,
+    "failures": [
+      {
+        "post_id": "1192555",
+        "source_file": "cb2_밤문화이야기_batch_45_2026-01-27T20-30-55.json",
+        "candidate_count": 0,
+        "expected_preview": ".\n감사합니다 !",
+        "actual_preview": null,
+        "pass": false,
+        "reason": "missing_in_v3"
+      },
+      {
+        "post_id": "1201353",
+        "source_file": "cb2_밤문화이야기_batch_61_2026-02-09T03-04-21.json",
+        "candidate_count": 0,
+        "expected_preview": "사라오늘돟떼초?\n??",
+        "actual_preview": null,
+        "pass": false,
+        "reason": "missing_in_v3"
+      },
+      {
+        "post_id": "1193683",
+        "source_file": "cb2_밤문화이야기_batch_38_2026-01-27T17-54-39.json",
+        "candidate_count": 1,
+        "expected_preview": "근데 저 궁금한게 이OO 교수님 여편네가 되어서\n돈 받느 기분인데\n\n이거 그동안 같은전공 다른 교수님들께 인사하고 다니면서 밤일 해서 그런가 …?\n\n같은 전공 다른 교수님( 김OO 등) 내연녀 컨셉하면서 돈 받을때는 재미도 있고 그냥 아무생각 없었는데\n\n지금은 이OO 교수님한테 돈 받으면서 사는 거 같아요 …\n\n제가 이OO 교수님 좋아하나요 …?",
+        "actual_preview": "근데 저 궁금한게 이OO 교수님 여편네가 되어서\n돈 받느 기분인데\n\n이거 그동안 같은전공 다른 교수님들께 인사하고 다니면서 밤일 해서 그런가 ...?\n\n같은 전공 다른 교수님( 김OO 등) 내연녀 컨셉하면서 돈 받을때는 재미도 있고 그냥 아무생각 없었는데\n\n지금은 이OO 교수님한테 돈 받으면서 사는 거 같아요 ...\n\n제가 이OO 교수님 좋아하나요 ...?",
+        "pass": false,
+        "reason": "text_mismatch"
+      }
+    ],
+    "examples": [
+      {
+        "post_id": "1187330",
+        "source_file": "cb2_밤문화이야기_batch_95_2026-02-10T03-02-35.json",
+        "candidate_count": 1,
+        "expected_preview": "ㄷㅌ 담당 추천해드림\n재하 이차원 찬윤 락중",
+        "actual_preview": "ㄷㅌ 담당 추천해드림\n재하 이차원 찬윤 락중",
+        "pass": true,
+        "reason": "exact_title_plus_body_match"
+      },
+      {
+        "post_id": "1189971",
+        "source_file": "cb2_밤문화이야기_batch_77_2026-02-09T20-26-15.json",
+        "candidate_count": 1,
+        "expected_preview": "가락동24시[느낌]사무실에서 공주님들 모셔봅니다!!#장안동#길동#신림#강남#점프#24시#종로#구리#송파#늦출#퇴근차#출근차#ㄴㄷ#착한실장#건대#홍대\n최선을 다하고 있어요!!믿고 와주세요!출근차/퇴근차/점프/출퇴자유/늦출",
+        "actual_preview": "가락동24시[느낌]사무실에서 공주님들 모셔봅니다!!#장안동#길동#신림#강남#점프#24시#종로#구리#송파#늦출#퇴근차#출근차#ㄴㄷ#착한실장#건대#홍대\n최선을 다하고 있어요!!믿고 와주세요!출근차/퇴근차/점프/출퇴자유/늦출",
+        "pass": true,
+        "reason": "exact_title_plus_body_match"
+      },
+      {
+        "post_id": "1194773",
+        "source_file": "cb2_밤문화이야기_batch_30_2026-01-27T15-13-44.json",
+        "candidate_count": 1,
+        "expected_preview": "타가게 대비 떼초 현저히 적습니다\n? 퍼.펙.트 ?\n?1월 21일 수요일?\n?️강남구 논현로 645?️\n➖➖✅ 순.번 ✅➖➖\n026김현중2호준vip\n126연이1건호\n106깜상2건호\n004김석진3선우\n109김우영1승현\n202윤학1동순\n124퍼펙트1승현ss\n007강현3ㅅ우재ㄷㅊ\n107황희재2ㅃ태평\n019퍼펙트2ㅅ로운ss\n020경호2ㅅ호준\n006광수2ㅅ영민ㄷㄱ\n",
+        "actual_preview": "타가게 대비 떼초 현저히 적습니다\n? 퍼.펙.트 ?\n?1월 21일 수요일?\n?️강남구 논현로 645?️\n➖➖✅ 순.번 ✅➖➖\n026김현중2호준vip\n126연이1건호\n106깜상2건호\n004김석진3선우\n109김우영1승현\n202윤학1동순\n124퍼펙트1승현ss\n007강현3ㅅ우재ㄷㅊ\n107황희재2ㅃ태평\n019퍼펙트2ㅅ로운ss\n020경호2ㅅ호준\n006광수2ㅅ영민ㄷㄱ\n",
+        "pass": true,
+        "reason": "exact_title_plus_body_match"
+      },
+      {
+        "post_id": "1196451",
+        "source_file": "cb2_밤문화이야기_batch_20_2026-01-27T11-24-23.json",
+        "candidate_count": 1,
+        "expected_preview": "여자강아지이름 동금vs동순 머가나아요?\nㅈㄱㄴ",
+        "actual_preview": "여자강아지이름 동금vs동순 머가나아요?\nㅈㄱㄴ",
+        "pass": true,
+        "reason": "exact_title_plus_body_match"
+      },
+      {
+        "post_id": "1195918",
+        "source_file": "cb2_밤문화이야기_batch_23_2026-01-27T12-34-37.json",
+        "candidate_count": 1,
+        "expected_preview": "가락 삼실 추천부탁요~\n반티,한티 시간비등 일처리 잘하는 삼실실장 추천부탁해요 테블이에요",
+        "actual_preview": "가락 삼실 추천부탁요~\n반티,한티 시간비등 일처리 잘하는 삼실실장 추천부탁해요 테블이에요",
+        "pass": true,
+        "reason": "exact_title_plus_body_match"
+      },
+      {
+        "post_id": "1194650",
+        "source_file": "cb2_밤문화이야기_batch_31_2026-01-27T15-37-58.json",
+        "candidate_count": 1,
+        "expected_preview": "마운자로 멀미 ㅠ\n다약 오래먹고 위고비 젤높은것도 효과없어서 으마운자로 5맞는데 멀미 ㅈㄴ나네요 미식거리고 낮춰야댈까요 이럴때 낮춰보신분 ㅠ",
+        "actual_preview": "마운자로 멀미 ㅠ\n다약 오래먹고 위고비 젤높은것도 효과없어서 으마운자로 5맞는데 멀미 ㅈㄴ나네요 미식거리고 낮춰야댈까요 이럴때 낮춰보신분 ㅠ",
+        "pass": true,
+        "reason": "exact_title_plus_body_match"
+      },
+      {
+        "post_id": "1190660",
+        "source_file": "cb2_밤문화이야기_batch_58_2026-01-28T01-32-23.json",
+        "candidate_count": 1,
+        "expected_preview": "달토\n오늘 ㅇㄸ요? 상띠 많나요?",
+        "actual_preview": "달토\n오늘 ㅇㄸ요? 상띠 많나요?",
+        "pass": true,
+        "reason": "exact_title_plus_body_match"
+      },
+      {
+        "post_id": "1187163",
+        "source_file": "cb2_밤문화이야기_batch_97_2026-02-10T03-56-46.json",
+        "candidate_count": 1,
+        "expected_preview": "떡용손들 거의 ntr 성향있음?\n아니면그냥 여자없어서 돈주고먹는거?",
+        "actual_preview": "떡용손들 거의 ntr 성향있음?\n아니면그냥 여자없어서 돈주고먹는거?",
+        "pass": true,
+        "reason": "exact_title_plus_body_match"
+      },
+      {
+        "post_id": "1194850",
+        "source_file": "cb2_밤문화이야기_batch_30_2026-01-27T15-13-44.json",
+        "candidate_count": 1,
+        "expected_preview": "일 잘하는 법 있음?\n사이즈 진짜 좋고 초이스 잘 되는데\n손님 옆에가면 입이 안떨어짐\n원래 개내성적이라;\n얼빠 손님만 그냥 가만히 잇어도 된다하고 앉혀주고\n대부분 1-2ㄲ",
+        "actual_preview": "일 잘하는 법 있음?\n사이즈 진짜 좋고 초이스 잘 되는데\n손님 옆에가면 입이 안떨어짐\n원래 개내성적이라;\n얼빠 손님만 그냥 가만히 잇어도 된다하고 앉혀주고\n대부분 1-2ㄲ",
+        "pass": true,
+        "reason": "exact_title_plus_body_match"
+      },
+      {
+        "post_id": "1186462",
+        "source_file": "cb2_밤문화이야기_batch_102_2026-02-10T05-50-28.json",
+        "candidate_count": 1,
+        "expected_preview": "저만 맨날 한시간 반 뺑이인가요ㅠㅠ\n입문 첫달은 날아다녓는데 비는 시간 없이 원초원메 길어야 20분 안에\n들어가는 거 한달내내 초이스 쉬워서 ㅅㄸ인줄 알앗지ㅠㅠ\n\n요새는 무조건 한시간 넘어요 ㅠㅠㅠ 나 별론가 ㅠㅠㅠ",
+        "actual_preview": "저만 맨날 한시간 반 뺑이인가요ㅠㅠ\n입문 첫달은 날아다녓는데 비는 시간 없이 원초원메 길어야 20분 안에\n들어가는 거 한달내내 초이스 쉬워서 ㅅㄸ인줄 알앗지ㅠㅠ\n\n요새는 무조건 한시간 넘어요 ㅠㅠㅠ 나 별론가 ㅠㅠㅠ",
+        "pass": true,
+        "reason": "exact_title_plus_body_match"
+      }
+    ]
+  },
+  "comment_sample": {
+    "sample_size": 50,
+    "pass_count": 0,
+    "fail_count": 50,
+    "failure_reasons": {
+      "leading_reply_tag_not_stripped": 32,
+      "comment_not_found_in_v3_thread": 18
+    },
+    "failures": [
+      {
+        "post_id": "1192335",
+        "source_file": "cb2_밤문화이야기_batch_47_2026-01-27T21-20-07.json",
+        "comment_index": 1,
+        "comment_key": "1-1",
+        "candidate_count": 5,
+        "raw_preview": "[1-1] 어떻게 갚으셨오요?",
+        "cleaned_preview": "어떻게 갚으셨오요?",
+        "actual_preview": "[1-1] 어떻게 갚으셨오요?",
+        "pass": false,
+        "reason": "leading_reply_tag_not_stripped"
+      },
+      {
+        "post_id": "1199715",
+        "source_file": "cb2_밤문화이야기_batch_71_2026-02-09T06-36-05.json",
+        "comment_index": 3,
+        "comment_key": "1-3",
+        "candidate_count": 9,
+        "raw_preview": "[1-3] 비회원 [1-2]  차은우 사태보고 슈스들이라 돈쓸어담아도 그만큼 세금 이것저것 떼가는게많으니 구지 마다하진 않겠다싶단 생각도..",
+        "cleaned_preview": "차은우 사태보고 슈스들이라 돈쓸어담아도 그만큼 세금 이것저것 떼가는게많으니 구지 마다하진 않겠다싶단 생각도..",
+        "actual_preview": "[1-3] 비회원 [1-2]  차은우 사태보고 슈스들이라 돈쓸어담아도 그만큼 세금 이것저것 떼가는게많으니 구지 마다하진 않겠다싶단 생각도..",
+        "pass": false,
+        "reason": "leading_reply_tag_not_stripped"
+      },
+      {
+        "post_id": "1192934",
+        "source_file": "cb2_밤문화이야기_batch_43_2026-01-27T19-44-44.json",
+        "comment_index": 2,
+        "comment_key": "1-2",
+        "candidate_count": 2,
+        "raw_preview": "[1-2] 비회원 [1-1]  ㅋㅋㅋㅋㅋㅋㅋ ㄹㅇ",
+        "cleaned_preview": "ㅋㅋㅋㅋㅋㅋㅋ ㄹㅇ",
+        "actual_preview": "[1-2] 비회원 [1-1]  ㅋㅋㅋㅋㅋㅋㅋ ㄹㅇ",
+        "pass": false,
+        "reason": "leading_reply_tag_not_stripped"
+      },
+      {
+        "post_id": "1195598",
+        "source_file": "cb2_밤문화이야기_batch_25_2026-01-27T13-13-33.json",
+        "comment_index": 3,
+        "comment_key": "4",
+        "candidate_count": 0,
+        "raw_preview": "[4] 안녕하세요 안양 셔츠/하퍼 아우라입니다\n\n5개이상 가능입니다\n\n70분(60분 체크) 20만원 풀티 지급중입니다!!\n\n하퍼 병행합니다\n\n10시전 출근시 첫티씨 15 두번째 티씨부터 올 13 지급\n\n일요일은 TC +1 추가지급 첫타임 21 그후 16지급\n\n반티 조정으로 인해 방 진행중 36분부터 완티 지급입니다\n\n강남하퍼 기준 31분부터 9지급\n\n안양셔",
+        "cleaned_preview": "안녕하세요 안양 셔츠/하퍼 아우라입니다\n\n5개이상 가능입니다\n\n70분(60분 체크) 20만원 풀티 지급중입니다!!\n\n하퍼 병행합니다\n\n10시전 출근시 첫티씨 15 두번째 티씨부터 올 13 지급\n\n일요일은 TC +1 추가지급 첫타임 21 그후 16지급\n\n반티 조정으로 인해 방 진행중 36분부터 완티 지급입니다\n\n강남하퍼 기준 31분부터 9지급\n\n안양셔츠 기준",
+        "actual_preview": null,
+        "pass": false,
+        "reason": "comment_not_found_in_v3_thread"
+      },
+      {
+        "post_id": "1188324",
+        "source_file": "cb2_밤문화이야기_batch_89_2026-02-10T00-33-22.json",
+        "comment_index": 6,
+        "comment_key": "5",
+        "candidate_count": 9,
+        "raw_preview": "[5] 저 개동그라미에 옆으로 넓은 스탈인데 단발아니먼 불가능ㅠ",
+        "cleaned_preview": "저 개동그라미에 옆으로 넓은 스탈인데 단발아니먼 불가능ㅠ",
+        "actual_preview": "[5] 저 개동그라미에 옆으로 넓은 스탈인데 단발아니먼 불가능ㅠ",
+        "pass": false,
+        "reason": "leading_reply_tag_not_stripped"
+      },
+      {
+        "post_id": "1198154",
+        "source_file": "cb2_밤문화이야기_batch_8_2026-01-27T07-11-47.json",
+        "comment_index": 1,
+        "comment_key": "2",
+        "candidate_count": 2,
+        "raw_preview": "[2] 저도여 빠꼬미들 술만 ㅈㄴ먹이고 내용도 없고 차라리 멜로눈깔낀 아재가 나은듯",
+        "cleaned_preview": "저도여 빠꼬미들 술만 ㅈㄴ먹이고 내용도 없고 차라리 멜로눈깔낀 아재가 나은듯",
+        "actual_preview": "[2] 저도여 빠꼬미들 술만 ㅈㄴ먹이고 내용도 없고 차라리 멜로눈깔낀 아재가 나은듯",
+        "pass": false,
+        "reason": "leading_reply_tag_not_stripped"
+      },
+      {
+        "post_id": "1188453",
+        "source_file": "cb2_밤문화이야기_batch_88_2026-02-10T00-12-47.json",
+        "comment_index": 4,
+        "comment_key": "5",
+        "candidate_count": 4,
+        "raw_preview": "[5] 쉽게 쉽게 ㄹㄸ에 ㄲㅃ해주는애들 널렸는데 팁을 글케 주겠어요? 원래 한남들 어려운여자한테 돈 더 쓰고 쉬운여자한테는 아낌 ㅉㅇ애들 지들이 지들 몸값 낮추면서 손질 타령 술값도 하퍼 비슷해서 일반인도 갈만함",
+        "cleaned_preview": "쉽게 쉽게 ㄹㄸ에 ㄲㅃ해주는애들 널렸는데 팁을 글케 주겠어요? 원래 한남들 어려운여자한테 돈 더 쓰고 쉬운여자한테는 아낌 ㅉㅇ애들 지들이 지들 몸값 낮추면서 손질 타령 술값도 하퍼 비슷해서 일반인도 갈만함",
+        "actual_preview": "[5] 쉽게 쉽게 ㄹㄸ에 ㄲㅃ해주는애들 널렸는데 팁을 글케 주겠어요? 원래 한남들 어려운여자한테 돈 더 쓰고 쉬운여자한테는 아낌 ㅉㅇ애들 지들이 지들 몸값 낮추면서 손질 타령 술값도 하퍼 비슷해서 일반인도 갈만함",
+        "pass": false,
+        "reason": "leading_reply_tag_not_stripped"
+      },
+      {
+        "post_id": "1186142",
+        "source_file": "cb2_밤문화이야기_batch_104_2026-02-10T06-59-21.json",
+        "comment_index": 3,
+        "comment_key": "2-2",
+        "candidate_count": 7,
+        "raw_preview": "[2-2] 언니 혹시 마운자로 시작할 때 키빼몸 몇이셧너요?",
+        "cleaned_preview": "언니 혹시 마운자로 시작할 때 키빼몸 몇이셧너요?",
+        "actual_preview": "[2-2] 언니 혹시 마운자로 시작할 때 키빼몸 몇이셧너요?",
+        "pass": false,
+        "reason": "leading_reply_tag_not_stripped"
+      },
+      {
+        "post_id": "1193747",
+        "source_file": "cb2_밤문화이야기_batch_37_2026-01-27T17-38-06.json",
+        "comment_index": 2,
+        "comment_key": "3",
+        "candidate_count": 1,
+        "raw_preview": "[3] 안녕하세요! 날이 추운데 몸 조심하시구 연락 한번 주세요! 잘 챙겨드리겠습니당 ㅎㅎ\n\n썸데이 하유호\n010-4146-1922\n카카오 ha1922\n\n강남 쩜오 하유호\nhttps://open.kakao.com/o/sNSbS0Jh\n\n썸데이 G팀 하루평균 10방이상\n밀빵 확실하게 해드립니다.\n강남 쩜오중 언니 젤 적은 가게\n잘 적응하시게 도와드리겠습니다.",
+        "cleaned_preview": "안녕하세요! 날이 추운데 몸 조심하시구 연락 한번 주세요! 잘 챙겨드리겠습니당 ㅎㅎ\n\n썸데이 하유호\n010-4146-1922\n카카오 ha1922\n\n강남 쩜오 하유호\nhttps://open.kakao.com/o/sNSbS0Jh\n\n썸데이 G팀 하루평균 10방이상\n밀빵 확실하게 해드립니다.\n강남 쩜오중 언니 젤 적은 가게\n잘 적응하시게 도와드리겠습니다.",
+        "actual_preview": "[4] 저 백치미소리 많이듣는데 실제로 그냥 빡대가리에요ㅋㅋㅋㅋㅋ",
+        "pass": false,
+        "reason": "comment_not_found_in_v3_thread"
+      },
+      {
+        "post_id": "1200074",
+        "source_file": "cb2_밤문화이야기_batch_69_2026-02-09T05-43-44.json",
+        "comment_index": 3,
+        "comment_key": "3",
+        "candidate_count": 3,
+        "raw_preview": "[3] 하퍼에서 편하게 일하실까요~??\n\n도파민은 어떠신가요?\n365일 24시 입니다\n\n1부~3부 2인1조로 풀상주중\n사고처리확실 스타트톡 개수톡 퇴근시칼수금!! 일하실때 필요한 비품 없는거 없어요 !!\n(스팀다리미, 꼬리빗, 숙취해소제,핫팩,담요)등\n\n아가씨 케어 정말 잘합니다\n밀빵 가능 갯수는 정점 찍을거에요~!!\n한번만 믿고 연락주세요~\n\n출근문의\n도",
+        "cleaned_preview": "하퍼에서 편하게 일하실까요~??\n\n도파민은 어떠신가요?\n365일 24시 입니다\n\n1부~3부 2인1조로 풀상주중\n사고처리확실 스타트톡 개수톡 퇴근시칼수금!! 일하실때 필요한 비품 없는거 없어요 !!\n(스팀다리미, 꼬리빗, 숙취해소제,핫팩,담요)등\n\n아가씨 케어 정말 잘합니다\n밀빵 가능 갯수는 정점 찍을거에요~!!\n한번만 믿고 연락주세요~\n\n출근문의\n도파민은 ",
+        "actual_preview": "[1] ?하퍼는 그게 공식이고 그아래면 한계가 확실하니 알아봐요",
+        "pass": false,
+        "reason": "comment_not_found_in_v3_thread"
+      },
+      {
+        "post_id": "1191405",
+        "source_file": "cb2_밤문화이야기_batch_53_2026-01-27T23-36-25.json",
+        "comment_index": 5,
+        "comment_key": "4",
+        "candidate_count": 6,
+        "raw_preview": "[4] 그만먹어 대지야",
+        "cleaned_preview": "그만먹어 대지야",
+        "actual_preview": "[4-1] 힝 : ( 오늘 처음이자 마지막 끼니로 할게욥",
+        "pass": false,
+        "reason": "comment_not_found_in_v3_thread"
+      },
+      {
+        "post_id": "1194615",
+        "source_file": "cb2_밤문화이야기_batch_32_2026-01-27T16-06-14.json",
+        "comment_index": 1,
+        "comment_key": "2",
+        "candidate_count": 3,
+        "raw_preview": "[2] 맛있게 드세요 :)\n\n썸데이 하유호\n010-4146-1922\n카카오 ha1922\n\n강남 쩜오 하유호\nhttps://open.kakao.com/o/sNSbS0Jh\n\n썸데이 G팀 하루평균 10방이상\n밀빵 확실하게 해드립니다.\n강남 쩜오중 언니 젤 적은 가게\n잘 적응하시게 도와드리겠습니다.",
+        "cleaned_preview": "맛있게 드세요 :)\n\n썸데이 하유호\n010-4146-1922\n카카오 ha1922\n\n강남 쩜오 하유호\nhttps://open.kakao.com/o/sNSbS0Jh\n\n썸데이 G팀 하루평균 10방이상\n밀빵 확실하게 해드립니다.\n강남 쩜오중 언니 젤 적은 가게\n잘 적응하시게 도와드리겠습니다.",
+        "actual_preview": "[3] 저메추 감사합니다 . .",
+        "pass": false,
+        "reason": "comment_not_found_in_v3_thread"
+      },
+      {
+        "post_id": "1199941",
+        "source_file": "cb2_밤문화이야기_batch_70_2026-02-09T06-10-25.json",
+        "comment_index": 4,
+        "comment_key": "5",
+        "candidate_count": 4,
+        "raw_preview": "[5] 영업진이랑 연애해봐서 말하자면 정병 걸리게만들어 놓고 뒤에서는 정병녀네 뭐네 사람 개 병신 만들어놔요 걔네 특인듯",
+        "cleaned_preview": "영업진이랑 연애해봐서 말하자면 정병 걸리게만들어 놓고 뒤에서는 정병녀네 뭐네 사람 개 병신 만들어놔요 걔네 특인듯",
+        "actual_preview": "[5] 영업진이랑 연애해봐서 말하자면 정병 걸리게만들어 놓고 뒤에서는 정병녀네 뭐네 사람 개 병신 만들어놔요 걔네 특인듯",
+        "pass": false,
+        "reason": "leading_reply_tag_not_stripped"
+      },
+      {
+        "post_id": "1187965",
+        "source_file": "cb2_밤문화이야기_batch_91_2026-02-10T01-16-52.json",
+        "comment_index": 10,
+        "comment_key": "8",
+        "candidate_count": 15,
+        "raw_preview": "[8] 으아ㅏㅏ 스노우맨 될거같아",
+        "cleaned_preview": "으아ㅏㅏ 스노우맨 될거같아",
+        "actual_preview": "[8] 으아ㅏㅏ 스노우맨 될거같아",
+        "pass": false,
+        "reason": "leading_reply_tag_not_stripped"
+      },
+      {
+        "post_id": "1198724",
+        "source_file": "cb2_밤문화이야기_batch_4_2026-01-27T05-59-27.json",
+        "comment_index": 0,
+        "comment_key": "1",
+        "candidate_count": 0,
+        "raw_preview": "[1] 한남사주입니다",
+        "cleaned_preview": "한남사주입니다",
+        "actual_preview": null,
+        "pass": false,
+        "reason": "comment_not_found_in_v3_thread"
+      }
+    ],
+    "examples": [
+      {
+        "post_id": "1192335",
+        "source_file": "cb2_밤문화이야기_batch_47_2026-01-27T21-20-07.json",
+        "comment_index": 1,
+        "comment_key": "1-1",
+        "candidate_count": 5,
+        "raw_preview": "[1-1] 어떻게 갚으셨오요?",
+        "cleaned_preview": "어떻게 갚으셨오요?",
+        "actual_preview": "[1-1] 어떻게 갚으셨오요?",
+        "pass": false,
+        "reason": "leading_reply_tag_not_stripped"
+      },
+      {
+        "post_id": "1199715",
+        "source_file": "cb2_밤문화이야기_batch_71_2026-02-09T06-36-05.json",
+        "comment_index": 3,
+        "comment_key": "1-3",
+        "candidate_count": 9,
+        "raw_preview": "[1-3] 비회원 [1-2]  차은우 사태보고 슈스들이라 돈쓸어담아도 그만큼 세금 이것저것 떼가는게많으니 구지 마다하진 않겠다싶단 생각도..",
+        "cleaned_preview": "차은우 사태보고 슈스들이라 돈쓸어담아도 그만큼 세금 이것저것 떼가는게많으니 구지 마다하진 않겠다싶단 생각도..",
+        "actual_preview": "[1-3] 비회원 [1-2]  차은우 사태보고 슈스들이라 돈쓸어담아도 그만큼 세금 이것저것 떼가는게많으니 구지 마다하진 않겠다싶단 생각도..",
+        "pass": false,
+        "reason": "leading_reply_tag_not_stripped"
+      },
+      {
+        "post_id": "1192934",
+        "source_file": "cb2_밤문화이야기_batch_43_2026-01-27T19-44-44.json",
+        "comment_index": 2,
+        "comment_key": "1-2",
+        "candidate_count": 2,
+        "raw_preview": "[1-2] 비회원 [1-1]  ㅋㅋㅋㅋㅋㅋㅋ ㄹㅇ",
+        "cleaned_preview": "ㅋㅋㅋㅋㅋㅋㅋ ㄹㅇ",
+        "actual_preview": "[1-2] 비회원 [1-1]  ㅋㅋㅋㅋㅋㅋㅋ ㄹㅇ",
+        "pass": false,
+        "reason": "leading_reply_tag_not_stripped"
+      },
+      {
+        "post_id": "1195598",
+        "source_file": "cb2_밤문화이야기_batch_25_2026-01-27T13-13-33.json",
+        "comment_index": 3,
+        "comment_key": "4",
+        "candidate_count": 0,
+        "raw_preview": "[4] 안녕하세요 안양 셔츠/하퍼 아우라입니다\n\n5개이상 가능입니다\n\n70분(60분 체크) 20만원 풀티 지급중입니다!!\n\n하퍼 병행합니다\n\n10시전 출근시 첫티씨 15 두번째 티씨부터 올 13 지급\n\n일요일은 TC +1 추가지급 첫타임 21 그후 16지급\n\n반티 조정으로 인해 방 진행중 36분부터 완티 지급입니다\n\n강남하퍼 기준 31분부터 9지급\n\n안양셔",
+        "cleaned_preview": "안녕하세요 안양 셔츠/하퍼 아우라입니다\n\n5개이상 가능입니다\n\n70분(60분 체크) 20만원 풀티 지급중입니다!!\n\n하퍼 병행합니다\n\n10시전 출근시 첫티씨 15 두번째 티씨부터 올 13 지급\n\n일요일은 TC +1 추가지급 첫타임 21 그후 16지급\n\n반티 조정으로 인해 방 진행중 36분부터 완티 지급입니다\n\n강남하퍼 기준 31분부터 9지급\n\n안양셔츠 기준",
+        "actual_preview": null,
+        "pass": false,
+        "reason": "comment_not_found_in_v3_thread"
+      },
+      {
+        "post_id": "1188324",
+        "source_file": "cb2_밤문화이야기_batch_89_2026-02-10T00-33-22.json",
+        "comment_index": 6,
+        "comment_key": "5",
+        "candidate_count": 9,
+        "raw_preview": "[5] 저 개동그라미에 옆으로 넓은 스탈인데 단발아니먼 불가능ㅠ",
+        "cleaned_preview": "저 개동그라미에 옆으로 넓은 스탈인데 단발아니먼 불가능ㅠ",
+        "actual_preview": "[5] 저 개동그라미에 옆으로 넓은 스탈인데 단발아니먼 불가능ㅠ",
+        "pass": false,
+        "reason": "leading_reply_tag_not_stripped"
+      },
+      {
+        "post_id": "1198154",
+        "source_file": "cb2_밤문화이야기_batch_8_2026-01-27T07-11-47.json",
+        "comment_index": 1,
+        "comment_key": "2",
+        "candidate_count": 2,
+        "raw_preview": "[2] 저도여 빠꼬미들 술만 ㅈㄴ먹이고 내용도 없고 차라리 멜로눈깔낀 아재가 나은듯",
+        "cleaned_preview": "저도여 빠꼬미들 술만 ㅈㄴ먹이고 내용도 없고 차라리 멜로눈깔낀 아재가 나은듯",
+        "actual_preview": "[2] 저도여 빠꼬미들 술만 ㅈㄴ먹이고 내용도 없고 차라리 멜로눈깔낀 아재가 나은듯",
+        "pass": false,
+        "reason": "leading_reply_tag_not_stripped"
+      },
+      {
+        "post_id": "1188453",
+        "source_file": "cb2_밤문화이야기_batch_88_2026-02-10T00-12-47.json",
+        "comment_index": 4,
+        "comment_key": "5",
+        "candidate_count": 4,
+        "raw_preview": "[5] 쉽게 쉽게 ㄹㄸ에 ㄲㅃ해주는애들 널렸는데 팁을 글케 주겠어요? 원래 한남들 어려운여자한테 돈 더 쓰고 쉬운여자한테는 아낌 ㅉㅇ애들 지들이 지들 몸값 낮추면서 손질 타령 술값도 하퍼 비슷해서 일반인도 갈만함",
+        "cleaned_preview": "쉽게 쉽게 ㄹㄸ에 ㄲㅃ해주는애들 널렸는데 팁을 글케 주겠어요? 원래 한남들 어려운여자한테 돈 더 쓰고 쉬운여자한테는 아낌 ㅉㅇ애들 지들이 지들 몸값 낮추면서 손질 타령 술값도 하퍼 비슷해서 일반인도 갈만함",
+        "actual_preview": "[5] 쉽게 쉽게 ㄹㄸ에 ㄲㅃ해주는애들 널렸는데 팁을 글케 주겠어요? 원래 한남들 어려운여자한테 돈 더 쓰고 쉬운여자한테는 아낌 ㅉㅇ애들 지들이 지들 몸값 낮추면서 손질 타령 술값도 하퍼 비슷해서 일반인도 갈만함",
+        "pass": false,
+        "reason": "leading_reply_tag_not_stripped"
+      },
+      {
+        "post_id": "1186142",
+        "source_file": "cb2_밤문화이야기_batch_104_2026-02-10T06-59-21.json",
+        "comment_index": 3,
+        "comment_key": "2-2",
+        "candidate_count": 7,
+        "raw_preview": "[2-2] 언니 혹시 마운자로 시작할 때 키빼몸 몇이셧너요?",
+        "cleaned_preview": "언니 혹시 마운자로 시작할 때 키빼몸 몇이셧너요?",
+        "actual_preview": "[2-2] 언니 혹시 마운자로 시작할 때 키빼몸 몇이셧너요?",
+        "pass": false,
+        "reason": "leading_reply_tag_not_stripped"
+      },
+      {
+        "post_id": "1193747",
+        "source_file": "cb2_밤문화이야기_batch_37_2026-01-27T17-38-06.json",
+        "comment_index": 2,
+        "comment_key": "3",
+        "candidate_count": 1,
+        "raw_preview": "[3] 안녕하세요! 날이 추운데 몸 조심하시구 연락 한번 주세요! 잘 챙겨드리겠습니당 ㅎㅎ\n\n썸데이 하유호\n010-4146-1922\n카카오 ha1922\n\n강남 쩜오 하유호\nhttps://open.kakao.com/o/sNSbS0Jh\n\n썸데이 G팀 하루평균 10방이상\n밀빵 확실하게 해드립니다.\n강남 쩜오중 언니 젤 적은 가게\n잘 적응하시게 도와드리겠습니다.",
+        "cleaned_preview": "안녕하세요! 날이 추운데 몸 조심하시구 연락 한번 주세요! 잘 챙겨드리겠습니당 ㅎㅎ\n\n썸데이 하유호\n010-4146-1922\n카카오 ha1922\n\n강남 쩜오 하유호\nhttps://open.kakao.com/o/sNSbS0Jh\n\n썸데이 G팀 하루평균 10방이상\n밀빵 확실하게 해드립니다.\n강남 쩜오중 언니 젤 적은 가게\n잘 적응하시게 도와드리겠습니다.",
+        "actual_preview": "[4] 저 백치미소리 많이듣는데 실제로 그냥 빡대가리에요ㅋㅋㅋㅋㅋ",
+        "pass": false,
+        "reason": "comment_not_found_in_v3_thread"
+      },
+      {
+        "post_id": "1200074",
+        "source_file": "cb2_밤문화이야기_batch_69_2026-02-09T05-43-44.json",
+        "comment_index": 3,
+        "comment_key": "3",
+        "candidate_count": 3,
+        "raw_preview": "[3] 하퍼에서 편하게 일하실까요~??\n\n도파민은 어떠신가요?\n365일 24시 입니다\n\n1부~3부 2인1조로 풀상주중\n사고처리확실 스타트톡 개수톡 퇴근시칼수금!! 일하실때 필요한 비품 없는거 없어요 !!\n(스팀다리미, 꼬리빗, 숙취해소제,핫팩,담요)등\n\n아가씨 케어 정말 잘합니다\n밀빵 가능 갯수는 정점 찍을거에요~!!\n한번만 믿고 연락주세요~\n\n출근문의\n도",
+        "cleaned_preview": "하퍼에서 편하게 일하실까요~??\n\n도파민은 어떠신가요?\n365일 24시 입니다\n\n1부~3부 2인1조로 풀상주중\n사고처리확실 스타트톡 개수톡 퇴근시칼수금!! 일하실때 필요한 비품 없는거 없어요 !!\n(스팀다리미, 꼬리빗, 숙취해소제,핫팩,담요)등\n\n아가씨 케어 정말 잘합니다\n밀빵 가능 갯수는 정점 찍을거에요~!!\n한번만 믿고 연락주세요~\n\n출근문의\n도파민은 ",
+        "actual_preview": "[1] ?하퍼는 그게 공식이고 그아래면 한계가 확실하니 알아봐요",
+        "pass": false,
+        "reason": "comment_not_found_in_v3_thread"
+      }
+    ]
+  },
+  "comment_corpus_shape": {
+    "leading_reply_tag_rows": 36387,
+    "leading_reply_tag_pct": 0.968151
+  },
+  "context_sample": {
+    "sample_size": 10,
+    "pass_count": 10,
+    "fail_count": 0,
+    "failures": [],
+    "examples": [
+      {
+        "source_id": "1197102",
+        "comment_key": "6",
+        "parent_comment_key": null,
+        "context_mode": "root",
+        "pass": true,
+        "reason": "context_text_and_keys_match",
+        "actual_preview": "제목: 도파 갈라는데\n원글: 2시쯤 가면 초중 좀 빠질ᄅ라나..\n댓글: 아니... 마의2시라 똑같아요 그때도",
+        "expected_preview": "제목: 도파 갈라는데\n원글: 2시쯤 가면 초중 좀 빠질ᄅ라나..\n댓글: 아니... 마의2시라 똑같아요 그때도"
+      },
+      {
+        "source_id": "1199866",
+        "comment_key": "2",
+        "parent_comment_key": null,
+        "context_mode": "root",
+        "pass": true,
+        "reason": "context_text_and_keys_match",
+        "actual_preview": "제목: -태주-저희집 강아지구경하고 가십쇼\n원글: 구커피 귀엽조\n댓글: 신림 진짜 뒤져가나보네 글 몇개를 올림 강쥐는 귀엽네여",
+        "expected_preview": "제목: -태주-저희집 강아지구경하고 가십쇼\n원글: 구커피 귀엽조\n댓글: 신림 진짜 뒤져가나보네 글 몇개를 올림 강쥐는 귀엽네여"
+      },
+      {
+        "source_id": "1193841",
+        "comment_key": "5",
+        "parent_comment_key": null,
+        "context_mode": "root",
+        "pass": true,
+        "reason": "context_text_and_keys_match",
+        "actual_preview": "제목: 요즘 여돌중에 얘네들이 내가 생각하는 옛날 일프로 상..\n원글: 요즘 일프로는 인플루언서 성미상이구...\n댓글: 언니가 올린상은 청순단아인가여",
+        "expected_preview": "제목: 요즘 여돌중에 얘네들이 내가 생각하는 옛날 일프로 상..\n원글: 요즘 일프로는 인플루언서 성미상이구...\n댓글: 언니가 올린상은 청순단아인가여"
+      },
+      {
+        "source_id": "1199599",
+        "comment_key": "3",
+        "parent_comment_key": null,
+        "context_mode": "root",
+        "pass": true,
+        "reason": "context_text_and_keys_match",
+        "actual_preview": "제목: 친오빠가 의사인데\n원글: 그럼 유전적으로 저도 아이큐 높을 가능성 있을까요\n그냥 공부 한번 해보고 싶어서...\n댓글: 검사를받아보세여. 근데보통 똑똑하면 자기가 먼저 알음... 항상 성적잘나오고, 주위에서 너 똑똑하다 그러니까",
+        "expected_preview": "제목: 친오빠가 의사인데\n원글: 그럼 유전적으로 저도 아이큐 높을 가능성 있을까요\n그냥 공부 한번 해보고 싶어서...\n댓글: 검사를받아보세여. 근데보통 똑똑하면 자기가 먼저 알음... 항상 성적잘나오고, 주위에서 너 똑똑하다 그러니까"
+      },
+      {
+        "source_id": "1190171",
+        "comment_key": "4-1",
+        "parent_comment_key": "4",
+        "context_mode": "reply",
+        "pass": true,
+        "reason": "context_text_and_keys_match",
+        "actual_preview": "제목: 미국 La 나 뉴욕\n원글: 미국 일하러가려는데 La랑 뉴욕 중에  \n어디로 갈지 고민중인데 둘 중 어디가나을까요..?\n같이 가실분이나 라스베가스 쪽 아시는분도 정보부탁드려용 ᅲᅲ\n부모댓글: 베가스는 복불복이 너무 심하다 들었고 엘에이 갈거면 일가는 가지마세요 아가씨들 팁 안주고 개판인 가게예요\n답글: 뉴욕이나을까요 엘에이가\n나을까요?ˀ ᅲᅲ 엘에이 가보신거에용?",
+        "expected_preview": "제목: 미국 La 나 뉴욕\n원글: 미국 일하러가려는데 La랑 뉴욕 중에  \n어디로 갈지 고민중인데 둘 중 어디가나을까요..?\n같이 가실분이나 라스베가스 쪽 아시는분도 정보부탁드려용 ᅲᅲ\n부모댓글: 베가스는 복불복이 너무 심하다 들었고 엘에이 갈거면 일가는 가지마세요 아가씨들 팁 안주고 개판인 가게예요\n답글: 뉴욕이나을까요 엘에이가\n나을까요?ˀ ᅲᅲ 엘에이 가보신거에용?"
+      },
+      {
+        "source_id": "1200089",
+        "comment_key": "1",
+        "parent_comment_key": null,
+        "context_mode": "root",
+        "pass": true,
+        "reason": "context_text_and_keys_match",
+        "actual_preview": "제목: 들앉 용손 다 관계 해줘야하나요?\n원글: 그거 안하고는 못하는거예요?\n댓글: 반대로 입장 바꿔서 생각해보세요 세상에 공짜가 어딨어요",
+        "expected_preview": "제목: 들앉 용손 다 관계 해줘야하나요?\n원글: 그거 안하고는 못하는거예요?\n댓글: 반대로 입장 바꿔서 생각해보세요 세상에 공짜가 어딨어요"
+      },
+      {
+        "source_id": "1198665",
+        "comment_key": "1",
+        "parent_comment_key": null,
+        "context_mode": "root",
+        "pass": true,
+        "reason": "context_text_and_keys_match",
+        "actual_preview": "제목: 저는 롱치충인데\n원글: 흰색롱치랑 검정 롱치랑 초이스차이 왜케 나죠 ᅲ 제기 검정이 안어울리는걸까여 검정입으면 초이스 은근 도는데 흰색입으면 너무 잘되는데 흰색은 너무 더러워져서 ᅲ\n댓글: 인정ᄏᄀᄏᄀ검정이때안타고좋은데\n머리도긴검정머리라서그런가 차이가나더라구여",
+        "expected_preview": "제목: 저는 롱치충인데\n원글: 흰색롱치랑 검정 롱치랑 초이스차이 왜케 나죠 ᅲ 제기 검정이 안어울리는걸까여 검정입으면 초이스 은근 도는데 흰색입으면 너무 잘되는데 흰색은 너무 더러워져서 ᅲ\n댓글: 인정ᄏᄀᄏᄀ검정이때안타고좋은데\n머리도긴검정머리라서그런가 차이가나더라구여"
+      },
+      {
+        "source_id": "1187731",
+        "comment_key": "2",
+        "parent_comment_key": null,
+        "context_mode": "root",
+        "pass": true,
+        "reason": "context_text_and_keys_match",
+        "actual_preview": "제목: 오늘 마운자로 처음 맞았는데\n원글: 토요일 일가는데에 지장없을까요 주량 줄어들고 더 잘취한다는 글이 많아서요ᅮᅮ\n댓글: 잘취한다기보다 걍 술먹는도중에체력딸리고존나게졸려요",
+        "expected_preview": "제목: 오늘 마운자로 처음 맞았는데\n원글: 토요일 일가는데에 지장없을까요 주량 줄어들고 더 잘취한다는 글이 많아서요ᅮᅮ\n댓글: 잘취한다기보다 걍 술먹는도중에체력딸리고존나게졸려요"
+      },
+      {
+        "source_id": "1186729",
+        "comment_key": "2",
+        "parent_comment_key": null,
+        "context_mode": "root",
+        "pass": true,
+        "reason": "context_text_and_keys_match",
+        "actual_preview": "제목: 오늘도 난 도파민에 출근한다..\n원글: 은성오빠 볼생각에 짜릿하다.....\n댓글: 고백하고 키스갈겨여",
+        "expected_preview": "제목: 오늘도 난 도파민에 출근한다..\n원글: 은성오빠 볼생각에 짜릿하다.....\n댓글: 고백하고 키스갈겨여"
+      },
+      {
+        "source_id": "1197961",
+        "comment_key": "1-8",
+        "parent_comment_key": "1",
+        "context_mode": "reply",
+        "pass": true,
+        "reason": "context_text_and_keys_match",
+        "actual_preview": "제목: 간호사 글 올라와서 궁금한거\n원글: 간호사도 학벌따져요? 인서울 전문대도 급에 안쳐줘요?\n부모댓글: 명문대 간호학과면 엄청 엘리트인거에요..\n서울대 철학과 들어 갈 수 있을정도 ?\n답글: 글케치면 철학과 가는 애들도 철학 목적으로 가나요 거기가 취업이 되는 것도 아닌데",
+        "expected_preview": "제목: 간호사 글 올라와서 궁금한거\n원글: 간호사도 학벌따져요? 인서울 전문대도 급에 안쳐줘요?\n부모댓글: 명문대 간호학과면 엄청 엘리트인거에요..\n서울대 철학과 들어 갈 수 있을정도 ?\n답글: 글케치면 철학과 가는 애들도 철학 목적으로 가나요 거기가 취업이 되는 것도 아닌데"
+      }
+    ]
+  },
+  "contamination": {
+    "phone_rows": 0,
+    "kakao_or_openchat_rows": 488,
+    "recruiter_template_rows": 2658,
+    "union_rows": 2708,
+    "phone_examples": [],
+    "kakao_examples": [
+      {
+        "source_id": "1186948",
+        "kind": "comment",
+        "text": "[1] 여기하퍼로오세욧^^!!!!\n\n강남 퍼펙트 \"동생이사\"\n\n폰-[전화번호]\n\n카카오톡-keroro25\n\n!!️개인이벤트중!!️\n\n언제든지 문의 환영!"
+      },
+      {
+        "source_id": "1187814",
+        "kind": "comment",
+        "text": "[2] 일은할수있지요~\n\n도파민은 \"김무열\"\n퍼펙트는 \"동생\"\n\n강남 퍼펙트 \"동생이사\"\n\n폰-[전화번호]\n\n카카오톡-keroro25\n\n언제든지 문의 환영!"
+      },
+      {
+        "source_id": "1196894",
+        "kind": "comment",
+        "text": "[1] 저 30중반인데 넘차이나죠? 출근일수도 저랑 비슷하신듯 4일 많으면 5일해요 j성향에 효율적이고 생산적인거 좋아해서 쉴때 도서관 책 카페 투자공부 운동 좋아해요\n\n괜찮다면 오카와주세요\n[URL]"
+      },
+      {
+        "source_id": "1191703",
+        "kind": "post",
+        "text": "정빠 명품관 같이 갈 언니 구해욤\n명품관 같이 다닐 사람 구해욤\n\n저 일주일에 세번은 가는 듯..\n\n반반 티씨는 각자내욤!\n\n혼자 다니니까 돈 넘 마니 들어서 거지됨..ㅠ\n\n괜찮으면 오카 드릴게오"
+      },
+      {
+        "source_id": "1195106",
+        "kind": "comment",
+        "text": "[2] 가게오픈부터 가게문닫을때까지 연락안된적이없습니다.가게서케어중이구여.연락주세여^^\n\n강남 퍼펙트 \"동생이사\"\n\n폰-[전화번호]\n\n카카오톡-keroro25\n\n!!️개인이벤트중!!️\n\n언제든지 문의 환영!"
+      },
+      {
+        "source_id": "1199612",
+        "kind": "comment",
+        "text": "[1] 여기아니시라면 점프환영합네다^^\n\n강남 도파민 \"동생\"\n\n폰-[전화번호]\n\n카카오톡-keroro25\n\n!!️개인이벤트중!!️\n\n언제든지 문의 환영!"
+      },
+      {
+        "source_id": "1196294",
+        "kind": "comment",
+        "text": "[6] 도파로오세여^^~\n\n도파민은 \"김무열\"\n퍼펙트는 \"동생\"\n\n강남 퍼펙트 \"동생이사\"\n\n폰-[전화번호]\n\n카카오톡-keroro25\n\n언제든지 문의 환영!"
+      },
+      {
+        "source_id": "1191403",
+        "kind": "comment",
+        "text": "[3] 연락주세영~\n\n도파민은 \"김무열\"\n퍼펙트는 \"동생\"\n\n강남 퍼펙트 \"동생이사\"\n\n폰-[전화번호]\n\n카카오톡-keroro25\n\n언제든지 문의 환영!"
+      },
+      {
+        "source_id": "1201408",
+        "kind": "post",
+        "text": "스우ㅔ언니들 도와주세여ㅜㅜ\n저 38살 민삘 마른 55 슴가 a컵 ㅜㅜ\n\n스웨 정보 받고싶은데 오카로 알려주실언니들 ㅠㅜ\n\n서울권/경기권이요ㅠㅜ\n\n너무 급해영 ㅠㅠ 흑흑 ㅠㅠ"
+      },
+      {
+        "source_id": "1197970",
+        "kind": "comment",
+        "text": "[5] 그럼요~요즘 여기저기 돌아다녀요~^^\n\n강남 도파민 \"동생\"\n\n폰-[전화번호]\n\n카카오톡-keroro25\n\n!!️개인이벤트중!!️\n\n언제든지 문의 환영!"
+      }
+    ],
+    "recruiter_examples": [
+      {
+        "source_id": "1186948",
+        "kind": "comment",
+        "text": "[1] 여기하퍼로오세욧^^!!!!\n\n강남 퍼펙트 \"동생이사\"\n\n폰-[전화번호]\n\n카카오톡-keroro25\n\n!!️개인이벤트중!!️\n\n언제든지 문의 환영!",
+        "promo_hits": [
+          "문의",
+          "이벤트",
+          "카톡",
+          "환영"
+        ]
+      },
+      {
+        "source_id": "1189771",
+        "kind": "comment",
+        "text": "[1] 보스턴 [전화번호]\n\n1년 365일 연중무휴 (공휴일 일요일 정상영업)\n영업시간 저녁8시~다음날오후2시 (선수들은 저녁10시쯤 출근해요)\n\n절대 총 안 쏘고 정직하게 오픈하고 장사합니다\n강남 호빠 17년 경력 업계 최고라 자부합니다\n가게에 항시 상주해있으며, 무책임하게 손님만 보내놓고 돈벌지 않습니다\n초이스부터 계산까지 제가 직접 진행합니다\n\n주대\n기본 위스키 최저가 판매 종류별 16만~22만\n고급 위스키 최저가 판매 ",
+        "promo_hits": [
+          "출근문의",
+          "카톡"
+        ]
+      },
+      {
+        "source_id": "1199993",
+        "kind": "comment",
+        "text": "[8] 가락24시 베이글입니다. ^^\n\n문의한번 주세요 궁금하신점 300번 답변해드리겠습니다.^^\n\n-문의-\n*카톡*ooaa119\n*전화* [전화번호]\n*텔레* mmamlb\n*라인* bagel98\n\n♥가락24시 최고대우♥",
+        "promo_hits": [
+          "라인",
+          "문의",
+          "카톡",
+          "텔레"
+        ]
+      },
+      {
+        "source_id": "1187814",
+        "kind": "comment",
+        "text": "[2] 일은할수있지요~\n\n도파민은 \"김무열\"\n퍼펙트는 \"동생\"\n\n강남 퍼펙트 \"동생이사\"\n\n폰-[전화번호]\n\n카카오톡-keroro25\n\n언제든지 문의 환영!",
+        "promo_hits": [
+          "문의",
+          "카톡",
+          "환영"
+        ]
+      },
+      {
+        "source_id": "1192434",
+        "kind": "comment",
+        "text": "[1-2] 비회원 [1-1]  보스턴 호빠 [전화번호]\n\n절대 총 안 쏘고 정직하게 오픈하고 장사합니다\n\n강아지 동반 환영 (가게에 취하면 댕댕이 친구들 많아요)\n혼자오는 손님 환영 (땁 비율60%이상)\n한병만 마셔도 환영 (부담 갖지마세요)\n선수 안 앉히고 노셔도 환영 (지인들끼리 노셔도 됩니다)\n아베크 환영 (여자 보도 아가씨 불러드려요)\n\n정직하게 총 안쏘고 초이스 부터 계산 까지 직접 케어합니다\n가게에 항시 상주해있으며",
+        "promo_hits": [
+          "문의",
+          "카톡",
+          "케어",
+          "환영"
+        ]
+      },
+      {
+        "source_id": "1191403",
+        "kind": "comment",
+        "text": "[2] 도파로 와주세요 핫합니다\nㅡㅡㅡㅡㅡㅡ\n❌수많은 광고중 가게에서 저를 제일 많이 찾고옵니다\n❌걱정 되시죠 첫출근 전지역픽업 첫방 시간보장❌\n✅초보전문 도파민에서 젤 큰팀 최고좋은혜택✅\n⚠️행동으로 진상 잘 짜르고 저랑 하시면 힘든일 덜합니다⚠️\n⬛️ 힘든거 돈잘받고 딴거보다 그거 잘해서 옵니다!!\n⬛️담당에 따라 환경 달라집니다 안맞으면 변경O\n➖➖➖➖➖➖➖➖➖➖\n⬛️일 처음 술,진상 초이스 걱정 되시는 분 믿어주세요\n좀",
+        "promo_hits": [
+          "광고",
+          "출근문의",
+          "픽업"
+        ]
+      },
+      {
+        "source_id": "1194506",
+        "kind": "comment",
+        "text": "[1-1] 진심 그런 구라많이쳐요 ㅋㅋㅋ 안가본사람들이\n여기와보세요 잘 적응하시게 도와드릴게요 일하는수위랑 딱맞으실듯\nㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n✅✅✅✅✅톡:kml0768✅✅✅✅✅\n❌걱정 되시죠 첫출근 전지역픽업 첫방 시간보장❌\n✅초보전문 도파민에서 젤 큰팀 최고좋은혜택✅\n⚠️행동으로 진상 잘 짜르고 저랑 하시면 힘든일 덜합니다⚠️\n⬛️ 힘든거 돈잘받고 딴거보다 그거 잘해서 옵니다!!\n⬛️담당에 따라 환경 달라집니다 안맞으면 변경",
+        "promo_hits": [
+          "출근문의",
+          "픽업"
+        ]
+      },
+      {
+        "source_id": "1188013",
+        "kind": "comment",
+        "text": "[5] 안녕하세요!!\n일산 1등 하이퍼블릭입니다.\n인사 X 퇴폐 X 변종 X\n순수 테이블 합법 1종 가게입니다!\n\n-- T.C -\n55분 11 + @\n85분 17 + @\n\n지명비 와리 전부 지급\n(알고 있는 손님 데려오시면\n결제 후 남은 마진 전부 지급)\n결제 내역 투명히 공개합니다.\n\n불편한 요소는\n최대한 제거해드릴게요!\n마음 편하게 일할 수 있어요.\n일산 내 가장 정직하고\n안정적인 시스템 보장합니다!\n편하게 연락 주세요!!",
+        "promo_hits": [
+          "tc",
+          "라인",
+          "지명비",
+          "카톡",
+          "텔레"
+        ]
+      },
+      {
+        "source_id": "1188227",
+        "kind": "comment",
+        "text": "[11] ❤️동대문,동대문역사문화공원(DDP)❤️항상아딜아딜\n첫날1시간6만 무조건 당일지급\nNo초이스\nNo떼초\n공주놀이가능\n퇴근차or 퇴근비\n\n카톡(소문자) zmzmzm7878\n[전화번호].",
+        "promo_hits": [
+          "당일지급",
+          "카톡"
+        ]
+      },
+      {
+        "source_id": "1194753",
+        "kind": "comment",
+        "text": "[3] 강북 수유 입니다!\n\n항상 콜 많이있습니다 언니들 갯수 만족하고 가실 수 있게 노력하겠습니다!\n\n언니들 니즈에 맞게 콜 잘잡아드리구 잘 걸러서 잡아드려요\n\n욕먹는 실장 말고 공감하는 실장될려고 노력하겠습니다\n\n출근부터 퇴근까지 케어 확실하게 하겠습니다 감사합니다\n\n톡 seung9518\n[전화번호]",
+        "promo_hits": [
+          "실장",
+          "출근문의",
+          "케어"
+        ]
+      },
+      {
+        "source_id": "1196894",
+        "kind": "comment",
+        "text": "[1] 저 30중반인데 넘차이나죠? 출근일수도 저랑 비슷하신듯 4일 많으면 5일해요 j성향에 효율적이고 생산적인거 좋아해서 쉴때 도서관 책 카페 투자공부 운동 좋아해요\n\n괜찮다면 오카와주세요\n[URL]",
+        "promo_hits": [
+          "출근문의",
+          "카톡"
+        ]
+      },
+      {
+        "source_id": "1193293",
+        "kind": "comment",
+        "text": "[3-1] 저녁일찍 도파민많아요\nㅡㅡㅡㅡㅡㅡㅡ\n✅✅✅✅✅톡:kml0768✅✅✅✅✅\n❌걱정 되시죠 첫출근 전지역픽업 첫방 시간보장❌\n✅초보전문 도파민에서 젤 큰팀 최고좋은혜택✅\n⚠️행동으로 진상 잘 짜르고 저랑 하시면 힘든일 덜합니다⚠️\n⬛️ 힘든거 돈잘받고 딴거보다 그거 잘해서 옵니다!!\n⬛️담당에 따라 환경 달라집니다 안맞으면 변경O\n➖➖➖➖➖➖➖➖➖➖\n⬛️일 처음 술,진상 초이스 걱정 되시는 분 믿어주세요\n좀 이쁘면 정말 ",
+        "promo_hits": [
+          "출근문의",
+          "픽업"
+        ]
+      },
+      {
+        "source_id": "1188420",
+        "kind": "comment",
+        "text": "[3] 도깨비는 어떠세요 ??\n\n도깨비 쩜오\n\n1등팀 흥팀 소속 영도부장\n많이 어렵게 생각하지 않으셔도 돼요\n결과로 보여드릴게요 ! 가게 초이스, 정산, 이름값 하는 팀입니다 편하게 믿고 연락 주세요\n⸻\n✅ 쩜오 TC\n2H 40만 / 3H 50만 / 4H 60만 / 5H 80만\n\n✅ 개인 이벤트\n출비 안 떼고, 헤어 & 메이크업 지원해드립니다 !\n픽업도 가능하니 부담 없이 말씀해주세요\n\n처음이셔도 가능합니다\n갯수만큼 칼수금 /",
+        "promo_hits": [
+          "tc",
+          "문의",
+          "부장",
+          "이벤트",
+          "카톡",
+          "텔레",
+          "픽업"
+        ]
+      },
+      {
+        "source_id": "1188818",
+        "kind": "comment",
+        "text": "[2]\n안녕하세요\n인천부천 손님많은 하퍼 1호점, 셔츠2호점\n운영중 입니다. 연락주세요\n연락처 [전화번호] 연락주세요.\n소중한 연락 기다리고 있을게요 ^^\n\n\n훈남실장 [전화번호]\n\n√ 9시 이전 출근: 1시간당 TC 하퍼 12 셔츠 14\n√ 9시 이후 출근: 1시간당 TC 하퍼 11 셔츠 13 √ 땁 +1\n√ 지명비: +2만\n√ 영업진 10명, 강남처럼 때초이스 X , 양아치손님 X, 편하게 일하세요\n\n√ 만근비, 경조사등 ",
+        "promo_hits": [
+          "tc",
+          "실장",
+          "지명비",
+          "출근문의"
+        ]
+      },
+      {
+        "source_id": "1198327",
+        "kind": "comment",
+        "text": "[3] 아 1부 그분? 그방 한번도 못들어가봄 나이많은언니들 뽑초나 밀빵만 넣던데 거의 퍼펙 대표마담이라 불러야하는게 맞긴함 웨이터가 부장처럼 보조보던데 지금도 그러나 ㅋㅋ",
+        "promo_hits": [
+          "밀빵",
+          "부장"
+        ]
+      }
+    ]
+  },
+  "val_overlap": {
+    "exact_text_overlap_count": 0,
+    "exact_text_examples": [],
+    "source_id_overlap_count": 0,
+    "source_id_examples": [],
+    "thread_overlap_count": 0,
+    "thread_examples": [],
+    "exact_tuple_overlap_count": 0,
+    "exact_tuple_examples": []
+  }
+}

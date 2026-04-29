@@ -24,8 +24,6 @@ REQUIRED_KEYS = {
     "eval": [
         "RUNPOD_API_KEY",
         "GITHUB_TOKEN",
-        "HF_ADAPTER_REPO",
-        "ANTHROPIC_API_KEY",
     ],
 }
 
@@ -38,7 +36,10 @@ OPTIONAL_KEYS = {
     ],
     "eval": [
         "HF_TOKEN",
+        "HF_ADAPTER_REPO",
+        "SFT_ADAPTER_REPO",
         "OPENAI_API_KEY",
+        "ANTHROPIC_API_KEY",
         "GITHUB_REPO",
         "NTFY_TOPIC",
         "BASE_MODEL",
@@ -67,16 +68,36 @@ def has_value(key: str) -> bool:
     return bool(os.environ.get(key, "").strip())
 
 
+def eval_mode() -> str:
+    return os.environ.get("EVAL_MODE", "phase6").strip() or "phase6"
+
+
 def check_target(target: str) -> list[str]:
     missing = [key for key in REQUIRED_KEYS[target] if not has_value(key)]
+    adapter_ready = True
+    if target == "eval":
+        adapter_ready = has_value("SFT_ADAPTER_REPO") or has_value("HF_ADAPTER_REPO")
+        if not adapter_ready:
+            missing.append("SFT_ADAPTER_REPO|HF_ADAPTER_REPO")
 
     print(f"[{target}]")
     for key in REQUIRED_KEYS[target]:
         status = "OK" if has_value(key) else "MISSING"
         print(f"  required  {key:<22} {status}")
+    if target == "eval":
+        status = "OK" if adapter_ready else "MISSING"
+        print(f"  required  {'SFT/HF_ADAPTER_REPO':<22} {status}")
     for key in OPTIONAL_KEYS[target]:
         status = "SET" if has_value(key) else "EMPTY"
         print(f"  optional  {key:<22} {status}")
+    if target == "eval":
+        print(
+            "  note      adapter repo          phase6 eval accepts SFT_ADAPTER_REPO or HF_ADAPTER_REPO; not blocking train launch"
+        )
+        if eval_mode() == "legacy":
+            print(
+                "  note      ANTHROPIC_API_KEY     legacy eval still needs this at launch time even though it is not enforced here"
+            )
     print()
 
     return missing
