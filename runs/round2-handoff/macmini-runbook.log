@@ -1,0 +1,68 @@
+==== round2 macmini runbook START 2026-04-29T02:29:26Z ====
+JOB_ID=remote-direct  REPO=/Users/unoa/projects/dalbitalba-train-data
+[A] env OK
+[phase A] rc=0
+[B] sync + compile + tests rc=0
+[phase B] rc=0
+[C] source_db_cache missing — pulling
+indexing raw cb2 JSON...
+  11288 posts indexed
+  30 personas loaded
+DONE written=11617 weighted=1202 skipped=0
+weighted_ratio=0.103
+[phase C] rc=0
+DONE pairs=1500 chosen_pool=1500 rejected_pool=1500
+[phase D] rc=0
+  sft comment 20/80 (100s)
+  sft comment 40/80 (132s)
+  sft comment 60/80 (165s)
+  sft comment 80/80 (198s)
+DONE baseline=100 sft=100 bl=149s sft=198s
+[phase E] rc=0
+[phase F] rc=0
+Traceback (most recent call last):
+  File "<stdin>", line 3, in <module>
+FileNotFoundError: [Errno 2] No such file or directory: '/Users/unoa/projects/dalbitalba-train-data/runs/round2-local-smoke/baseline-eval.json'
+[phase G] rc=1
+curl: (22) The requested URL returned error: 404
+[phase H] rc=0
+
+==== runbook END 2026-04-29T02:35:29Z ====
+phase_status=A=0;B=0;C=0;D=0;E=0;F=0;G=1;H=0;
+==== round2 macmini runbook START 2026-04-29T03:22:07Z ====
+JOB_ID=local-dryrun  REPO=/Users/unoa/projects/dalbitalba-train-data
+WROTE /Users/unoa/projects/dalbitalba-train-data/runs/round2-handoff/macmini-runbook-result.json
+UPDATED /Users/unoa/projects/dalbitalba-train-data/runs/round2-handoff/macmini-runbook-result.json phase_status=A=0;B=0;C=0;D=0;E=0;F=0;G=0;H=0;
+
+==== runbook END 2026-04-29T03:22:07Z ====
+phase_status=A=0;B=0;C=0;D=0;E=0;F=0;G=0;H=0;
+{
+  "machine": "mac-mini-01",
+  "completed_at": "2026-04-29T03:22:07Z",
+  "baseline_artifact": {
+    "path": "runs/round2-local-smoke/baseline.jsonl",
+    "sample_count": 100,
+    "kind_counts": {
+      "post": 20,
+      "comment": 80
+    }
+  },
+  "smoke_stats": {
+    "model": "Qwen/Qwen3-0.6B",
+    "device": "mps",
+    "n_baseline": 100,
+    "n_sft": 100,
+    "baseline_elapsed_sec": 149.22906804084778,
+    "sft_elapsed_sec": 198.3107271194458,
+    "max_new_tokens": 120,
+    "note": "post-sft is few-shot simulation. Real SFT requires RunPod GPU pod (out of session scope)."
+  },
+  "post_sft_metrics": {
+    "n_ai": 100,
+    "n_raw": 2451,
+    "bigram_jsd": 0.5000340924785803,
+    "length_kl": 1.9512146370046293,
+    "digit_density_delta": 0.049997063343549954,
+    "english_density_delta": 0.015903015419005205,
+    "domain_keyword_alignment": 0.0,
+    "tone_distribution_match": 0.1466299469604243,

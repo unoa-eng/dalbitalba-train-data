@@ -35,11 +35,16 @@ def resolve_cpt_file() -> Path:
         if not candidate.is_absolute():
             candidate = REPO_ROOT / candidate
         return candidate
-    for name in ("cpt_context_stream.jsonl", "cpt_corpus.v3.jsonl", "cpt_corpus.v2.jsonl"):
+    for name in (
+        "v3-data/cpt_structured_v3.jsonl",
+        "cpt_context_stream.jsonl",
+        "cpt_corpus.v3.jsonl",
+        "cpt_corpus.v2.jsonl",
+    ):
         candidate = REPO_ROOT / name
         if candidate.exists():
             return candidate
-    return REPO_ROOT / "cpt_context_stream.jsonl"
+    return REPO_ROOT / "v3-data/cpt_structured_v3.jsonl"
 
 
 DEFAULT_FILES = {

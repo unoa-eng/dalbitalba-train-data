@@ -118,6 +118,18 @@ def normalize_workspace_data_path(raw_value: str) -> str:
     return f"/workspace/data/{relative}"
 
 
+def normalize_workspace_repo_path(raw_value: str) -> str:
+    value = raw_value.strip()
+    if not value:
+        return value
+    path = Path(value)
+    if path.is_absolute() or value.startswith("/workspace/"):
+        return value
+
+    relative = value[2:] if value.startswith("./") else value
+    return f"/workspace/repo/{relative}"
+
+
 def resolve_workspace_data_path(
     env_keys: tuple[str, ...],
     candidate_names: tuple[str, ...],
@@ -282,6 +294,7 @@ def main() -> None:
         "/workspace/repo && "
         # copy repo datasets + train scripts + merge script
         "cp /workspace/repo/*.jsonl /workspace/data/ 2>/dev/null || true && "
+        "cp -r /workspace/repo/v3-data /workspace/data/v3-data 2>/dev/null || true && "
         "cp /workspace/repo/train_*.py /workspace/ 2>/dev/null || true && "
         "mkdir -p /workspace/scripts && "
         "cp /workspace/repo/scripts/merge_cpt_to_fp16.py /workspace/scripts/ 2>/dev/null || true && "
@@ -312,6 +325,8 @@ def main() -> None:
         "WANDB_PROJECT": wandb_project,
     }
     for optional_key in (
+        "CPT_TOKENIZER_DIR",
+        "CPT_EXTEND_TOKENS",
         "CPT_MAX_STEPS",
         "SFT_MAX_STEPS",
         "CPT_LIMIT_ROWS",
@@ -336,6 +351,8 @@ def main() -> None:
     ):
         value = os.environ.get(optional_key, "").strip()
         if value:
+            if optional_key == "CPT_TOKENIZER_DIR":
+                value = normalize_workspace_repo_path(value)
             env[optional_key] = value
     if wandb_api_key:
         env["WANDB_API_KEY"] = wandb_api_key

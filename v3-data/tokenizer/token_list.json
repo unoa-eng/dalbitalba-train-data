@@ -1,0 +1,16 @@
+{
+  "model": "Qwen/Qwen3-8B-Base",
+  "additional_special_tokens": [
+    "<|post|>",
+    "<|/post|>",
+    "<|comment depth=0|>",
+    "<|comment depth=1|>",
+    "<|comment depth=2|>",
+    "<|comment depth=3|>",
+    "<|comment depth=4|>",
+    "<|comment depth=5|>",
+    "<|/comment|>",
+    "<|thread|>",
+    "<|/thread|>"
+  ]
+}

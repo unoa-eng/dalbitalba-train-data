@@ -34,4 +34,12 @@ runs/latest-local-verification.json
 # Pre-clean backups — large binary snapshots, local-only.
 archive/dataset-backups/
 .omc/
-.venv/
+.venv
+.venv*/
+**/__pycache__/
+hf_cache/
+.cache/huggingface/
+source_db_cache/
+runs/**/adapter/
+runs/**/adapter_model.safetensors
+runs/**/adapter_config.json

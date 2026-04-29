@@ -1,0 +1,19 @@
+2026-04-29 13:31:54,826 [INFO] structured CPT markers detected in v3-data/cpt_structured_v3.jsonl (sample row 1)
+2026-04-29 13:31:54,826 [INFO] structured CPT detected; loading tokenizer from CPT_TOKENIZER_DIR=v3-data/tokenizer
+2026-04-29 13:31:54,826 [INFO] runtime tokenizer manifest loaded: v3-data/tokenizer/token_list.json (11 tokens)
+train_jsonl=v3-data/cpt_structured_v3.jsonl
+tokenizer_source=v3-data/tokenizer
+structured_detected=True
+runtime_token_count=11
+runtime_added=0
+<|post|>	151669
+<|/post|>	151670
+<|comment depth=0|>	151671
+<|comment depth=1|>	151672
+<|comment depth=2|>	151673
+<|comment depth=3|>	151674
+<|comment depth=4|>	151675
+<|comment depth=5|>	151676
+<|/comment|>	151677
+<|thread|>	151678
+<|/thread|>	151679

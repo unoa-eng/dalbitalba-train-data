@@ -1,0 +1,56 @@
+[gate] verifier PASS @ 2026-04-29T04:32:00Z
+{
+  "name": "dalbitalba-train-20260429-0432",
+  "imageName": "runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04",
+  "computeType": "GPU",
+  "cloudType": "COMMUNITY",
+  "gpuCount": 1,
+  "gpuTypePriority": "availability",
+  "volumeInGb": 80,
+  "containerDiskInGb": 40,
+  "minVCPUPerGPU": 8,
+  "minRAMPerGPU": 48,
+  "volumeMountPath": "/workspace",
+  "ports": [],
+  "interruptible": false,
+  "env": {
+    "HF_TOKEN": "***REDACTED***",
+    "HF_USERNAME": "***REDACTED***",
+    "GITHUB_TOKEN": "***REDACTED***",
+    "GITHUB_REPO": "***REDACTED***",
+    "RUNPOD_API_KEY": "***REDACTED***",
+    "BASE_MODEL": "***REDACTED***",
+    "TRAIN_CPT_JSONL": "***REDACTED***",
+    "INPUT_JSONL": "***REDACTED***",
+    "TRAIN_SFT_PAIR_JSONL": "***REDACTED***",
+    "SFT_PAIR_JSONL": "***REDACTED***",
+    "TRAIN_VAL_JSONL": "***REDACTED***",
+    "CPT_VAL_JSONL": "***REDACTED***",
+    "CPT_NUM_EPOCHS": "***REDACTED***",
+    "SFT_NUM_EPOCHS": "***REDACTED***",
+    "CPT_LR": "***REDACTED***",
+    "SFT_LR": "***REDACTED***",
+    "WANDB_PROJECT": "***REDACTED***",
+    "CPT_TOKENIZER_DIR": "***REDACTED***",
+    "CPT_EXTEND_TOKENS": "***REDACTED***",
+    "CPT_SAVE_STEPS": "***REDACTED***",
+    "CPT_EVAL_STEPS": "***REDACTED***",
+    "CPT_LOGGING_STEPS": "***REDACTED***",
+    "SKIP_SFT": "***REDACTED***",
+    "CPT_TIMEOUT_HOURS": "***REDACTED***",
+    "MERGE_TIMEOUT_HOURS": "***REDACTED***",
+    "SFT_TIMEOUT_HOURS": "***REDACTED***",
+    "HF_UPLOAD_TIMEOUT_HOURS": "***REDACTED***",
+    "EVAL_MODE": "***REDACTED***",
+    "NTFY_TOPIC": "***REDACTED***"
+  },
+  "dockerEntrypoint": [],
+  "dockerStartCmd": [
+    "bash",
+    "-lc",
+    "mkdir -p /workspace/logs /workspace/data /workspace/scripts /workspace/out /workspace/hf_cache && export HF_HOME=/workspace/hf_cache && export TOKENIZERS_PARALLELISM=false && rm -rf /workspace/repo && git clone --branch budget30-pre-launch --single-branch \"https://x-access-token:***REDACTED***@github.com/unoa-eng/dalbitalba-train-data.git\" /workspace/repo && cp /workspace/repo/*.jsonl /workspace/data/ 2>/dev/null || true && cp -r /workspace/repo/v3-data /workspace/data/v3-data 2>/dev/null || true && cp /workspace/repo/train_*.py /workspace/ 2>/dev/null || true && mkdir -p /workspace/scripts && cp /workspace/repo/scripts/merge_cpt_to_fp16.py /workspace/scripts/ 2>/dev/null || true && cp /workspace/repo/chain_train.sh /workspace/chain_train.sh && chmod +x /workspace/chain_train.sh && exec bash /workspace/chain_train.sh 2>&1 | tee -a /workspace/logs/chain_$(date -u '+%Y%m%dT%H%M%SZ').log"
+  ],
+  "gpuTypeIds": [
+    "NVIDIA L40S"
+  ]
+}

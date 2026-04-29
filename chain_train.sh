@@ -96,6 +96,9 @@ export TOKENIZERS_PARALLELISM=false
 export HF_REPO_SFT HF_REPO_CPT
 
 mkdir -p "${LOG_DIR}" "${OUT_DIR}" "${DATA_DIR}" "${HF_CACHE_DIR}"
+if [ -d "${REPO_CLONE_DIR}/v3-data" ] && [ ! -d "${DATA_DIR}/v3-data" ]; then
+    cp -r "${REPO_CLONE_DIR}/v3-data" "${DATA_DIR}/v3-data" 2>/dev/null || true
+fi
 
 log() {
     local msg="$1"

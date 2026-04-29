@@ -11,6 +11,8 @@ METRICS = [
     "length_kl",
     "digit_density_delta",
     "english_density_delta",
+    "domain_keyword_alignment",
+    "tone_distribution_match",
     "mauve_score",
 ]
 

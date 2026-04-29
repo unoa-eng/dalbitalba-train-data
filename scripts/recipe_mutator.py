@@ -108,20 +108,20 @@ def apply_rules(
     """Return (recipe_changes, data_regen_changes, rule_id, rationale)."""
     m = metrics
     # R1 — high bigram JSD
-    if m.get("bigram_jsd", 0) > 0.15:
+    if m.get("bigram_jsd", 0) > 0.08:
         if recipe.get("CPT_NUM_EPOCHS", 1) == 1:
             return (
                 {"CPT_NUM_EPOCHS": 2},
                 {},
                 "R1",
-                "bigram_jsd > 0.15, first escalation: extend CPT to 2 epochs",
+                "bigram_jsd > 0.08, first escalation: extend CPT to 2 epochs",
             )
         if recipe.get("LORA_R", 64) < 128:
             return (
                 {"LORA_R": 128, "LORA_ALPHA": 128},
                 {},
                 "R1b",
-                "bigram_jsd still > 0.15 at 2 epochs, bump LoRA r to 128",
+                "bigram_jsd still > 0.08 at 2 epochs, bump LoRA r to 128",
             )
         if recipe.get("CPT_USE_DORA", 0) == 0:
             return (
@@ -186,7 +186,7 @@ def apply_rules(
         )
     # R5 — boundary case: many metrics close to threshold
     thresholds = {
-        "bigram_jsd": 0.15,
+        "bigram_jsd": 0.08,
         "length_kl": 0.10,
         "digit_density_delta": 0.03,
         "english_density_delta": 0.02,

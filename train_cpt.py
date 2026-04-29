@@ -28,6 +28,7 @@ import logging
 import math
 import os
 import random
+import re
 import subprocess
 import sys
 import time
@@ -57,11 +58,14 @@ except ImportError as e:
 # ── 환경변수 ──────────────────────────────────────────────────────────
 BASE_MODEL = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base")
 INPUT_JSONL = os.environ.get("INPUT_JSONL", "/workspace/data/cpt_corpus.v2.jsonl")
+TRAIN_CPT_JSONL = os.environ.get("TRAIN_CPT_JSONL", "").strip()
 VAL_JSONL = os.environ.get("CPT_VAL_JSONL", "/workspace/data/val_set.v2.jsonl")
 OUTPUT_DIR = os.environ.get("CPT_OUTPUT_DIR", "/workspace/out/cpt-lora")
 CKPT_DIR = os.environ.get("CPT_CKPT_DIR", "/workspace/out/cpt-ckpt")
 LOG_FILE = os.environ.get("CPT_LOG_FILE", "/workspace/train_cpt.log")
 HUB_MODEL_ID = os.environ.get("CPT_HUB_MODEL_ID", "").strip() or None
+CPT_TOKENIZER_DIR = os.environ.get("CPT_TOKENIZER_DIR", "").strip()
+CPT_EXTEND_TOKENS = os.environ.get("CPT_EXTEND_TOKENS", "0") == "1"
 
 SEED = int(os.environ.get("TRAIN_SEED", "42"))
 MAX_SEQ_LEN = int(os.environ.get("CPT_MAX_SEQ_LEN", "1024"))
@@ -87,6 +91,23 @@ USE_DORA = os.environ.get("CPT_USE_DORA", "0") == "1"
 USE_LORA_EMBED = os.environ.get("CPT_LORA_EMBED", "0") == "1"
 
 FLASH_ATTN = os.environ.get("CPT_FLASH_ATTN", "flash_attention_2")
+STRUCTURED_TOKEN_RE = re.compile(
+    r"<\|(?:post|/post|thread|/thread|/comment)\|>|<\|comment depth=\d+\|>"
+)
+TOKENIZER_MANIFEST_FILENAME = "token_list.json"
+STRUCTURED_SPECIAL_TOKENS = [
+    "<|post|>",
+    "<|/post|>",
+    "<|comment depth=0|>",
+    "<|comment depth=1|>",
+    "<|comment depth=2|>",
+    "<|comment depth=3|>",
+    "<|comment depth=4|>",
+    "<|comment depth=5|>",
+    "<|/comment|>",
+    "<|thread|>",
+    "<|/thread|>",
+]
 
 # ── Logging ───────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -163,6 +184,151 @@ def load_corpus(path: str) -> Dataset:
     return Dataset.from_list(records)
 
 
+def resolve_train_jsonl() -> str:
+    return TRAIN_CPT_JSONL or INPUT_JSONL
+
+
+def dedupe_preserve_order(tokens: list[str]) -> list[str]:
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for token in tokens:
+        if token in seen:
+            continue
+        seen.add(token)
+        ordered.append(token)
+    return ordered
+
+
+def extract_text_candidate(raw_line: str) -> str:
+    try:
+        obj = json.loads(raw_line)
+    except json.JSONDecodeError:
+        return raw_line
+    if isinstance(obj, dict):
+        return str(obj.get("text", ""))
+    return raw_line
+
+
+def dataset_contains_structured_tokens(path: str, sample_size: int = 256) -> bool:
+    if not path or not os.path.exists(path):
+        return False
+
+    checked = 0
+    with open(path, "r", encoding="utf-8") as handle:
+        for raw_line in handle:
+            raw_line = raw_line.strip()
+            if not raw_line:
+                continue
+            text = extract_text_candidate(raw_line)
+            if STRUCTURED_TOKEN_RE.search(text):
+                logger.info(
+                    "structured CPT markers detected in %s (sample row %d)",
+                    path,
+                    checked + 1,
+                )
+                return True
+            checked += 1
+            if checked >= sample_size:
+                break
+    return False
+
+
+def tokenizer_bundle_exists(tokenizer_path: Path) -> bool:
+    primary_bundle = (
+        (tokenizer_path / "tokenizer.json").exists()
+        or (tokenizer_path / "vocab.json").exists()
+    )
+    config_files = (
+        (tokenizer_path / "tokenizer_config.json").exists()
+        and (tokenizer_path / "special_tokens_map.json").exists()
+    )
+    return tokenizer_path.is_dir() and primary_bundle and config_files
+
+
+def load_runtime_special_tokens() -> list[str]:
+    tokens = list(STRUCTURED_SPECIAL_TOKENS)
+    manifest_candidates: list[Path] = []
+    if CPT_TOKENIZER_DIR:
+        manifest_candidates.append(Path(CPT_TOKENIZER_DIR) / TOKENIZER_MANIFEST_FILENAME)
+    manifest_candidates.append(Path("v3-data/tokenizer") / TOKENIZER_MANIFEST_FILENAME)
+
+    for manifest_path in manifest_candidates:
+        if not manifest_path.exists():
+            continue
+        try:
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            logger.warning("tokenizer manifest parse 실패 (%s): %s", manifest_path, exc)
+            continue
+
+        extra_tokens: list[str] = []
+        if isinstance(payload, dict):
+            extra_tokens = [
+                str(token)
+                for token in payload.get("additional_special_tokens", [])
+                if str(token).strip()
+            ]
+        elif isinstance(payload, list):
+            extra_tokens = [str(token) for token in payload if str(token).strip()]
+
+        if extra_tokens:
+            logger.info(
+                "runtime tokenizer manifest loaded: %s (%d tokens)",
+                manifest_path,
+                len(extra_tokens),
+            )
+            tokens.extend(extra_tokens)
+            break
+
+    return dedupe_preserve_order(tokens)
+
+
+def resolve_tokenizer_source(train_jsonl: str) -> tuple[str, bool]:
+    structured_tokens_present = dataset_contains_structured_tokens(train_jsonl)
+
+    if CPT_TOKENIZER_DIR:
+        tokenizer_path = Path(CPT_TOKENIZER_DIR)
+        if tokenizer_bundle_exists(tokenizer_path):
+            if structured_tokens_present:
+                logger.info(
+                    "structured CPT detected; loading tokenizer from CPT_TOKENIZER_DIR=%s",
+                    CPT_TOKENIZER_DIR,
+                )
+            else:
+                logger.info(
+                    "CPT_TOKENIZER_DIR is set without structured-token detection; using %s",
+                    CPT_TOKENIZER_DIR,
+                )
+            return CPT_TOKENIZER_DIR, structured_tokens_present
+
+        if CPT_EXTEND_TOKENS:
+            logger.warning(
+                "CPT_TOKENIZER_DIR=%s is missing a tokenizer bundle; "
+                "falling back to BASE_MODEL with runtime token extension",
+                CPT_TOKENIZER_DIR,
+            )
+            return BASE_MODEL, structured_tokens_present
+
+        if not tokenizer_path.exists():
+            raise FileNotFoundError(
+                f"CPT_TOKENIZER_DIR does not exist: {CPT_TOKENIZER_DIR}"
+            )
+        raise RuntimeError(
+            "CPT_TOKENIZER_DIR exists but does not contain a tokenizer bundle. "
+            "Run scripts/extend_tokenizer_v3.py or set CPT_EXTEND_TOKENS=1."
+        )
+
+    if structured_tokens_present and not CPT_EXTEND_TOKENS:
+        raise RuntimeError(
+            "Structured CPT markers detected in TRAIN_CPT_JSONL/INPUT_JSONL but "
+            "CPT_TOKENIZER_DIR is not set. Run scripts/extend_tokenizer_v3.py and "
+            "export CPT_TOKENIZER_DIR, or set CPT_EXTEND_TOKENS=1 to extend the "
+            "base tokenizer at runtime before training."
+        )
+
+    return BASE_MODEL, structured_tokens_present
+
+
 def tokenize_fn(examples: dict, tokenizer) -> dict:
     # No template. Raw continuation; each row is a standalone text.
     out = tokenizer(
@@ -177,13 +343,16 @@ def tokenize_fn(examples: dict, tokenizer) -> dict:
 
 def main() -> None:
     start = time.time()
+    train_jsonl = resolve_train_jsonl()
     logger.info("=" * 60)
     logger.info("CPT v2 시작")
     logger.info(f"  base         : {BASE_MODEL}")
-    logger.info(f"  input        : {INPUT_JSONL}")
+    logger.info(f"  input        : {train_jsonl}")
     logger.info(f"  val          : {VAL_JSONL}")
     logger.info(f"  output       : {OUTPUT_DIR}")
     logger.info(f"  hub_model_id : {HUB_MODEL_ID or '(disabled)'}")
+    logger.info(f"  tokenizer_dir: {CPT_TOKENIZER_DIR or '(base tokenizer)'}")
+    logger.info(f"  extend_tokens: {CPT_EXTEND_TOKENS}")
     logger.info(
         f"  LoRA r={LORA_R} α={LORA_ALPHA} rsLoRA={USE_RSLORA} DoRA={USE_DORA}"
     )
@@ -208,13 +377,31 @@ def main() -> None:
     os.makedirs(CKPT_DIR, exist_ok=True)
 
     # ── Tokenizer ────────────────────────────────────────────────────
+    tokenizer_source, structured_tokens_present = resolve_tokenizer_source(train_jsonl)
     tokenizer = AutoTokenizer.from_pretrained(
-        BASE_MODEL, trust_remote_code=True, use_fast=True
+        tokenizer_source, trust_remote_code=True, use_fast=True
     )
+    if CPT_EXTEND_TOKENS:
+        runtime_special_tokens = load_runtime_special_tokens()
+        added = tokenizer.add_special_tokens(
+            {"additional_special_tokens": runtime_special_tokens}
+        )
+        logger.info(
+            "runtime tokenizer extension enabled: requested=%s added=%s total_vocab=%s",
+            len(runtime_special_tokens),
+            added,
+            len(tokenizer),
+        )
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.pad_token_id = tokenizer.eos_token_id
-    logger.info(f"tokenizer vocab size: {tokenizer.vocab_size}")
+    logger.info(
+        "tokenizer size: base_vocab=%s total_vocab=%s structured=%s source=%s",
+        tokenizer.vocab_size,
+        len(tokenizer),
+        structured_tokens_present,
+        tokenizer_source,
+    )
 
     # ── 4-bit quantized base ─────────────────────────────────────────
     bnb_config = BitsAndBytesConfig(
@@ -236,6 +423,15 @@ def main() -> None:
         logger.warning(f"flash_attention_2 로드 실패, eager로 fallback: {e}")
         model_kwargs.pop("attn_implementation", None)
         model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, **model_kwargs)
+
+    input_embedding_count = model.get_input_embeddings().num_embeddings
+    if len(tokenizer) != input_embedding_count:
+        logger.info(
+            "resize_token_embeddings: %s -> %s",
+            input_embedding_count,
+            len(tokenizer),
+        )
+        model.resize_token_embeddings(len(tokenizer))
 
     model.config.use_cache = False
     if hasattr(model.config, "pretraining_tp"):
@@ -262,7 +458,7 @@ def main() -> None:
     model.print_trainable_parameters()
 
     # ── Data ────────────────────────────────────────────────────────
-    train_raw = load_corpus(INPUT_JSONL)
+    train_raw = load_corpus(train_jsonl)
     eval_raw = load_corpus(VAL_JSONL) if os.path.exists(VAL_JSONL) else None
     if LIMIT_ROWS > 0 and len(train_raw) > LIMIT_ROWS:
         logger.info(f"CPT_LIMIT_ROWS 적용: {len(train_raw):,} -> {LIMIT_ROWS:,}")
