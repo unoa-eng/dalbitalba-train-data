@@ -69,7 +69,7 @@ PHASE6 (eval):
 PHASE7 (ORPO, conditional):
   Only runs if PHASE6 failed AND cycle_counter < 3 AND budget_remaining > $4.
   Mutation rules (apply exactly one per cycle, pick highest-impact):
-    - violations include "bigram_jsd" > 0.15     → CPT 2 epochs (was 1)
+    - violations include "bigram_jsd" > 0.08     → CPT 2 epochs (was 1)
     - violations include "length_kl" > 0.10      → oversample xl/xxl 3× (was 2×)
     - violations include "english_density" > ...  → oversample english 3×
     - violations include "mauve" < 0.80          → enable DoRA (CPT_USE_DORA=1)

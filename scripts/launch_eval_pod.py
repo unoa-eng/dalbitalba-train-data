@@ -169,13 +169,15 @@ def main() -> None:
     eval_mode = os.environ.get("EVAL_MODE", "phase6").strip() or "phase6"
     hf_adapter_repo = os.environ.get("HF_ADAPTER_REPO", "").strip()
     sft_adapter_repo = os.environ.get("SFT_ADAPTER_REPO", "").strip() or hf_adapter_repo
+    cpt_merged_repo = os.environ.get("CPT_MERGED_REPO", "").strip()
+    cpt_merged_path = os.environ.get("CPT_MERGED_PATH", "").strip()
     if eval_mode == "legacy":
         if not hf_adapter_repo:
             raise SystemExit("[ERROR] missing env: HF_ADAPTER_REPO")
         anthropic_api_key = require_env("ANTHROPIC_API_KEY")
     else:
-        if not sft_adapter_repo:
-            raise SystemExit("[ERROR] missing env: SFT_ADAPTER_REPO")
+        if not sft_adapter_repo and not cpt_merged_repo and not cpt_merged_path:
+            raise SystemExit("[ERROR] missing env: SFT_ADAPTER_REPO or CPT_MERGED_REPO/CPT_MERGED_PATH")
         anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     hf_token = os.environ.get("HF_TOKEN", "").strip()
     openai_api_key = os.environ.get("OPENAI_API_KEY", "").strip()
@@ -200,12 +202,13 @@ def main() -> None:
         "GITHUB_REPO": github_repo,
         "EVAL_MODE": eval_mode,
         "HF_ADAPTER_REPO": hf_adapter_repo or sft_adapter_repo,
-        "SFT_ADAPTER_REPO": sft_adapter_repo,
         "RUNPOD_API_KEY": api_key,
         "BASE_MODEL": base_model,
         "HF_HUB_ENABLE_HF_TRANSFER": "1",
         "RUNPOD_POD_ID": "__SELF__",
     }
+    if sft_adapter_repo:
+        env["SFT_ADAPTER_REPO"] = sft_adapter_repo
     if anthropic_api_key:
         env["ANTHROPIC_API_KEY"] = anthropic_api_key
     if hf_token:

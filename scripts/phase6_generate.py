@@ -4,9 +4,12 @@ import json
 import os
 import re
 import sys
+from pathlib import Path
 
 
 BASE_MODEL = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base")
+CPT_MERGED_REPO = os.environ.get("CPT_MERGED_REPO", "").strip()
+CPT_MERGED_PATH = os.environ.get("CPT_MERGED_PATH", "").strip()
 SFT_ADAPTER_REPO = os.environ.get("SFT_ADAPTER_REPO", "").strip()
 SFT_ADAPTER_SUBFOLDER = os.environ.get("SFT_ADAPTER_SUBFOLDER", "").strip()
 HF_TOKEN = os.environ.get("HF_TOKEN", "").strip() or None
@@ -28,6 +31,102 @@ FORMAL_FILTER_RE = re.compile(
     r'문의\s*사항|참고하시기|좋은\s*하루|에\s*대해\s*알려',
     re.IGNORECASE
 )
+
+
+def path_exists(path: str) -> bool:
+    return bool(path) and Path(path).exists()
+
+
+def has_explicit_merged_source() -> bool:
+    return bool(CPT_MERGED_REPO or CPT_MERGED_PATH)
+
+
+def resolve_model_source() -> str:
+    if path_exists(CPT_MERGED_PATH):
+        return CPT_MERGED_PATH
+    if CPT_MERGED_REPO:
+        return CPT_MERGED_REPO
+    return BASE_MODEL
+
+
+def resolve_adapter_subfolders() -> list[str | None]:
+    subfolders: list[str | None] = []
+    if SFT_ADAPTER_SUBFOLDER:
+        subfolders.append(SFT_ADAPTER_SUBFOLDER)
+    if has_explicit_merged_source():
+        subfolders.extend(["sft-lora", None])
+    else:
+        subfolders.extend(["sft-lora", "cpt-lora", None])
+    return subfolders
+
+
+def load_peft_adapter(model, peft, adapter_repo: str, adapter_kwargs: dict[str, object]):
+    attempted: list[str | None] = []
+    subfolders = resolve_adapter_subfolders()
+
+    for subfolder in subfolders:
+        if subfolder in attempted:
+            continue
+        attempted.append(subfolder)
+        kwargs = dict(adapter_kwargs)
+        if subfolder:
+            kwargs["subfolder"] = subfolder
+        try:
+            return peft.PeftModel.from_pretrained(model, adapter_repo, **kwargs)
+        except Exception:
+            continue
+
+    attempted_text = ", ".join("(root)" if value is None else value for value in attempted)
+    if has_explicit_merged_source():
+        print(
+            "[warn] adapter load failed; falling back to merged model only "
+            f"(tried: {attempted_text})",
+            file=sys.stderr,
+        )
+        return model
+    raise RuntimeError(
+        f"failed to load adapter from {adapter_repo}; tried subfolders: {attempted_text}"
+    )
+
+
+def load_tokenizer(transformers, model_source: str):
+    attempted: list[tuple[str, str | None]] = []
+    candidates: list[tuple[str, str | None]] = []
+
+    if has_explicit_merged_source():
+        candidates.append((model_source, None))
+    if SFT_ADAPTER_REPO:
+        for subfolder in resolve_adapter_subfolders():
+            candidates.append((SFT_ADAPTER_REPO, subfolder))
+    candidates.append((BASE_MODEL, None))
+
+    for source, subfolder in candidates:
+        candidate = (source, subfolder)
+        if not source or candidate in attempted:
+            continue
+        attempted.append(candidate)
+        kwargs = {
+            "token": HF_TOKEN,
+            "trust_remote_code": True,
+            "use_fast": True,
+        }
+        if subfolder:
+            kwargs["subfolder"] = subfolder
+        try:
+            tokenizer = transformers.AutoTokenizer.from_pretrained(source, **kwargs)
+            label = source if not subfolder else f"{source}/{subfolder}"
+            return tokenizer, label
+        except Exception:
+            continue
+
+    attempted_text = ", ".join(
+        source if not subfolder else f"{source}/{subfolder}"
+        for source, subfolder in attempted
+    )
+    raise RuntimeError(
+        "failed to load tokenizer from merged/adapter/base candidates: "
+        f"{attempted_text}"
+    )
 
 
 def normalize_kind(value: object) -> str | None:
@@ -89,40 +188,38 @@ def main() -> int:
     import torch
     import transformers
 
-    if not SFT_ADAPTER_REPO:
-        print("[error] SFT_ADAPTER_REPO is required", file=sys.stderr)
+    model_source = resolve_model_source()
+    if model_source == BASE_MODEL and not SFT_ADAPTER_REPO:
+        print(
+            "[error] need either SFT_ADAPTER_REPO or CPT_MERGED_REPO/CPT_MERGED_PATH",
+            file=sys.stderr,
+        )
         return 1
+    print(f"[model] base source: {model_source}", flush=True)
+
+    tokenizer, tokenizer_source = load_tokenizer(transformers, model_source)
+    print(f"[tokenizer] source: {tokenizer_source}", flush=True)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.pad_token_id = tokenizer.eos_token_id
 
     model = transformers.AutoModelForCausalLM.from_pretrained(
-        BASE_MODEL,
+        model_source,
         torch_dtype=torch.bfloat16,
         device_map="auto",
         token=HF_TOKEN,
         trust_remote_code=True,
     )
-    adapter_kwargs = {"token": HF_TOKEN}
-    if SFT_ADAPTER_SUBFOLDER:
-        adapter_kwargs["subfolder"] = SFT_ADAPTER_SUBFOLDER
-    try:
-        model = peft.PeftModel.from_pretrained(model, SFT_ADAPTER_REPO, **adapter_kwargs)
-    except Exception:
-        if SFT_ADAPTER_SUBFOLDER:
-            raise
-        model = peft.PeftModel.from_pretrained(
-            model,
-            SFT_ADAPTER_REPO,
-            subfolder="sft-lora",
-            token=HF_TOKEN,
+    input_embedding_count = model.get_input_embeddings().num_embeddings
+    if len(tokenizer) != input_embedding_count:
+        print(
+            f"[model] resize_token_embeddings: {input_embedding_count} -> {len(tokenizer)}",
+            flush=True,
         )
-    tokenizer = transformers.AutoTokenizer.from_pretrained(
-        BASE_MODEL,
-        token=HF_TOKEN,
-        trust_remote_code=True,
-        use_fast=True,
-    )
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-        tokenizer.pad_token_id = tokenizer.eos_token_id
+        model.resize_token_embeddings(len(tokenizer))
+    adapter_kwargs = {"token": HF_TOKEN}
+    if SFT_ADAPTER_REPO:
+        model = load_peft_adapter(model, peft, SFT_ADAPTER_REPO, adapter_kwargs)
 
     with open(INPUT_PATH, "r", encoding="utf-8") as src, open(
         OUTPUT_PATH, "w", encoding="utf-8"

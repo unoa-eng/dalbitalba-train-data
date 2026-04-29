@@ -190,7 +190,10 @@ else
   if [[ -z "${SFT_ADAPTER_REPO:-}" && -n "${HF_ADAPTER_REPO:-}" ]]; then
     export SFT_ADAPTER_REPO="${HF_ADAPTER_REPO}"
   fi
-  require_env "SFT_ADAPTER_REPO"
+  if [[ -z "${SFT_ADAPTER_REPO:-}" && -z "${CPT_MERGED_REPO:-}" && -z "${CPT_MERGED_PATH:-}" ]]; then
+    log "[ERROR] need SFT_ADAPTER_REPO or CPT_MERGED_REPO/CPT_MERGED_PATH for phase6 eval"
+    exit 1
+  fi
 fi
 
 if [[ ! -d "${REPO_DIR}/.git" ]]; then
@@ -246,7 +249,7 @@ if [[ "${EVAL_MODE:-phase6}" = "legacy" ]]; then
   run_timeout "${EVAL_METRIC_TIMEOUT_HOURS}" "legacy:make_eval_samples" \
     ${PY} eval/make_eval_samples.py \
     --ai-output ai_generated.jsonl \
-    --crawl cpt_corpus.jsonl \
+    --crawl v3-data/cpt_structured_v3.jsonl \
     --n "${EVAL_PER_CLASS:-30}" \
     --output eval_samples.jsonl \
     >> "${LOG_FILE}" 2>&1
@@ -279,6 +282,8 @@ else
   cp val_set.v2.jsonl /workspace/data/val_set.v2.jsonl
   BASE_MODEL="${BASE_MODEL:-Qwen/Qwen3-8B-Base}" \
   SFT_ADAPTER_REPO="${SFT_ADAPTER_REPO}" \
+  CPT_MERGED_REPO="${CPT_MERGED_REPO:-}" \
+  CPT_MERGED_PATH="${CPT_MERGED_PATH:-}" \
   HF_TOKEN="${HF_TOKEN:-}" \
     run_timeout "${EVAL_GENERATE_TIMEOUT_HOURS}" "phase6:generate" \
     ${PY} scripts/phase6_generate.py >> "${LOG_FILE}" 2>&1
@@ -303,6 +308,10 @@ else
   fi
   PHASE6_RC="${PHASE6_RC:-0}"
   log "[4/5] phase6 gate exit=${PHASE6_RC}"
+  if [[ "${PHASE6_RC}" -ne 0 ]]; then
+    log "[ERROR] phase6 gate failed rc=${PHASE6_RC}"
+    exit "${PHASE6_RC}"
+  fi
   log "[5/5] phase6 report ready"
 fi
 

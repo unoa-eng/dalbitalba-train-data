@@ -327,6 +327,10 @@ def main() -> None:
     for optional_key in (
         "CPT_TOKENIZER_DIR",
         "CPT_EXTEND_TOKENS",
+        "CPT_LORA_EMBED",
+        "CPT_USE_PACKING",
+        "REPLAY_JSONL",
+        "CPT_EMBED_WARMUP_STEPS",
         "CPT_MAX_STEPS",
         "SFT_MAX_STEPS",
         "CPT_LIMIT_ROWS",
@@ -353,6 +357,8 @@ def main() -> None:
         if value:
             if optional_key == "CPT_TOKENIZER_DIR":
                 value = normalize_workspace_repo_path(value)
+            elif optional_key == "REPLAY_JSONL":
+                value = normalize_workspace_data_path(value)
             env[optional_key] = value
     if wandb_api_key:
         env["WANDB_API_KEY"] = wandb_api_key

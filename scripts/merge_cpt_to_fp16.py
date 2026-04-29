@@ -28,6 +28,30 @@ except ImportError as e:
     sys.exit(1)
 
 
+def tokenizer_bundle_exists(path: Path) -> bool:
+    return path.is_dir() and any(
+        (path / name).exists()
+        for name in (
+            "tokenizer_config.json",
+            "tokenizer.json",
+            "special_tokens_map.json",
+            "vocab.json",
+        )
+    )
+
+
+def resolve_tokenizer_source(base_model: str, adapter_dir: str) -> str:
+    candidates = [Path(adapter_dir)]
+    tokenizer_dir = os.environ.get("CPT_TOKENIZER_DIR", "").strip()
+    if tokenizer_dir:
+        candidates.append(Path(tokenizer_dir))
+
+    for candidate in candidates:
+        if tokenizer_bundle_exists(candidate):
+            return str(candidate)
+    return base_model
+
+
 def main() -> None:
     base_model = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base")
     adapter_dir = os.environ.get("CPT_LORA_DIR", "/workspace/out/cpt-lora")
@@ -41,6 +65,14 @@ def main() -> None:
     print(f"[merge] lora  : {adapter_dir}")
     print(f"[merge] out   : {merged_dir}")
 
+    tokenizer_source = resolve_tokenizer_source(base_model, adapter_dir)
+    tokenizer = AutoTokenizer.from_pretrained(
+        tokenizer_source,
+        trust_remote_code=True,
+        use_fast=True,
+    )
+    print(f"[merge] tokenizer source: {tokenizer_source}")
+
     # Load base in fp16/bf16 (NOT 4-bit) so the merge is lossless.
     dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
     base = AutoModelForCausalLM.from_pretrained(
@@ -51,16 +83,19 @@ def main() -> None:
     )
     print("[merge] loaded base in", dtype)
 
+    input_embedding_count = base.get_input_embeddings().num_embeddings
+    if len(tokenizer) != input_embedding_count:
+        print(
+            f"[merge] resize_token_embeddings: {input_embedding_count} -> {len(tokenizer)}"
+        )
+        base.resize_token_embeddings(len(tokenizer))
+
     model = PeftModel.from_pretrained(base, adapter_dir, is_trainable=False)
     model = model.merge_and_unload()
     print("[merge] merge_and_unload done")
 
     Path(merged_dir).mkdir(parents=True, exist_ok=True)
     model.save_pretrained(merged_dir, safe_serialization=True)
-
-    tokenizer = AutoTokenizer.from_pretrained(
-        base_model, trust_remote_code=True, use_fast=True
-    )
     tokenizer.save_pretrained(merged_dir)
 
     print(f"[merge] saved merged fp16 model → {merged_dir}")

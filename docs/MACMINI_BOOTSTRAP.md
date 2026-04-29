@@ -242,11 +242,11 @@ for p in json.loads(r.read()):
 - [ ] adapter 무결성 OK (`check_adapter_integrity.py`)
 - [ ] budget30 run DONE.txt + HF adapter 확인
 - [ ] eval pod metrics.json 생성
-- [ ] 5-metric gate PASS (jsd ≤0.15, length_kl ≤0.10, digit/eng delta, mauve ≥0.80)
+- [ ] 7-metric gate PASS (jsd ≤0.08, length_kl ≤0.10, digit/eng delta, domain_keyword_alignment ≥0.50, tone_distribution_match ≤0.15, mauve ≥0.80)
 - [ ] PR 생성 (`scripts/create_final_pr.sh`)
 - [ ] 비활성 pod 정리 (위 12번 스크립트)
 
-## 14. budget30 의 5-metric gate FAIL 시 rollback playbook
+## 14. budget30 의 7-metric gate FAIL 시 rollback playbook
 
 **같은 recipe 로 절대 재시도 금지.** 동일 데이터·동일 hparam 으로 두 번째 시도해도 결과는 동일하고 또 ~$25 burn 한다 (0618 → 0424 식 누적 burn 의 패턴).
 

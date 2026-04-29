@@ -59,6 +59,7 @@ except ImportError as e:
 BASE_MODEL = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base")
 INPUT_JSONL = os.environ.get("INPUT_JSONL", "/workspace/data/cpt_corpus.v2.jsonl")
 TRAIN_CPT_JSONL = os.environ.get("TRAIN_CPT_JSONL", "").strip()
+REPLAY_JSONL = os.environ.get("REPLAY_JSONL", "").strip()
 VAL_JSONL = os.environ.get("CPT_VAL_JSONL", "/workspace/data/val_set.v2.jsonl")
 OUTPUT_DIR = os.environ.get("CPT_OUTPUT_DIR", "/workspace/out/cpt-lora")
 CKPT_DIR = os.environ.get("CPT_CKPT_DIR", "/workspace/out/cpt-ckpt")
@@ -89,8 +90,11 @@ LORA_DROPOUT = float(os.environ.get("CPT_LORA_DROPOUT", "0.0"))
 USE_RSLORA = os.environ.get("CPT_USE_RSLORA", "1") == "1"
 USE_DORA = os.environ.get("CPT_USE_DORA", "0") == "1"
 USE_LORA_EMBED = os.environ.get("CPT_LORA_EMBED", "0") == "1"
+USE_PACKING = os.environ.get("CPT_USE_PACKING", "0") == "1"
+EMBED_WARMUP_STEPS = int(os.environ.get("CPT_EMBED_WARMUP_STEPS", "0") or "0")
 
 FLASH_ATTN = os.environ.get("CPT_FLASH_ATTN", "flash_attention_2")
+REPLAY_RATIO = 0.10
 STRUCTURED_TOKEN_RE = re.compile(
     r"<\|(?:post|/post|thread|/thread|/comment)\|>|<\|comment depth=\d+\|>"
 )
@@ -165,7 +169,7 @@ def resolve_lora_target_modules(model) -> str | list[str]:
     return resolved
 
 
-def load_corpus(path: str) -> Dataset:
+def load_corpus_records(path: str) -> list[dict]:
     records: list[dict] = []
     skipped = 0
     with open(path, "r", encoding="utf-8") as f:
@@ -181,7 +185,69 @@ def load_corpus(path: str) -> Dataset:
             except json.JSONDecodeError:
                 skipped += 1
     logger.info(f"load_corpus({path}) -> {len(records):,} rows (skipped {skipped})")
+    return records
+
+
+def build_dataset(records: list[dict], *, label: str) -> Dataset:
+    if not records:
+        raise RuntimeError(f"{label}: no usable rows found")
+    logger.info("build_dataset(%s) -> %s rows", label, f"{len(records):,}")
     return Dataset.from_list(records)
+
+
+def limit_records(records: list[dict], limit: int, *, label: str) -> list[dict]:
+    if limit <= 0 or len(records) <= limit:
+        return records
+    logger.info("%s limit 적용: %s -> %s", label, f"{len(records):,}", f"{limit:,}")
+    return records[:limit]
+
+
+def mix_replay_records(main_records: list[dict], replay_records: list[dict]) -> list[dict]:
+    if not replay_records:
+        logger.warning("REPLAY_JSONL is set but no replay rows were loaded; replay skipped")
+        return main_records
+
+    desired_replay_rows = max(1, int(round(len(main_records) * REPLAY_RATIO)))
+    actual_replay_rows = min(len(replay_records), desired_replay_rows)
+    if actual_replay_rows < desired_replay_rows:
+        logger.warning(
+            "replay rows 부족: desired=%s available=%s -> available rows only",
+            f"{desired_replay_rows:,}",
+            f"{len(replay_records):,}",
+        )
+
+    rng = random.Random(SEED)
+    if actual_replay_rows < len(replay_records):
+        selected_replay = rng.sample(replay_records, actual_replay_rows)
+    else:
+        selected_replay = list(replay_records)
+        rng.shuffle(selected_replay)
+
+    mixed_records: list[dict] = []
+    main_index = 0
+    replay_index = 0
+    while main_index < len(main_records):
+        remaining_main = len(main_records) - main_index
+        remaining_replay = len(selected_replay) - replay_index
+        if remaining_replay <= 0:
+            mixed_records.extend(main_records[main_index:])
+            break
+
+        chunk_size = max(1, math.ceil(remaining_main / (remaining_replay + 1)))
+        mixed_records.extend(main_records[main_index : main_index + chunk_size])
+        main_index += chunk_size
+        mixed_records.append(selected_replay[replay_index])
+        replay_index += 1
+
+    effective_ratio = len(selected_replay) / len(mixed_records)
+    logger.info(
+        "replay mix 적용: main=%s replay=%s total=%s effective_ratio=%.4f",
+        f"{len(main_records):,}",
+        f"{len(selected_replay):,}",
+        f"{len(mixed_records):,}",
+        effective_ratio,
+    )
+    return mixed_records
 
 
 def resolve_train_jsonl() -> str:
@@ -331,14 +397,184 @@ def resolve_tokenizer_source(train_jsonl: str) -> tuple[str, bool]:
 
 def tokenize_fn(examples: dict, tokenizer) -> dict:
     # No template. Raw continuation; each row is a standalone text.
+    max_length = MAX_SEQ_LEN
+    if USE_PACKING and tokenizer.eos_token_id is not None:
+        max_length = max(1, MAX_SEQ_LEN - 1)
     out = tokenizer(
         examples["text"],
         truncation=True,
-        max_length=MAX_SEQ_LEN,
+        max_length=max_length,
         padding=False,
     )
     out["labels"] = [ids.copy() for ids in out["input_ids"]]
     return out
+
+
+def pack_tokenized_dataset(tokenized: Dataset, tokenizer, split_name: str) -> Dataset:
+    eos_token_id = tokenizer.eos_token_id
+    if eos_token_id is None:
+        raise RuntimeError("CPT_USE_PACKING=1 requires tokenizer.eos_token_id")
+
+    packed_input_ids: list[list[int]] = []
+    packed_attention_mask: list[list[int]] = []
+    current_chunk: list[int] = []
+    source_rows = 0
+    source_tokens = 0
+
+    for ids in tokenized["input_ids"]:
+        if not ids:
+            continue
+        row = list(ids)
+        if row[-1] != eos_token_id:
+            row.append(eos_token_id)
+        source_rows += 1
+        source_tokens += len(row)
+
+        if current_chunk and len(current_chunk) + len(row) > MAX_SEQ_LEN:
+            packed_input_ids.append(current_chunk)
+            packed_attention_mask.append([1] * len(current_chunk))
+            current_chunk = []
+
+        if len(row) == MAX_SEQ_LEN:
+            packed_input_ids.append(row)
+            packed_attention_mask.append([1] * len(row))
+            continue
+
+        current_chunk.extend(row)
+        if len(current_chunk) == MAX_SEQ_LEN:
+            packed_input_ids.append(current_chunk)
+            packed_attention_mask.append([1] * len(current_chunk))
+            current_chunk = []
+
+    if current_chunk:
+        packed_input_ids.append(current_chunk)
+        packed_attention_mask.append([1] * len(current_chunk))
+
+    packed_labels = [ids.copy() for ids in packed_input_ids]
+    packed = Dataset.from_dict(
+        {
+            "input_ids": packed_input_ids,
+            "attention_mask": packed_attention_mask,
+            "labels": packed_labels,
+        }
+    )
+    packed_tokens = sum(len(ids) for ids in packed_input_ids)
+    logger.info(
+        "packing %s: source_rows=%s -> packed_sequences=%s (%.2fx fewer rows), "
+        "tokens=%s, avg_tokens_per_sequence=%.1f",
+        split_name,
+        source_rows,
+        len(packed),
+        (source_rows / len(packed)) if len(packed) else 0.0,
+        packed_tokens,
+        (packed_tokens / len(packed)) if len(packed) else 0.0,
+    )
+    if packed_tokens != source_tokens:
+        logger.warning(
+            "packing token accounting mismatch for %s: source=%s packed=%s",
+            split_name,
+            source_tokens,
+            packed_tokens,
+        )
+    return packed
+
+
+def resolve_warmup_param_names(model) -> tuple[set[str], set[str]]:
+    all_trainable = {name for name, param in model.named_parameters() if param.requires_grad}
+    embed_only = {
+        name
+        for name in all_trainable
+        if "embed_tokens" in name or "lm_head" in name
+    }
+    return all_trainable, embed_only
+
+
+def log_trainable_param_summary(
+    model,
+    active_param_names: set[str],
+    managed_param_names: set[str],
+    phase_name: str,
+) -> None:
+    enabled_params = 0
+    total_params = 0
+    enabled_names = 0
+
+    for name, param in model.named_parameters():
+        if name not in managed_param_names:
+            continue
+        total_params += param.numel()
+        if name in active_param_names:
+            enabled_names += 1
+            enabled_params += param.numel()
+
+    logger.info(
+        "staged warmup %s: enabled %s/%s parameter tensors, trainable params=%s/%s",
+        phase_name,
+        enabled_names,
+        len(managed_param_names),
+        f"{enabled_params:,}",
+        f"{total_params:,}",
+    )
+
+
+class EmbedWarmupTrainer(Trainer):
+    def __init__(
+        self,
+        *args,
+        embed_warmup_steps: int = 0,
+        all_trainable_param_names: set[str] | None = None,
+        embed_only_param_names: set[str] | None = None,
+        **kwargs,
+    ) -> None:
+        self.embed_warmup_steps = max(0, int(embed_warmup_steps))
+        self.all_trainable_param_names = set(all_trainable_param_names or ())
+        self.embed_only_param_names = set(embed_only_param_names or ())
+        self.masked_param_names = (
+            self.all_trainable_param_names - self.embed_only_param_names
+        )
+        self._warmup_started_logged = False
+        self._warmup_finished_logged = False
+        super().__init__(*args, **kwargs)
+
+    def _warmup_active(self) -> bool:
+        return (
+            self.embed_warmup_steps > 0
+            and bool(self.embed_only_param_names)
+            and self.state.global_step < self.embed_warmup_steps
+        )
+
+    def _log_warmup_transition(self) -> None:
+        if self.embed_warmup_steps <= 0 or not self.embed_only_param_names:
+            return
+        if self.state.global_step < self.embed_warmup_steps:
+            if not self._warmup_started_logged:
+                logger.info(
+                    "staged embed warmup active: first %s optimizer steps keep non-embed LoRA grads cleared",
+                    self.embed_warmup_steps,
+                )
+                self._warmup_started_logged = True
+            return
+        if not self._warmup_finished_logged:
+            logger.info(
+                "staged embed warmup complete at global_step=%s; full LoRA gradients restored",
+                self.state.global_step,
+            )
+            self._warmup_finished_logged = True
+
+    def _clear_non_embed_gradients(self, model) -> None:
+        for name, param in model.named_parameters():
+            if name not in self.masked_param_names or param.grad is None:
+                continue
+            # Clear the gradient entirely so AdamW/weight decay cannot move
+            # non-embed LoRA params during the embed-only warmup window.
+            param.grad = None
+
+    def training_step(self, model, inputs, *args, **kwargs):
+        self._log_warmup_transition()
+        loss = super().training_step(model, inputs, *args, **kwargs)
+        if self._warmup_active():
+            self._clear_non_embed_gradients(model)
+        return loss
 
 
 def main() -> None:
@@ -348,6 +584,7 @@ def main() -> None:
     logger.info("CPT v2 시작")
     logger.info(f"  base         : {BASE_MODEL}")
     logger.info(f"  input        : {train_jsonl}")
+    logger.info(f"  replay       : {REPLAY_JSONL or '(disabled)'}")
     logger.info(f"  val          : {VAL_JSONL}")
     logger.info(f"  output       : {OUTPUT_DIR}")
     logger.info(f"  hub_model_id : {HUB_MODEL_ID or '(disabled)'}")
@@ -359,6 +596,10 @@ def main() -> None:
     logger.info(
         f"  seq_len={MAX_SEQ_LEN} eff_batch={BATCH_SIZE*GRAD_ACCUM} "
         f"lr={LR} epochs={NUM_EPOCHS}"
+    )
+    logger.info(
+        f"  packing      : {USE_PACKING} "
+        f"(embed_warmup_steps={EMBED_WARMUP_STEPS})"
     )
     logger.info(f"  seed         : {SEED}")
     logger.info("=" * 60)
@@ -458,14 +699,18 @@ def main() -> None:
     model.print_trainable_parameters()
 
     # ── Data ────────────────────────────────────────────────────────
-    train_raw = load_corpus(train_jsonl)
-    eval_raw = load_corpus(VAL_JSONL) if os.path.exists(VAL_JSONL) else None
-    if LIMIT_ROWS > 0 and len(train_raw) > LIMIT_ROWS:
-        logger.info(f"CPT_LIMIT_ROWS 적용: {len(train_raw):,} -> {LIMIT_ROWS:,}")
-        train_raw = train_raw.select(range(LIMIT_ROWS))
-    if eval_raw is not None and VAL_LIMIT_ROWS > 0 and len(eval_raw) > VAL_LIMIT_ROWS:
-        logger.info(f"CPT_VAL_LIMIT_ROWS 적용: {len(eval_raw):,} -> {VAL_LIMIT_ROWS:,}")
-        eval_raw = eval_raw.select(range(VAL_LIMIT_ROWS))
+    train_records = load_corpus_records(train_jsonl)
+    train_records = limit_records(train_records, LIMIT_ROWS, label="CPT train")
+    if REPLAY_JSONL:
+        replay_records = load_corpus_records(REPLAY_JSONL)
+        train_records = mix_replay_records(train_records, replay_records)
+    train_raw = build_dataset(train_records, label="train")
+
+    eval_raw = None
+    if os.path.exists(VAL_JSONL):
+        eval_records = load_corpus_records(VAL_JSONL)
+        eval_records = limit_records(eval_records, VAL_LIMIT_ROWS, label="CPT val")
+        eval_raw = build_dataset(eval_records, label="val")
 
     train_ds = train_raw.map(
         lambda ex: tokenize_fn(ex, tokenizer),
@@ -483,6 +728,10 @@ def main() -> None:
             remove_columns=["text"],
             desc="tokenize val",
         )
+    if USE_PACKING:
+        train_ds = pack_tokenized_dataset(train_ds, tokenizer, split_name="train")
+        if eval_ds is not None:
+            eval_ds = pack_tokenized_dataset(eval_ds, tokenizer, split_name="val")
     total_tokens = sum(len(x) for x in train_ds["input_ids"])
     logger.info(
         f"tokenize 완료: train {len(train_ds):,} rows / ~{total_tokens:,} tokens"
@@ -499,6 +748,12 @@ def main() -> None:
         f"steps_per_epoch={steps_per_epoch} total_steps={total_steps} "
         f"warmup={warmup_steps}"
     )
+    if EMBED_WARMUP_STEPS > 0 and total_steps <= EMBED_WARMUP_STEPS:
+        logger.warning(
+            "embed warmup spans the full run: total_steps=%s <= CPT_EMBED_WARMUP_STEPS=%s",
+            total_steps,
+            EMBED_WARMUP_STEPS,
+        )
 
     logger.info("[step] DataCollatorForLanguageModeling build")
     data_collator = DataCollatorForLanguageModeling(
@@ -565,17 +820,6 @@ def main() -> None:
     training_args = TrainingArguments(**training_args_kwargs)
     logger.info("[step] TrainingArguments OK")
 
-    logger.info("[step] instantiate Trainer")
-    trainer = Trainer(
-        model=model,
-        args=training_args,
-        train_dataset=train_ds,
-        eval_dataset=eval_ds,
-        data_collator=data_collator,
-        tokenizer=tokenizer,
-    )
-    logger.info("[step] Trainer OK")
-
     # resume
     resume_from = None
     ckpt_path = Path(CKPT_DIR)
@@ -583,6 +827,53 @@ def main() -> None:
     if existing:
         resume_from = str(existing[-1])
         logger.info(f"resume from {resume_from}")
+
+    all_trainable_param_names: set[str] = set()
+    embed_only_param_names: set[str] = set()
+    effective_embed_warmup_steps = 0
+    if EMBED_WARMUP_STEPS > 0:
+        all_trainable_param_names, embed_only_param_names = resolve_warmup_param_names(model)
+        if not embed_only_param_names:
+            logger.warning(
+                "CPT_EMBED_WARMUP_STEPS=%s but no trainable embed_tokens/lm_head params were found. "
+                "Warmup is skipped; set CPT_LORA_EMBED=1 to activate embed-only warmup.",
+                EMBED_WARMUP_STEPS,
+            )
+        else:
+            resumed_step = 0
+            if resume_from:
+                match = re.search(r"checkpoint-(\d+)$", resume_from)
+                if match:
+                    resumed_step = int(match.group(1))
+            if resumed_step >= EMBED_WARMUP_STEPS:
+                logger.info(
+                    "resume checkpoint already past embed warmup boundary "
+                    "(checkpoint step=%s, warmup=%s) -> skip staged warmup",
+                    resumed_step,
+                    EMBED_WARMUP_STEPS,
+                )
+            else:
+                effective_embed_warmup_steps = EMBED_WARMUP_STEPS
+                log_trainable_param_summary(
+                    model,
+                    active_param_names=embed_only_param_names,
+                    managed_param_names=all_trainable_param_names,
+                    phase_name="embed-only",
+                )
+
+    logger.info("[step] instantiate Trainer")
+    trainer = EmbedWarmupTrainer(
+        model=model,
+        args=training_args,
+        train_dataset=train_ds,
+        eval_dataset=eval_ds,
+        data_collator=data_collator,
+        tokenizer=tokenizer,
+        embed_warmup_steps=effective_embed_warmup_steps,
+        all_trainable_param_names=all_trainable_param_names,
+        embed_only_param_names=embed_only_param_names,
+    )
+    logger.info("[step] Trainer OK")
 
     logger.info("학습 시작 — trainer.train()")
     trainer.train(resume_from_checkpoint=resume_from)

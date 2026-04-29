@@ -32,9 +32,9 @@ mechanically without needing an online LLM at each cycle.
 - IF `budget_spent >= 25.0 USD` → `STOP`, commit final report.
 
 **R1 — High bigram JSD (most common failure):**
-- IF `bigram_jsd > 0.15`:
+- IF `bigram_jsd > 0.08`:
   - First occurrence → `CPT_NUM_EPOCHS = 2` (if currently 1)
-  - Second (still > 0.15 with 2 epochs) → `LORA_R = 128` (if currently 64)
+  - Second (still > 0.08 with 2 epochs) → `LORA_R = 128` (if currently 64)
   - Third → `LORA_R = 128` AND `CPT_USE_DORA = 1`
   - Fourth → `STOP` (bigram JSD not responsive to any cheap lever; investigate data/tokenizer)
 
@@ -54,7 +54,7 @@ mechanically without needing an online LLM at each cycle.
   - If DoRA already on → bump `SFT_NUM_EPOCHS` from 2 to 3
 
 **R5 — All close but no pass (boundary case):**
-- IF 3 of 5 metrics are within 10% of threshold, others fail marginally:
+- IF 3 of the primary numeric thresholds are within 10% of threshold, others fail marginally:
   - Extend `CPT_NUM_EPOCHS` to 2 (cheapest global improvement)
 
 **R6 — No signal, try parameter space expansion:**
@@ -102,7 +102,7 @@ Write `.state/ESCALATE.md` with cycle context + ntfy alert "ESCALATE:" prefix wh
 ## Example rulebook application trace
 
 - Cycle 1: metrics={jsd: 0.21, kl: 0.09, ...} → R1 fires → mutation "CPT_NUM_EPOCHS 1→2"
-- Cycle 2: metrics={jsd: 0.14, kl: 0.09, ...} → R1 again (still >0.15? no — 0.14 < 0.15, R1 doesn't fire). Next check R2: 0.09 < 0.10, pass. Next R3, R4, R5. If all pass → PR.
+- Cycle 2: metrics={jsd: 0.07, kl: 0.09, ...} → R1 again (still >0.08? no — 0.07 < 0.08, R1 doesn't fire). Next check R2: 0.09 < 0.10, pass. Next R3, R4, R5. If all pass → PR.
 - Cycle 3: only runs if cycle 2 failed.
 
 ## Non-negotiable invariants

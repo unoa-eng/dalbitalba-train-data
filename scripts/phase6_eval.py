@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-phase6_eval.py — Deterministic 7-metric evaluator for the autonomous loop.
+phase6_eval.py — Deterministic 8-metric evaluator for the autonomous loop.
 
 Inputs:
   AI_JSONL   : {"text": "..."} per line — generated samples from current adapter
@@ -18,7 +18,8 @@ Metrics (all deterministic, no LLM judge):
   4. english_density_Δ — mean absolute delta in per-sample english letter ratio
   5. domain_keyword_alignment — minimum generated/raw sample-presence ratio across 20 core GAP terms
   6. tone_distribution_match — max absolute delta across 반말/존댓말 sample ratios
-  7. mauve_score      — optional, requires `mauve-text` + klue/roberta encoder (GPU)
+  7. korean_retention_ppl — adapted/base perplexity ratio on 100 replay Korean sentences
+  8. mauve_score      — optional, requires `mauve-text` + klue/roberta encoder (GPU)
 
 Gate thresholds (from .planning/calibration/raw-vs-raw.json):
   bigram_jsd      ≤ 0.08   (baseline 0.019)
@@ -27,6 +28,7 @@ Gate thresholds (from .planning/calibration/raw-vs-raw.json):
   english_Δ       ≤ 0.02
   domain_keyword_alignment ≥ 0.50
   tone_distribution_match  ≤ 0.15
+  korean_retention_ppl     ≤ 1.50
   mauve           ≥ 0.80   (if available)
 
 Exit codes:
@@ -38,8 +40,10 @@ Exit codes:
 from __future__ import annotations
 
 import argparse
+import gc
 import json
 import math
+import os
 import re
 import sys
 from collections import Counter
@@ -47,6 +51,17 @@ from pathlib import Path
 
 
 KIND_ORDER = ("post", "comment")
+BASE_MODEL = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base").strip()
+HF_TOKEN = os.environ.get("HF_TOKEN", "").strip() or None
+SFT_ADAPTER_REPO = os.environ.get("SFT_ADAPTER_REPO", "").strip()
+SFT_ADAPTER_SUBFOLDER = os.environ.get("SFT_ADAPTER_SUBFOLDER", "").strip()
+CPT_MERGED_REPO = os.environ.get("CPT_MERGED_REPO", "").strip()
+CPT_MERGED_PATH = os.environ.get("CPT_MERGED_PATH", "").strip()
+RETENTION_CORPUS = os.environ.get(
+    "KOREAN_RETENTION_JSONL",
+    "v3-data/replay_korean_5k.jsonl",
+).strip()
+RETENTION_ROWS = int(os.environ.get("KOREAN_RETENTION_ROWS", "100") or "100")
 
 
 def normalize_kind(value: object) -> str | None:
@@ -334,6 +349,174 @@ def maybe_mauve(
         return None
 
 
+def path_exists(path: str) -> bool:
+    return bool(path) and Path(path).exists()
+
+
+def resolve_eval_model_source() -> str:
+    if path_exists(CPT_MERGED_PATH):
+        return CPT_MERGED_PATH
+    if CPT_MERGED_REPO:
+        return CPT_MERGED_REPO
+    return BASE_MODEL
+
+
+def load_peft_adapter(model, peft, adapter_repo: str, adapter_kwargs: dict[str, object]):
+    attempted: list[str | None] = []
+    subfolders: list[str | None] = []
+    if SFT_ADAPTER_SUBFOLDER:
+        subfolders.append(SFT_ADAPTER_SUBFOLDER)
+    subfolders.extend([None, "sft-lora", "cpt-lora"])
+
+    for subfolder in subfolders:
+        if subfolder in attempted:
+            continue
+        attempted.append(subfolder)
+        kwargs = dict(adapter_kwargs)
+        if subfolder:
+            kwargs["subfolder"] = subfolder
+        try:
+            return peft.PeftModel.from_pretrained(model, adapter_repo, **kwargs)
+        except Exception:
+            continue
+
+    attempted_text = ", ".join("(root)" if value is None else value for value in attempted)
+    raise RuntimeError(
+        f"failed to load adapter from {adapter_repo}; tried subfolders: {attempted_text}"
+    )
+
+
+def load_retention_texts(path: str, limit: int) -> list[str]:
+    corpus_path = Path(path)
+    if not corpus_path.exists():
+        return []
+    rows: list[str] = []
+    with corpus_path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                obj = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            text = str(obj.get("text") or "").strip()
+            if text:
+                rows.append(text)
+            if len(rows) >= limit:
+                break
+    return rows
+
+
+def load_model_and_tokenizer(model_source: str, *, adapter_repo: str | None = None):
+    import peft
+    import torch
+    import transformers
+
+    tokenizer = transformers.AutoTokenizer.from_pretrained(
+        model_source,
+        token=HF_TOKEN,
+        trust_remote_code=True,
+        use_fast=True,
+    )
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+
+    model = transformers.AutoModelForCausalLM.from_pretrained(
+        model_source,
+        torch_dtype=torch.bfloat16,
+        device_map="auto",
+        token=HF_TOKEN,
+        trust_remote_code=True,
+    )
+    if adapter_repo:
+        model = load_peft_adapter(model, peft, adapter_repo, {"token": HF_TOKEN})
+    model.eval()
+    return model, tokenizer, torch
+
+
+def compute_perplexity(model, tokenizer, torch, texts: list[str], max_length: int = 512) -> float:
+    device = model.device
+    total_nll = 0.0
+    total_tokens = 0
+
+    with torch.inference_mode():
+        for text in texts:
+            encoded = tokenizer(
+                text,
+                return_tensors="pt",
+                truncation=True,
+                max_length=max_length,
+            )
+            input_ids = encoded["input_ids"].to(device)
+            attention_mask = encoded["attention_mask"].to(device)
+            token_count = max(int(attention_mask.sum().item()) - 1, 1)
+            outputs = model(
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                labels=input_ids,
+            )
+            total_nll += float(outputs.loss.item()) * token_count
+            total_tokens += token_count
+
+    if total_tokens <= 0:
+        raise RuntimeError("retention perplexity failed: no usable tokens")
+    return math.exp(total_nll / total_tokens)
+
+
+def cleanup_model(model, torch) -> None:
+    del model
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+
+def maybe_korean_retention_ppl() -> tuple[float | None, dict[str, object]]:
+    texts = load_retention_texts(RETENTION_CORPUS, RETENTION_ROWS)
+    if not texts:
+        return None, {
+            "status": "skipped",
+            "reason": f"retention corpus missing or empty: {RETENTION_CORPUS}",
+        }
+
+    adapted_source = resolve_eval_model_source()
+    if adapted_source == BASE_MODEL and not SFT_ADAPTER_REPO:
+        return None, {
+            "status": "skipped",
+            "reason": "no adapted model source configured",
+        }
+
+    try:
+        base_model, base_tokenizer, torch = load_model_and_tokenizer(BASE_MODEL)
+        base_ppl = compute_perplexity(base_model, base_tokenizer, torch, texts)
+        cleanup_model(base_model, torch)
+
+        adapter_repo = SFT_ADAPTER_REPO or None
+        adapted_model, adapted_tokenizer, torch = load_model_and_tokenizer(
+            adapted_source,
+            adapter_repo=adapter_repo,
+        )
+        adapted_ppl = compute_perplexity(adapted_model, adapted_tokenizer, torch, texts)
+        cleanup_model(adapted_model, torch)
+    except Exception as exc:
+        return None, {
+            "status": "skipped",
+            "reason": str(exc),
+        }
+
+    ratio = adapted_ppl / base_ppl if base_ppl > 0 else None
+    return ratio, {
+        "status": "ok",
+        "corpus": RETENTION_CORPUS,
+        "rows": len(texts),
+        "base_ppl": base_ppl,
+        "adapted_ppl": adapted_ppl,
+        "ppl_ratio": ratio,
+        "catastrophic_forgetting": bool(ratio is not None and ratio > 1.5),
+    }
+
+
 # ─── Gate ─────────────────────────────────────────────────────────────
 GATE = {
     "bigram_jsd": ("le", 0.08),
@@ -342,6 +525,7 @@ GATE = {
     "english_density_delta": ("le", 0.02),
     "domain_keyword_alignment": ("ge", 0.50),
     "tone_distribution_match": ("le", 0.15),
+    "korean_retention_ppl": ("le", 1.50),
     "mauve_score": ("ge", 0.80),
 }
 
@@ -364,6 +548,7 @@ def compute_metric_bundle(
     raw_texts: list[str],
     *,
     include_mauve: bool,
+    include_retention: bool,
 ) -> tuple[dict[str, float | None], dict[str, object]]:
     p = normalize(aggregate_bigrams(ai_texts))
     q = normalize(aggregate_bigrams(raw_texts))
@@ -374,10 +559,14 @@ def compute_metric_bundle(
     english_delta = mean_abs_delta(ai_texts, raw_texts, english_density)
     domain_alignment, domain_details = domain_keyword_alignment(ai_texts, raw_texts)
     tone_match, tone_details = tone_distribution_match(ai_texts, raw_texts)
+    retention_ratio: float | None = None
+    retention_details: dict[str, object] = {"status": "skipped", "reason": "disabled"}
 
     mauve_score: float | None = None
     if include_mauve:
         mauve_score = maybe_mauve(ai_texts, raw_texts)
+    if include_retention:
+        retention_ratio, retention_details = maybe_korean_retention_ppl()
 
     metrics = {
         "n_ai": len(ai_texts),
@@ -388,11 +577,13 @@ def compute_metric_bundle(
         "english_density_delta": english_delta,
         "domain_keyword_alignment": domain_alignment,
         "tone_distribution_match": tone_match,
+        "korean_retention_ppl": retention_ratio,
         "mauve_score": mauve_score,
     }
     details = {
         "domain_keyword_alignment": domain_details,
         "tone_distribution_match": tone_details,
+        "korean_retention_ppl": retention_details,
     }
     return metrics, details
 
@@ -403,6 +594,7 @@ def main() -> int:
     parser.add_argument("--raw", required=True, help="Raw held-out samples JSONL")
     parser.add_argument("--out", help="Write JSON report to this path")
     parser.add_argument("--skip-mauve", action="store_true")
+    parser.add_argument("--skip-retention", action="store_true")
     args = parser.parse_args()
 
     ai_rows = load_rows(args.ai)
@@ -415,7 +607,12 @@ def main() -> int:
         )
         return 3
 
-    metrics, details = compute_metric_bundle(ai, raw, include_mauve=not args.skip_mauve)
+    metrics, details = compute_metric_bundle(
+        ai,
+        raw,
+        include_mauve=not args.skip_mauve,
+        include_retention=not args.skip_retention,
+    )
     verdict, violations = evaluate_gate(metrics)
 
     kind_breakdown: dict[str, object] = {}
@@ -431,6 +628,7 @@ def main() -> int:
                 ai_kind,
                 raw_kind,
                 include_mauve=False,
+                include_retention=False,
             )
             kind_verdict, kind_violations = evaluate_gate(kind_metrics)
             kind_breakdown[kind] = {
