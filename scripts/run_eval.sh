@@ -18,6 +18,7 @@ EVAL_METRIC_TIMEOUT_HOURS="${EVAL_METRIC_TIMEOUT_HOURS:-1}"
 # Pin python interpreter — never trust PATH (chain_train.sh established this rule).
 PY="${PY:-python3}"
 PIP="${PIP:-${PY} -m pip}"
+SFT_ADAPTER_REPO="${SFT_ADAPTER_REPO:-}"
 
 EVAL_FAILED=0
 ARTIFACTS_PERSISTED=0
@@ -279,7 +280,16 @@ if [[ "${EVAL_MODE:-phase6}" = "legacy" ]]; then
 else
   log "[2/5] generate ai samples (phase6 deterministic gate)"
   mkdir -p /workspace/data eval
-  cp val_set.v2.jsonl /workspace/data/val_set.v2.jsonl
+  cp val_set.v3.jsonl /workspace/data/val_set.v3.jsonl
+  if [[ -n "${SFT_ADAPTER_REPO}" ]]; then
+    log "[phase6] source=sft_adapter repo=${SFT_ADAPTER_REPO}"
+  elif [[ -n "${CPT_MERGED_PATH:-}" ]]; then
+    log "[phase6] source=cpt_merged_path path=${CPT_MERGED_PATH}"
+  elif [[ -n "${CPT_MERGED_REPO:-}" ]]; then
+    log "[phase6] source=cpt_merged_repo repo=${CPT_MERGED_REPO}"
+  else
+    log "[phase6] source=base_model_only repo=${BASE_MODEL:-Qwen/Qwen3-8B-Base}"
+  fi
   BASE_MODEL="${BASE_MODEL:-Qwen/Qwen3-8B-Base}" \
   SFT_ADAPTER_REPO="${SFT_ADAPTER_REPO}" \
   CPT_MERGED_REPO="${CPT_MERGED_REPO:-}" \
@@ -294,7 +304,7 @@ else
     run_timeout "${EVAL_METRIC_TIMEOUT_HOURS}" "phase6:eval-no-mauve" \
       ${PY} scripts/phase6_eval.py \
       --ai ai_generated.jsonl \
-      --raw val_set.v2.jsonl \
+      --raw val_set.v3.jsonl \
       --out eval/metrics.json \
       --skip-mauve \
       >> "${LOG_FILE}" 2>&1 || PHASE6_RC=$?
@@ -302,7 +312,7 @@ else
     run_timeout "${EVAL_METRIC_TIMEOUT_HOURS}" "phase6:eval-mauve" \
       ${PY} scripts/phase6_eval.py \
       --ai ai_generated.jsonl \
-      --raw val_set.v2.jsonl \
+      --raw val_set.v3.jsonl \
       --out eval/metrics.json \
       >> "${LOG_FILE}" 2>&1 || PHASE6_RC=$?
   fi

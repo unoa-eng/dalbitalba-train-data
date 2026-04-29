@@ -60,7 +60,7 @@ BASE_MODEL = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base")
 INPUT_JSONL = os.environ.get("INPUT_JSONL", "/workspace/data/cpt_corpus.v2.jsonl")
 TRAIN_CPT_JSONL = os.environ.get("TRAIN_CPT_JSONL", "").strip()
 REPLAY_JSONL = os.environ.get("REPLAY_JSONL", "").strip()
-VAL_JSONL = os.environ.get("CPT_VAL_JSONL", "/workspace/data/val_set.v2.jsonl")
+VAL_JSONL = os.environ.get("CPT_VAL_JSONL", "/workspace/data/val_set.v3.jsonl")
 OUTPUT_DIR = os.environ.get("CPT_OUTPUT_DIR", "/workspace/out/cpt-lora")
 CKPT_DIR = os.environ.get("CPT_CKPT_DIR", "/workspace/out/cpt-ckpt")
 LOG_FILE = os.environ.get("CPT_LOG_FILE", "/workspace/train_cpt.log")
@@ -517,6 +517,50 @@ def log_trainable_param_summary(
     )
 
 
+class DataCollatorForPackedCPT:
+    """Data collator for packed CPT sequences that preserves pre-made labels.
+
+    DataCollatorForLanguageModeling masks positions where input_ids == pad_token_id
+    in labels (sets them to -100). When pad_token == eos_token (e.g. Qwen3), this
+    silently removes the EOS/document-boundary signal from packed sequences.
+
+    This collator instead uses the pre-made ``labels`` column directly, only adding
+    padding to align a batch and masking the *padding* positions (not EOS) in labels.
+    """
+
+    def __init__(self, tokenizer, pad_to_multiple_of: int | None = None):
+        self.tokenizer = tokenizer
+        self.pad_to_multiple_of = pad_to_multiple_of
+        self.pad_token_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 0
+
+    def __call__(self, features: list[dict]) -> dict:
+        max_len = max(len(f["input_ids"]) for f in features)
+        if self.pad_to_multiple_of:
+            max_len = ((max_len + self.pad_to_multiple_of - 1)
+                       // self.pad_to_multiple_of * self.pad_to_multiple_of)
+
+        batch_input_ids = []
+        batch_attention_mask = []
+        batch_labels = []
+        for f in features:
+            ids = list(f["input_ids"])
+            attn = list(f.get("attention_mask", [1] * len(ids)))
+            labels = list(f["labels"]) if "labels" in f else list(ids)
+            pad_len = max_len - len(ids)
+            ids += [self.pad_token_id] * pad_len
+            attn += [0] * pad_len
+            labels += [-100] * pad_len  # mask only real padding, not EOS
+            batch_input_ids.append(ids)
+            batch_attention_mask.append(attn)
+            batch_labels.append(labels)
+
+        return {
+            "input_ids": torch.tensor(batch_input_ids, dtype=torch.long),
+            "attention_mask": torch.tensor(batch_attention_mask, dtype=torch.long),
+            "labels": torch.tensor(batch_labels, dtype=torch.long),
+        }
+
+
 class EmbedWarmupTrainer(Trainer):
     def __init__(
         self,
@@ -755,11 +799,17 @@ def main() -> None:
             EMBED_WARMUP_STEPS,
         )
 
-    logger.info("[step] DataCollatorForLanguageModeling build")
-    data_collator = DataCollatorForLanguageModeling(
-        tokenizer=tokenizer, mlm=False, pad_to_multiple_of=8
-    )
-    logger.info("[step] DataCollator OK")
+    logger.info("[step] DataCollator build")
+    if USE_PACKING:
+        data_collator = DataCollatorForPackedCPT(
+            tokenizer=tokenizer, pad_to_multiple_of=8
+        )
+        logger.info("[step] DataCollatorForPackedCPT OK (preserves EOS in labels)")
+    else:
+        data_collator = DataCollatorForLanguageModeling(
+            tokenizer=tokenizer, mlm=False, pad_to_multiple_of=8
+        )
+        logger.info("[step] DataCollatorForLanguageModeling OK")
 
     logger.info("[step] building training_args_kwargs")
     training_args_kwargs = dict(

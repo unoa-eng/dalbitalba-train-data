@@ -18,7 +18,7 @@ Key recipe changes vs v1:
 Env:
   BASE_MODEL            : /workspace/out/cpt-merged-fp16 (merged)
   SFT_RAW_JSONL         : /workspace/data/cpt_corpus.v2.jsonl
-  SFT_PAIR_JSONL        : /workspace/data/sft_pairs.v2.jsonl
+  SFT_INPUT_JSONL       : /workspace/data/sft_pairs.v2.jsonl
   SFT_VAL_JSONL         : /workspace/data/val_set.v2.jsonl
   SFT_OUTPUT_DIR        : /workspace/out/sft-lora
   SFT_CKPT_DIR          : /workspace/out/sft-ckpt
@@ -64,8 +64,9 @@ except ImportError as e:
 # ── Env ──────────────────────────────────────────────────────────────
 BASE_MODEL = os.environ.get("BASE_MODEL", "/workspace/out/cpt-merged-fp16")
 SFT_RAW_JSONL = os.environ.get("SFT_RAW_JSONL", "/workspace/data/cpt_corpus.v2.jsonl")
-SFT_PAIR_JSONL = os.environ.get("SFT_PAIR_JSONL", "/workspace/data/sft_pairs.v2.jsonl")
-SFT_VAL_JSONL = os.environ.get("SFT_VAL_JSONL", "/workspace/data/val_set.v2.jsonl")
+LEGACY_SFT_PAIR_JSONL = os.environ.get("SFT_PAIR_JSONL", "/workspace/data/sft_pairs.v2.jsonl")
+SFT_INPUT_JSONL = os.environ.get("SFT_INPUT_JSONL", LEGACY_SFT_PAIR_JSONL)
+SFT_VAL_JSONL = os.environ.get("SFT_VAL_JSONL", "/workspace/data/val_set.v3.jsonl")
 OUTPUT_DIR = os.environ.get("SFT_OUTPUT_DIR", "/workspace/out/sft-lora")
 CKPT_DIR = os.environ.get("SFT_CKPT_DIR", "/workspace/out/sft-ckpt")
 LOG_FILE = os.environ.get("SFT_LOG_FILE", "/workspace/train_sft.log")
@@ -85,7 +86,9 @@ SAVE_TOTAL_LIMIT = int(os.environ.get("SFT_SAVE_TOTAL_LIMIT", "3"))
 EVAL_STEPS = int(os.environ.get("SFT_EVAL_STEPS", "200"))
 LOGGING_STEPS = int(os.environ.get("SFT_LOGGING_STEPS", "10"))
 RAW_LIMIT_ROWS = int(os.environ.get("SFT_RAW_LIMIT_ROWS", "0") or "0")
-PAIR_LIMIT_ROWS = int(os.environ.get("SFT_PAIR_LIMIT_ROWS", "0") or "0")
+INPUT_LIMIT_ROWS = int(
+    os.environ.get("SFT_INPUT_LIMIT_ROWS", os.environ.get("SFT_PAIR_LIMIT_ROWS", "0")) or "0"
+)
 VAL_LIMIT_ROWS = int(os.environ.get("SFT_VAL_LIMIT_ROWS", "0") or "0")
 
 RAW_RATIO = float(os.environ.get("SFT_RAW_RATIO", "0.8"))
@@ -141,18 +144,26 @@ def load_jsonl(path: str) -> list[dict]:
     return rows
 
 
+def detect_supervised_row_format(row: dict) -> str:
+    if "instruction" in row:
+        return "instruction"
+    if "post" in row and "comment" in row:
+        return "pair"
+    return "unknown"
+
+
 def build_mixed_dataset(tokenizer) -> tuple[Dataset, Dataset | None]:
     rng = random.Random(SEED)
 
     raw_rows = load_jsonl(SFT_RAW_JSONL)
-    pair_rows = load_jsonl(SFT_PAIR_JSONL)
+    supervised_rows = load_jsonl(SFT_INPUT_JSONL)
     val_rows = load_jsonl(SFT_VAL_JSONL)
     if RAW_LIMIT_ROWS > 0 and len(raw_rows) > RAW_LIMIT_ROWS:
         logger.info(f"SFT_RAW_LIMIT_ROWS 적용: {len(raw_rows):,} -> {RAW_LIMIT_ROWS:,}")
         raw_rows = raw_rows[:RAW_LIMIT_ROWS]
-    if PAIR_LIMIT_ROWS > 0 and len(pair_rows) > PAIR_LIMIT_ROWS:
-        logger.info(f"SFT_PAIR_LIMIT_ROWS 적용: {len(pair_rows):,} -> {PAIR_LIMIT_ROWS:,}")
-        pair_rows = pair_rows[:PAIR_LIMIT_ROWS]
+    if INPUT_LIMIT_ROWS > 0 and len(supervised_rows) > INPUT_LIMIT_ROWS:
+        logger.info(f"SFT_INPUT_LIMIT_ROWS 적용: {len(supervised_rows):,} -> {INPUT_LIMIT_ROWS:,}")
+        supervised_rows = supervised_rows[:INPUT_LIMIT_ROWS]
     if VAL_LIMIT_ROWS > 0 and len(val_rows) > VAL_LIMIT_ROWS:
         logger.info(f"SFT_VAL_LIMIT_ROWS 적용: {len(val_rows):,} -> {VAL_LIMIT_ROWS:,}")
         val_rows = val_rows[:VAL_LIMIT_ROWS]
@@ -160,23 +171,29 @@ def build_mixed_dataset(tokenizer) -> tuple[Dataset, Dataset | None]:
     logger.info(
         f"mix policy: raw={RAW_RATIO:.2f} pair={PAIR_RATIO:.2f}"
     )
+    if supervised_rows:
+        format_counts: dict[str, int] = {}
+        for row in supervised_rows:
+            key = detect_supervised_row_format(row)
+            format_counts[key] = format_counts.get(key, 0) + 1
+        logger.info(f"supervised row formats: {format_counts}")
 
     # compute pair target count so that pairs / (raw + pairs) == PAIR_RATIO
-    if RAW_RATIO >= 1.0 or not pair_rows:
-        pairs_take = 0
+    if RAW_RATIO >= 1.0 or not supervised_rows:
+        supervised_take = 0
     elif RAW_RATIO <= 0.0:
-        pairs_take = len(pair_rows)
+        supervised_take = len(supervised_rows)
         raw_rows = []
     else:
         raw_n = len(raw_rows)
-        pairs_take = int(round(raw_n * PAIR_RATIO / max(RAW_RATIO, 1e-6)))
-        pairs_take = min(pairs_take, len(pair_rows))
+        supervised_take = int(round(raw_n * PAIR_RATIO / max(RAW_RATIO, 1e-6)))
+        supervised_take = min(supervised_take, len(supervised_rows))
     logger.info(
-        f"sampled sizes: raw={len(raw_rows):,} pair={pairs_take:,} / "
-        f"{len(pair_rows):,} available"
+        f"sampled sizes: raw={len(raw_rows):,} supervised={supervised_take:,} / "
+        f"{len(supervised_rows):,} available"
     )
-    rng.shuffle(pair_rows)
-    pair_rows = pair_rows[:pairs_take]
+    rng.shuffle(supervised_rows)
+    supervised_rows = supervised_rows[:supervised_take]
 
     eos = tokenizer.eos_token or ""
     if not eos:
@@ -195,36 +212,67 @@ def build_mixed_dataset(tokenizer) -> tuple[Dataset, Dataset | None]:
             "labels": tok["input_ids"].copy(),
         }
 
-    def build_pair_example(row: dict) -> dict:
-        post = row.get("post", "").strip()
-        comment = row.get("comment", "").strip()
-        if not post or not comment:
+    def build_completion_example(prompt: str, completion: str) -> dict | None:
+        prompt = prompt.strip()
+        completion = completion.strip()
+        if not prompt or not completion:
             return None  # type: ignore[return-value]
-        prefix = post + "\n"
-        response = comment + eos
-        prefix_ids = tokenizer(prefix, add_special_tokens=True)["input_ids"]
+        prefix_ids = tokenizer(prompt, add_special_tokens=True)["input_ids"]
+        response = completion + eos
         resp_ids = tokenizer(response, add_special_tokens=False)["input_ids"]
         input_ids = (prefix_ids + resp_ids)[:MAX_SEQ_LEN]
         attn = [1] * len(input_ids)
-        labels = [-100] * min(len(prefix_ids), len(input_ids))
-        labels += input_ids[len(labels):]
+        prompt_len = min(len(prefix_ids), len(input_ids))
+        labels = [-100] * prompt_len
+        labels += input_ids[prompt_len:]
         return {"input_ids": input_ids, "attention_mask": attn, "labels": labels}
+
+    def build_instruction_example(row: dict) -> dict | None:
+        instruction = row.get("instruction", "").strip()
+        input_text = row.get("input", "").strip()
+        prompt = instruction if not input_text else f"{instruction}\n\n{input_text}"
+        completion = row.get("output", "").strip()
+        return build_completion_example(prompt, completion)
+
+    def build_pair_example(row: dict) -> dict | None:
+        post = row.get("post", "").strip()
+        comment = row.get("comment", "").strip()
+        prompt = post + "\n"
+        return build_completion_example(prompt, comment)
+
+    def build_supervised_example(row: dict) -> dict | None:
+        row_format = detect_supervised_row_format(row)
+        if row_format == "instruction":
+            return build_instruction_example(row)
+        if row_format == "pair":
+            return build_pair_example(row)
+        return None
 
     merged: list[dict] = []
     for row in raw_rows:
         merged.append(build_raw_example(row))
-    for row in pair_rows:
-        ex = build_pair_example(row)
+    for row in supervised_rows:
+        ex = build_supervised_example(row)
         if ex is not None:
             merged.append(ex)
     rng.shuffle(merged)
+
+    if not merged:
+        raise RuntimeError("no SFT training examples built from configured inputs")
 
     logger.info(f"merged train size: {len(merged):,}")
     train_ds = Dataset.from_list(merged)
 
     eval_ds = None
     if val_rows:
-        eval_examples = [build_raw_example(r) for r in val_rows if r.get("text")]
+        eval_examples: list[dict] = []
+        for row in val_rows:
+            if row.get("text"):
+                eval_examples.append(build_raw_example(row))
+                continue
+            ex = build_supervised_example(row)
+            if ex is not None:
+                eval_examples.append(ex)
         eval_ds = Dataset.from_list(eval_examples)
         logger.info(f"val size: {len(eval_ds):,}")
 
@@ -237,7 +285,7 @@ def main() -> None:
     logger.info("SFT v2 시작")
     logger.info(f"  base          : {BASE_MODEL}")
     logger.info(f"  raw_jsonl     : {SFT_RAW_JSONL}")
-    logger.info(f"  pair_jsonl    : {SFT_PAIR_JSONL}")
+    logger.info(f"  input_jsonl   : {SFT_INPUT_JSONL}")
     logger.info(f"  val_jsonl     : {SFT_VAL_JSONL}")
     logger.info(f"  output        : {OUTPUT_DIR}")
     logger.info(f"  hub_model_id  : {HUB_MODEL_ID or '(disabled)'}")

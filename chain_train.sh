@@ -46,16 +46,20 @@ if [ -f "${DATA_DIR}/cpt_context_stream.jsonl" ]; then
     DEFAULT_TRAIN_CPT_JSONL="${DATA_DIR}/cpt_context_stream.jsonl"
 fi
 DEFAULT_TRAIN_SFT_PAIR_JSONL="${DATA_DIR}/sft_pairs.v2.jsonl"
-DEFAULT_TRAIN_VAL_JSONL="${DATA_DIR}/val_set.v2.jsonl"
+DEFAULT_TRAIN_SFT_INPUT_JSONL="${DEFAULT_TRAIN_SFT_PAIR_JSONL}"
+DEFAULT_TRAIN_VAL_JSONL="${DATA_DIR}/val_set.v3.jsonl"
 
 TRAIN_CPT_JSONL="${TRAIN_CPT_JSONL:-${INPUT_JSONL:-${DEFAULT_TRAIN_CPT_JSONL}}}"
-TRAIN_SFT_PAIR_JSONL="${TRAIN_SFT_PAIR_JSONL:-${SFT_PAIR_JSONL:-${DEFAULT_TRAIN_SFT_PAIR_JSONL}}}"
+TRAIN_SFT_INPUT_JSONL="${TRAIN_SFT_INPUT_JSONL:-${SFT_INPUT_JSONL:-${TRAIN_SFT_PAIR_JSONL:-${SFT_PAIR_JSONL:-${DEFAULT_TRAIN_SFT_INPUT_JSONL}}}}}"
+TRAIN_SFT_PAIR_JSONL="${TRAIN_SFT_PAIR_JSONL:-${TRAIN_SFT_INPUT_JSONL}}"
 TRAIN_VAL_JSONL="${TRAIN_VAL_JSONL:-${CPT_VAL_JSONL:-${DEFAULT_TRAIN_VAL_JSONL}}}"
 
 # Keep both the legacy and explicit TRAIN_* aliases in sync so local/manual
 # launches and launch_train_pod.py resolve the same dataset paths.
 export INPUT_JSONL="${TRAIN_CPT_JSONL}"
 export TRAIN_CPT_JSONL
+export SFT_INPUT_JSONL="${TRAIN_SFT_INPUT_JSONL}"
+export TRAIN_SFT_INPUT_JSONL
 export SFT_PAIR_JSONL="${TRAIN_SFT_PAIR_JSONL}"
 export TRAIN_SFT_PAIR_JSONL
 export CPT_VAL_JSONL="${TRAIN_VAL_JSONL}"
@@ -314,7 +318,7 @@ log "  cpt_epochs   : ${CPT_EPOCHS}"
 log "  sft_epochs   : ${SFT_EPOCHS}"
 log "  skip_sft     : ${SKIP_SFT}"
 log "  cpt_jsonl    : ${TRAIN_CPT_JSONL}"
-log "  sft_pair     : ${TRAIN_SFT_PAIR_JSONL}"
+log "  sft_input    : ${TRAIN_SFT_INPUT_JSONL}"
 log "  val_jsonl    : ${TRAIN_VAL_JSONL}"
 log "  timeouts     : cpt=${CPT_TIMEOUT_HOURS}h merge=${MERGE_TIMEOUT_HOURS}h sft=${SFT_TIMEOUT_HOURS}h upload=${HF_UPLOAD_TIMEOUT_HOURS}h"
 log "=========================================="
@@ -344,7 +348,7 @@ log "=========================================="
 
 required_data_files=("${TRAIN_CPT_JSONL}" "${TRAIN_VAL_JSONL}")
 if [ "${SKIP_SFT}" != "1" ] && [ "${SKIP_SFT}" != "true" ]; then
-    required_data_files+=("${TRAIN_SFT_PAIR_JSONL}")
+    required_data_files+=("${TRAIN_SFT_INPUT_JSONL}")
 fi
 
 for f in "${required_data_files[@]}"; do
@@ -567,7 +571,8 @@ else
     run_timeout "${SFT_TIMEOUT_HOURS}" env \
     BASE_MODEL="${CPT_MERGED}" \
     SFT_RAW_JSONL="${TRAIN_CPT_JSONL}" \
-    SFT_PAIR_JSONL="${TRAIN_SFT_PAIR_JSONL}" \
+    SFT_INPUT_JSONL="${TRAIN_SFT_INPUT_JSONL}" \
+    SFT_PAIR_JSONL="${TRAIN_SFT_INPUT_JSONL}" \
     SFT_VAL_JSONL="${TRAIN_VAL_JSONL}" \
     SFT_NUM_EPOCHS="${SFT_EPOCHS}" \
     SFT_OUTPUT_DIR="${SFT_OUT}" \

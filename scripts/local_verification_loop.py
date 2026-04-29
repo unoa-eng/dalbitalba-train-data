@@ -49,8 +49,8 @@ def resolve_cpt_file() -> Path:
 
 DEFAULT_FILES = {
     "cpt": resolve_cpt_file(),
-    "sft": REPO_ROOT / "sft_pairs.v2.jsonl",
-    "val": REPO_ROOT / "val_set.v2.jsonl",
+    "sft": REPO_ROOT / "v3-data" / "sft_5task_v3.jsonl",
+    "val": REPO_ROOT / "val_set.v3.jsonl",
     "cai": REPO_ROOT / "cai_pairs.filtered.jsonl",
 }
 
@@ -245,7 +245,7 @@ def validate_dataset(kind: str, path: Path) -> dict[str, Any]:
     if kind in {"cpt", "val"}:
         required = {"text", "kind", "source_id", "source_field", "length_bucket"}
     elif kind == "sft":
-        required = {"post", "comment", "thread_key", "source_id", "length_bucket"}
+        required = {"task", "instruction", "input", "output", "source_id"}
     else:
         required = set()
 
@@ -379,7 +379,7 @@ def verify_contract() -> dict[str, Any]:
     required_markers = [
         "cpt_corpus.v2.jsonl",
         "sft_pairs.v2.jsonl",
-        "val_set.v2.jsonl",
+        "val_set.v3.jsonl",
         "CPT_HUB_MODEL_ID",
         "SFT_HUB_MODEL_ID",
         "persist_run_artifacts",
@@ -515,6 +515,10 @@ def estimate_training_cost(
     sft_steps = math.ceil(sft_rows / batch) * sft_epochs
     cpt_hours = cpt_steps * sec_per_step / 3600
     sft_hours = sft_steps * sec_per_step / 3600
+    # Cap SFT hours by SFT_TIMEOUT_HOURS if set (the pod enforces this hard limit).
+    sft_timeout = float(os.environ.get("SFT_TIMEOUT_HOURS", "0") or "0")
+    if sft_timeout > 0:
+        sft_hours = min(sft_hours, sft_timeout)
     return {
         "sec_per_step": sec_per_step,
         "hourly_usd": hourly_usd,
@@ -663,18 +667,18 @@ def main() -> int:
     )
     # Profile-aware budget gating.
     # default: full CPT+SFT vs budget (warn only, since the operator may pick a sub-profile).
-    # budget30: CPT-only — overrun is SEVERE (a paid run under this profile must fit $30).
+    # budget30: full CPT+SFT chain cost must fit the budget ceiling.
     # smoke: budget bound is much smaller; overrun is SEVERE.
     profile = args.profile
     if profile == "budget30":
-        cpt_cost = cost["cpt_usd"]
-        if cpt_cost > args.budget_usd:
+        total_cost = cost.get("total_usd", cost["cpt_usd"] + cost.get("sft_usd", 0))
+        if total_cost > args.budget_usd:
             severe.append(
-                f"[budget30] estimated CPT cost ${cpt_cost} exceeds ceiling ${args.budget_usd}; refuse to launch"
+                f"[budget30] estimated total cost ${total_cost:.2f} exceeds ceiling ${args.budget_usd}; refuse to launch"
             )
-        elif cpt_cost > args.budget_usd * 0.92:
+        elif total_cost > args.budget_usd * 0.92:
             warnings.append(
-                f"[budget30] CPT cost ${cpt_cost} ≥ 92% of ${args.budget_usd}; safety margin almost gone"
+                f"[budget30] total cost ${total_cost:.2f} ≥ 92% of ${args.budget_usd}; safety margin almost gone"
             )
     elif profile == "smoke":
         if cost["cpt_usd"] > 8:

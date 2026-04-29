@@ -3,11 +3,13 @@
 Smoke -> budget30 promotion gate.
 
 Reads runs/latest-train.json (written by chain_train.sh persist_run_artifacts),
-verifies the HF CPT adapter exists, and prints PROMOTE or HOLD with reasons.
+or accepts equivalent CLI overrides, verifies the HF CPT adapter exists, and
+prints PROMOTE or HOLD with reasons.
 
 Usage:
     python3 scripts/check_smoke_promotion.py             # default: read latest-train.json
     python3 scripts/check_smoke_promotion.py --json      # machine-readable
+    python3 scripts/check_smoke_promotion.py --train-status done_ok --hf-cpt-repo UNOA/repo
 
 Exit codes:
     0  PROMOTE  (safe to launch the next stage)
@@ -85,6 +87,14 @@ def hf_fetch_json(repo_id: str, filename: str, token: str | None) -> dict | None
         return None
 
 
+def load_latest_payload(path: Path) -> dict | None:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        print(f"[FATAL] cannot parse {path}: {exc}", file=sys.stderr)
+        raise SystemExit(2) from exc
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -96,6 +106,21 @@ def main() -> int:
         "--hf-cpt-repo",
         default="",
         help="Override HF CPT repo (else read from latest-train.json)",
+    )
+    parser.add_argument(
+        "--hf-sft-repo",
+        default="",
+        help="Override HF SFT repo (else read from latest-train.json)",
+    )
+    parser.add_argument(
+        "--train-status",
+        default="",
+        help="Override train status (else read from latest-train.json)",
+    )
+    parser.add_argument(
+        "--branch",
+        default="",
+        help="Override run branch for local artifact checks",
     )
     parser.add_argument(
         "--require-sft",
@@ -112,28 +137,28 @@ def main() -> int:
     ok_checks: list[str] = []
 
     latest_path = Path(args.latest_train)
-    if not latest_path.exists():
+    latest = load_latest_payload(latest_path) if latest_path.exists() else None
+    if latest is None and not (args.train_status and args.hf_cpt_repo):
         print(f"[FATAL] latest-train pointer not found: {latest_path}", file=sys.stderr)
-        print("  -> run a training pod first; the pointer is created by chain_train.sh", file=sys.stderr)
+        print(
+            "  -> either run a training pod first, or pass --train-status and --hf-cpt-repo",
+            file=sys.stderr,
+        )
         return 2
 
-    try:
-        latest = json.loads(latest_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        print(f"[FATAL] cannot parse {latest_path}: {exc}", file=sys.stderr)
-        return 2
-
-    branch = latest.get("branch", "") or ""
-    status = latest.get("status", "") or ""
+    latest = latest or {}
+    branch = (args.branch or latest.get("branch", "") or "").strip()
+    status = (args.train_status or latest.get("status", "") or "").strip()
     hf_cpt = (args.hf_cpt_repo or latest.get("hf_repo_cpt", "") or "").strip()
-    hf_sft = (latest.get("hf_repo_sft", "") or "").strip()
-    timestamp = latest.get("timestamp", "")
+    hf_sft = (args.hf_sft_repo or latest.get("hf_repo_sft", "") or "").strip()
+    timestamp = latest.get("timestamp", "") if latest else ""
 
     # Check 1: status must be done_ok
     if status == "done_ok":
-        ok_checks.append(f"latest-train status=done_ok ({branch})")
+        source = str(latest_path) if latest_path.exists() else "cli"
+        ok_checks.append(f"train status=done_ok ({branch or 'branch:unknown'}, source={source})")
     else:
-        reasons.append(f"latest-train status='{status}' (expected done_ok); branch={branch}")
+        reasons.append(f"train status='{status}' (expected done_ok); branch={branch or 'unknown'}")
 
     # Check 2: HF CPT adapter must exist
     if not hf_cpt:
@@ -197,27 +222,30 @@ def main() -> int:
                     reasons.append(f"hf_sft={hf_sft} has {len(sft_files)} files but no adapter_model.safetensors")
 
     # Check 4: branch artifacts (DONE.txt + manifest)
-    branch_dir = REPO_ROOT / "runs" / branch
-    if branch_dir.exists():
-        done_file = branch_dir / "DONE.txt"
-        manifest_file = branch_dir / "manifest.json"
-        if done_file.exists():
-            done_txt = done_file.read_text(encoding="utf-8", errors="replace").strip()
-            if "done_ok" in done_txt:
-                ok_checks.append(f"DONE.txt = done_ok ({branch_dir})")
+    if branch:
+        branch_dir = REPO_ROOT / "runs" / branch
+        if branch_dir.exists():
+            done_file = branch_dir / "DONE.txt"
+            manifest_file = branch_dir / "manifest.json"
+            if done_file.exists():
+                done_txt = done_file.read_text(encoding="utf-8", errors="replace").strip()
+                if "done_ok" in done_txt:
+                    ok_checks.append(f"DONE.txt = done_ok ({branch_dir})")
+                else:
+                    reasons.append(f"DONE.txt content does not include done_ok: {done_txt[:80]}")
             else:
-                reasons.append(f"DONE.txt content does not include done_ok: {done_txt[:80]}")
+                reasons.append(f"DONE.txt missing in {branch_dir}")
+            if manifest_file.exists():
+                ok_checks.append(f"manifest.json present in {branch_dir}")
+            else:
+                reasons.append(f"manifest.json missing in {branch_dir}")
         else:
-            reasons.append(f"DONE.txt missing in {branch_dir}")
-        if manifest_file.exists():
-            ok_checks.append(f"manifest.json present in {branch_dir}")
-        else:
-            reasons.append(f"manifest.json missing in {branch_dir}")
+            reasons.append(
+                f"runs/{branch}/ directory not present locally — `git fetch origin {branch}` "
+                "and `git checkout {branch} -- runs/{branch}` to inspect"
+            )
     else:
-        reasons.append(
-            f"runs/{branch}/ directory not present locally — `git fetch origin {branch}` "
-            "and `git checkout {branch} -- runs/{branch}` to inspect"
-        )
+        ok_checks.append("local branch artifact check skipped (no branch provided)")
 
     promote = len(reasons) == 0
     verdict = "PROMOTE" if promote else "HOLD"
