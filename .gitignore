@@ -37,6 +37,7 @@ archive/dataset-backups/
 .venv
 .venv*/
 **/__pycache__/
+.hf-home/
 hf_cache/
 .cache/huggingface/
 source_db_cache/
