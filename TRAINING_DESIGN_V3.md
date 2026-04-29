@@ -221,7 +221,8 @@ def is_promo_v2(text: str) -> bool:
 | LoRA rank | 64 | "LoRA Learns Less Forgets Less" — 높은 rank가 도메인 적응에 유리 |
 | LoRA alpha | 128 | alpha/rank = 2 (standard scaling) |
 | Target modules | q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj | 모든 linear layer |
-| Learning rate | 2e-4 | "Learning Rate Matters" (2026) — vanilla LoRA에서 LR이 가장 중요한 하이퍼파라미터 |
+| LoRA layer sweep anchor | 8 layers | `runs/ablation/hyperparam-comparison.md`의 `B4` 비교에서 16 layers가 `B3`(8 layers)보다 손실/샘플 품질 이득이 없었음. 첫 8B CPT도 8 layers를 기본값으로 시작 |
+| Learning rate | 5e-5 | `runs/ablation/ABLATION-RESULTS.md`의 `B3`가 0.6B 로컬 structured sweep에서 최고 val loss(`3.372`)를 기록. 8B 첫 시도도 보수적 LR로 시작 |
 | LR scheduler | cosine with warmup | warmup 3% |
 | Epochs | 3 | 소규모 코퍼스에서 multi-epoch이 효과적 (DAPT 논문) |
 | Batch size | 4 (effective 16 via grad accum 4) | L40S 메모리 최적 |
@@ -238,6 +239,8 @@ CPT 코퍼스 구성:
 ├── 합성 데이터 (EntiGraph) — ~15K (전체의 20-30%)
 └── 총 예상: ~72K rows
 ```
+
+기본 CPT 포맷은 **structured v3**를 유지한다. `A1-A4` 로컬 비교에서 `A2-structured-cpt-v3`가 flat/title/context 변형보다 가장 낮은 val loss와 가장 높은 구조 충실도를 보였고, 상세 근거는 [runs/ablation/ABLATION-RESULTS.md](/Users/unoa/projects/dalbitalba-train-data/runs/ablation/ABLATION-RESULTS.md)와 [runs/ablation/structure-comparison.md](/Users/unoa/projects/dalbitalba-train-data/runs/ablation/structure-comparison.md)에 정리되어 있다.
 
 #### 3.2.3 Catastrophic Forgetting 방지
 
@@ -450,7 +453,17 @@ CPT 코퍼스 구성:
 | Val loss 추이 | 6.105 → 4.741 (100it) → **4.166 (200it)** → 4.260 (300it) → 4.227 (400it) |
 | 최적 checkpoint | 200 iter (overfitting 시작점) |
 
-### 7.2 생성 품질 관찰
+### 7.2 구조/하이퍼파라미터 ablation 결과 (2026-04-29)
+
+상세 매트릭스는 [runs/ablation/ABLATION-RESULTS.md](/Users/unoa/projects/dalbitalba-train-data/runs/ablation/ABLATION-RESULTS.md), 포맷 비교는 [runs/ablation/structure-comparison.md](/Users/unoa/projects/dalbitalba-train-data/runs/ablation/structure-comparison.md), LR/LoRA depth 비교는 [runs/ablation/hyperparam-comparison.md](/Users/unoa/projects/dalbitalba-train-data/runs/ablation/hyperparam-comparison.md)에 정리되어 있다.
+
+핵심 결론:
+- **Structured CPT가 기본 포맷으로 확정**: `A2-structured-cpt-v3`는 `A1` flat, `A3` context stream, `A4` title-prepended보다 가장 낮은 val loss와 가장 높은 구조 충실도를 보였다. 구조 토큰 자체가 성능 향상의 주된 원인이다.
+- **LR 기본값은 5e-5**: structured sweep의 `B3`(`lr=5e-5`, `8 layers`)가 최저 val loss(`3.372`), `100%` 구조 fidelity, 가장 균형 잡힌 반말/무레지스터 분포를 기록했다.
+- **LoRA depth는 8 layers 유지**: `B4`의 16 layers는 `B3`보다 손실이 나쁘고 lexical gain도 거의 없었다. 첫 8B CPT도 8 layers를 sweep anchor로 시작한다.
+- **0.6B의 역할은 방향 검증**: 이 실험은 포맷 선택과 LR 방향, adapter depth 우선순위를 검증하는 데는 충분했지만, 절대적인 생성 품질이나 최종 realism ceiling을 판단하는 근거로 쓰면 안 된다.
+
+### 7.3 생성 품질 관찰
 
 **스타일 학습 성공 징후:**
 - 초성 사용 (`ㄴㄷㄷ`, `ㄱㅈㄴ`, `ㄱㅌ`) — 도메인 패턴 흡수
@@ -462,7 +475,7 @@ CPT 코퍼스 구성:
 - 한국어 지식 기반 얕음: "okay" 같은 영어 출력 혼재
 - 도메인 은어의 올바른 맥락 사용 미달
 
-### 7.3 설계 수정 사항
+### 7.4 설계 수정 사항
 
 1. **Overfitting 방지**: 200 iter에서 이미 val loss 반등 → RunPod CPT에서 **early stopping 필수**
    - `save_every_n_steps=100`, `eval_every_n_steps=100` 추가
@@ -474,9 +487,9 @@ CPT 코퍼스 구성:
 
 3. **Packing 효과 확인**: max_seq_length=512에서 일부 텍스트 truncation 경고 → packing으로 해결
 
-4. **로컬 검증 가치**: 0.6B로도 스타일 방향은 확인 가능 → **RunPod 전 로컬 sanity check 유효**
+4. **로컬 검증 가치**: 0.6B로도 **포맷 우열, LR 방향, LoRA depth 우선순위**는 검증 가능 → RunPod 전 로컬 sanity check 유효
 
-### 7.4 Qwen3-4B 베이스라인 (파인튜닝 전)
+### 7.5 Qwen3-4B 베이스라인 (파인튜닝 전)
 
 | 항목 | 결과 |
 |------|------|
@@ -487,7 +500,7 @@ CPT 코퍼스 구성:
 
 **결론**: 파인튜닝 없이는 이 도메인에 **전혀 대응 불가**. 학습의 필요성이 정량적으로 확인됨.
 
-### 7.5 Qwen3-0.6B 500 iter 생성물 분석
+### 7.6 Qwen3-0.6B 500 iter 생성물 분석
 
 | 항목 | 관찰 |
 |------|------|
@@ -497,7 +510,7 @@ CPT 코퍼스 구성:
 | 광고 오염 | Sample 5에서 "카카오톡아이디" + 이모지 생성 — **필터 강화 필수** |
 | Coherence | 0.6B 한계로 의미적 일관성 부족 — 8B에서 해결 예상 |
 
-### 7.6 학습설계 수정 반영
+### 7.7 학습설계 수정 반영
 
 위 실험에서 도출된 추가 수정 사항:
 
@@ -506,7 +519,7 @@ CPT 코퍼스 구성:
 3. **Early stopping 강화**: val loss 2회 연속 상승 시 학습 중단 (0.6B 실험에서 200 iter에 최적점)
 4. **광고 텍스트 추가 클리닝**: "카카오톡아이디", "텔레그램", 이모지 3개 이상 연속 패턴 필터
 
-### 7.7 도메인 메트릭 정량 평가 결과 (Qwen3-0.6B, 500 iter, N=50)
+### 7.8 도메인 메트릭 정량 평가 결과 (Qwen3-0.6B, 500 iter, N=50)
 
 | 메트릭 | 원천 | 생성 | 편차 | 판정 |
 |--------|------|------|------|------|
@@ -523,14 +536,14 @@ CPT 코퍼스 구성:
 
 **Level 1 분포**: Bigram JSD 0.557 (목표 <0.08), Length KL 3.035 (목표 <0.01) — 0.6B+500iter로는 분포 수렴 불가.
 
-### 7.8 고도화 필요 사항 (다음 루프에서 반영)
+### 7.9 고도화 필요 사항 (다음 루프에서 반영)
 
 1. **웃음/구두점 마커 부족**: 0.6B의 생성 다양성 한계. 8B에서 개선 예상되나, SFT에서 구두점 패턴을 명시적으로 학습시키는 방안 검토
 2. **광고 오염 지속**: 50개 샘플 중 2건(4%)에서 전화번호/카카오톡 생성 → CPT 데이터에서 광고 텍스트 추가 제거 필요
 3. **초성 과학습**: 36% > 30.3% 원천. 초성 텍스트만으로 이루어진 row 비중 축소 검토
 4. **길이 분포 괴리**: avg 42.8 vs 60.3 — 생성물이 원천보다 짧음. 긴 텍스트 학습 비중 조정 필요
 
-### 7.9 N=200 정밀 평가 결과 (v2 클린 데이터, Qwen3-0.6B, 500 iter)
+### 7.10 N=200 정밀 평가 결과 (v2 클린 데이터, Qwen3-0.6B, 500 iter)
 
 | 메트릭 | 원천 | 생성 | 편차 | 판정 |
 |--------|------|------|------|------|
@@ -545,7 +558,7 @@ CPT 코퍼스 구성:
 | 중간값 길이 | 38자 | 46자 | +21% | ✅ |
 | **Pass rate** | | | | **3/9** |
 
-### 7.10 로컬 실험 종합 결론
+### 7.11 로컬 실험 종합 결론
 
 **0.6B 모델은 concept validation용이며, 학습설계의 건전성을 확인하는 도구:**
 
@@ -558,10 +571,29 @@ CPT 코퍼스 구성:
 - 데이터 전처리 파이프라인 동작 검증 ✅
 - 도메인 메트릭 자동 측정 파이프라인 동작 검증 ✅
 - is_promo_v2 필터 효과 검증 ✅
-- 학습 하이퍼파라미터 방향성 검증 (LR 2e-4, 500 iter convergence) ✅
-- 구조 토큰 삽입은 raw data 필요로 미검증 → RunPod에서 직접 검증
+- 학습 하이퍼파라미터 방향성 검증 (`structured CPT > flat`, `LR 5e-5 > 1e-4/2e-4`, `8 layers > 16 layers` on 0.6B) ✅
+- 구조 토큰 삽입과 structured CPT 우위는 로컬 ablation으로 검증 완료. 다만 **절대 품질/realism은 8B RunPod 학습에서만 판단** 가능
+
+### 7.12 2026-04-29 로컬 ablation matrix 반영
+
+200 iter / batch 1 / 450 train / 25 val 조건의 Qwen3-0.6B MLX LoRA matrix에서 확인된 추가 결론:
+
+| 축 | 승자 | 근거 |
+|----|------|------|
+| 데이터 형식 | Structured CPT v3 (`A2`) | `A1 4.221 → A2 3.455`, structure fidelity `0% → 90%` |
+| LR sweep | `5e-5` (`B3`) | structured runs 중 최저 val loss `3.372`, structure fidelity `100%` |
+| LoRA depth | 8 layers | `B4`(16 layers)가 `B3`보다 loss/lexical 품질 모두 우위 아님 |
+| Base vs FT | FT 필수 | `B0`는 태그 미종결, 메타데이터/제목 echo가 심함 |
+
+이 matrix가 설계에 주는 수정 사항:
+
+1. **로컬 MLX 기본 LR 교체**: `2e-4`를 기본값으로 두지 말고 `5e-5`를 sanity-check anchor로 사용.
+2. **구조 토큰을 기본 경로로 고정**: 구조 없는 flat/context/title 변형은 모두 structured 대비 명확히 열세였다.
+3. **16 layers는 후순위**: 8-layer structured baseline이 안정화되기 전까지 depth 확장은 비용만 늘리고 이득이 없었다.
+4. **0.6B와 8B의 역할 분리**: 0.6B는 형식/최적화 ranking용, 8B는 실제 도메인 어휘 회수와 realism 검증용으로 명시.
+5. **도메인 어휘 평가 해석 강화**: `ㅋㅋ`, `ㅠㅠ` 과생성은 쉬운데 `TC`, `밀빵`, `케어` 같은 희귀 어휘는 0.6B/200 iter에서 거의 회수되지 않았다. 따라서 단순 term count는 구조 fidelity, readability와 함께 봐야 한다.
 
 ---
 
-*Generated: 2026-04-28 | Ralph iteration 3-4 | dalbitalba-train-data v3 training design*
-*Local experiment: MLX LoRA on Qwen3-0.6B, 500 iters, val_loss_best=4.166 @200iter*
+*Generated: 2026-04-29 | Ralph iteration 3-4 | dalbitalba-train-data v3 training design*
+*Local experiments: legacy 500-iter probe + 2026-04-29 ablation matrix on Qwen3-0.6B MLX LoRA*

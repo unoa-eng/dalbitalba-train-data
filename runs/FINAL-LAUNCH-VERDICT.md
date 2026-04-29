@@ -2,29 +2,38 @@
 
 Date: 2026-04-29
 Branch: `budget30-pre-launch`
-Verdict: `GO`
+Verdict: `NO-GO`
 
-## Evidence
+## Required Checks
 
 | Check | Result | Evidence |
 | --- | --- | --- |
-| Tokenizer extension script | `PASS` | `source .venv/bin/activate && python3 scripts/extend_tokenizer_v3.py --model Qwen/Qwen3-8B-Base --out-dir v3-data/tokenizer` completed successfully |
-| Structured token inventory | `PASS` | Saved tokenizer now includes `<|post|>`, `<|/post|>`, `<|thread|>`, `<|/thread|>`, `<|/comment|>`, `<|comment depth=0|>` through `<|comment depth=5|>` |
-| Runtime tokenizer fallback | `PASS` | `train_cpt.py` now honors `CPT_TOKENIZER_DIR` and `CPT_EXTEND_TOKENS=1`, loads `token_list.json` when present, and resizes embeddings after runtime token insertion |
-| Pod v3-data staging | `PASS` | `scripts/launch_train_pod.py` startup command now copies `cp -r /workspace/repo/v3-data /workspace/data/v3-data`; `chain_train.sh` repeats the same copy inside the pod before data checks |
-| Pod path resolution | `PASS` | Recipe path normalizes to `/workspace/data/v3-data/cpt_structured_v3.jsonl`; tokenizer dir normalizes to `/workspace/repo/v3-data/tokenizer` |
-| Launch recipe wiring | `PASS` | `recipes/budget30_v2.env` now sets `CPT_TOKENIZER_DIR=v3-data/tokenizer` and `CPT_EXTEND_TOKENS=1` |
-| Launch dry-run | `PASS` | `python3 scripts/launch_train_pod.py --dry-run` passed the budget gate and rendered a valid RunPod payload with `CPT_TOKENIZER_DIR`, `CPT_EXTEND_TOKENS`, and the new `v3-data` staging step |
-| Local verification loop | `PASS` | `python3 scripts/local_verification_loop.py --profile budget30` returned `{"verdict":"PASS"}` and wrote `runs/local-verification-20260429-043209/report.md` |
-| Syntax smoke | `PASS` | `python3 -m py_compile train_cpt.py scripts/launch_train_pod.py scripts/extend_tokenizer_v3.py` succeeded |
+| Recipe loaded | `PASS` | `source recipes/budget30_v2.env` succeeded in all launch checks |
+| Train env check | `PASS` | `python3 scripts/check_env.py --target train` reported `[result] environment is ready` |
+| Launch dry-run | `PASS` | `python3 scripts/launch_train_pod.py --dry-run` rendered a valid RunPod payload with the `budget30-pre-launch` clone command |
+| Local verification loop | `PASS` | `python3 scripts/local_verification_loop.py --profile budget30` returned `{"verdict":"PASS"}` and wrote `runs/local-verification-20260429-051233/report.md` |
+| Verification report | `PASS` | Report shows `Severe: 0`, `Warnings: 0`, CPT/SFT/val/CAI datasets clean, total train estimate `60.12h` / `$47.49` |
+| CPT learning rate | `PASS` | `recipes/budget30_v2.env` now contains `CPT_LR=5e-5` |
 
-## Notes
+## Launch Blockers
 
-- `recipes/budget30_v2.env` remains a plain shell-assignment file. Launch validation used `set -a` before sourcing it so the Python process inherited the recipe values in `zsh`.
-- `.gitignore` now covers `.venv*/`, local HF cache paths, and `runs/**/adapter/` so the required commit can exclude local-only envs and adapter weights cleanly.
+1. Actual pod launch clones GitHub, not this local working tree.
+   `scripts/launch_train_pod.py` builds `git clone --branch budget30-pre-launch --single-branch "https://x-access-token:${GITHUB_TOKEN}@github.com/unoa-eng/dalbitalba-train-data.git" /workspace/repo`
+2. The verified local branch is ahead of remote by 4 commits.
+   `git rev-list --left-right --count origin/budget30-pre-launch...HEAD` returned `0 4`
+3. The recipe change that sets `CPT_LR=5e-5` is still uncommitted locally.
+   `git diff -- recipes/budget30_v2.env` shows `CPT_LR` changed from `1e-4` to `5e-5`
+4. The working tree still contains additional uncommitted launch-related artifacts.
+   `git status -sb` shows local modifications including `.gitignore`, `recipes/budget30_v2.env`, and untracked `runs/ablation/` content
 
 ## Decision
 
-Launch is clear from a blocker perspective.
+`NO-GO` for the real RunPod launch from the current repository state.
 
-The tokenizer artifact exists on disk, runtime extension is wired as fallback, the selected v3 CPT JSONL is staged into the pod at the path the recipe resolves to, the launch wrapper accepts the recipe, and the local verification loop is currently `PASS`.
+The technical gates passed locally, but the launch target is still the remote `budget30-pre-launch` branch. Until the required v3 artifacts and recipe changes are committed and pushed, the pod would launch stale code/data instead of the verified local state.
+
+## Flip To GO When
+
+1. Worker-1's v3 artifact commit lands.
+2. The branch is pushed so GitHub contains the same verified recipe and artifacts.
+3. `git rev-list --left-right --count origin/budget30-pre-launch...HEAD` returns `0 0` or otherwise confirms the remote launch ref is current.
