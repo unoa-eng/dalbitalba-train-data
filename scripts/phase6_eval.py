@@ -530,11 +530,16 @@ GATE = {
 }
 
 
+REQUIRED_GATE_METRICS = {"bigram_jsd", "domain_keyword_alignment", "korean_retention_ppl"}
+
+
 def evaluate_gate(metrics: dict[str, float | None]) -> tuple[str, list[str]]:
     violations: list[str] = []
     for key, (op, threshold) in GATE.items():
         value = metrics.get(key)
         if value is None:
+            if key in REQUIRED_GATE_METRICS:
+                violations.append(f"{key}=None (required metric unavailable)")
             continue
         if op == "le" and value > threshold:
             violations.append(f"{key}={value:.4f} > {threshold}")
