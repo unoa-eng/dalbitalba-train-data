@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-04-29T15:02:36Z",
+  "status": "done_cpt_only",
+  "base_model": "Qwen/Qwen3-8B-Base",
+  "pod_id": "6kcrjcrka8jod1",
+  "hf_repo_cpt": "UNOA/dalbitalba-qwen3-cpt-20260429-0849",
+  "hf_repo_sft": "UNOA/dalbitalba-qwen3-sft-20260429-0849",
+  "cpt_lr": "1e-4",
+  "cpt_epochs": 1,
+  "sft_epochs": 1,
+  "source_repo": "unoa-eng/dalbitalba-train-data"
+}

@@ -1,0 +1,48 @@
+2026-04-29 08:50:39,975 [INFO] ============================================================
+2026-04-29 08:50:39,981 [INFO] CPT v2 시작
+2026-04-29 08:50:39,984 [INFO]   base         : Qwen/Qwen3-8B-Base
+2026-04-29 08:50:39,985 [INFO]   input        : /workspace/data/v3-data/cpt_structured_v3.jsonl
+2026-04-29 08:50:39,986 [INFO]   replay       : /workspace/data/v3-data/replay_korean_5k.jsonl
+2026-04-29 08:50:39,988 [INFO]   val          : /workspace/data/val_set.v3.jsonl
+2026-04-29 08:50:39,989 [INFO]   output       : /workspace/out/cpt-lora
+2026-04-29 08:50:39,990 [INFO]   hub_model_id : UNOA/dalbitalba-qwen3-cpt-20260429-0849
+2026-04-29 08:50:39,991 [INFO]   tokenizer_dir: /workspace/repo/v3-data/tokenizer
+2026-04-29 08:50:39,993 [INFO]   extend_tokens: True
+2026-04-29 08:50:39,994 [INFO]   LoRA r=64 α=64 rsLoRA=True DoRA=False
+2026-04-29 08:50:39,995 [INFO]   seq_len=1024 eff_batch=16 lr=0.0001 epochs=1
+2026-04-29 08:50:39,996 [INFO]   packing      : True (embed_warmup_steps=20)
+2026-04-29 08:50:39,997 [INFO]   seed         : 42
+2026-04-29 08:50:39,998 [INFO] ============================================================
+2026-04-29 08:50:40,088 [INFO] GPU: NVIDIA A40 (47.7GB)
+2026-04-29 08:50:40,134 [INFO] structured CPT markers detected in /workspace/data/v3-data/cpt_structured_v3.jsonl (sample row 1)
+2026-04-29 08:50:40,139 [INFO] structured CPT detected; loading tokenizer from CPT_TOKENIZER_DIR=/workspace/repo/v3-data/tokenizer
+2026-04-29 08:50:40,626 [INFO] runtime tokenizer manifest loaded: /workspace/repo/v3-data/tokenizer/token_list.json (11 tokens)
+2026-04-29 08:50:40,666 [INFO] runtime tokenizer extension enabled: requested=11 added=0 total_vocab=151680
+2026-04-29 08:50:40,711 [INFO] tokenizer size: base_vocab=151643 total_vocab=151680 structured=True source=/workspace/repo/v3-data/tokenizer
+2026-04-29 08:52:21,456 [INFO] resize_token_embeddings: 151936 -> 151680
+2026-04-29 08:52:21,523 [INFO] CPT_LORA_EMBED=1 -> target_modules=down_proj,embed_tokens,gate_proj,k_proj,lm_head,o_proj,q_proj,up_proj,v_proj
+2026-04-29 08:52:21,529 [INFO] LoRA target_modules=['down_proj', 'embed_tokens', 'gate_proj', 'k_proj', 'lm_head', 'o_proj', 'q_proj', 'up_proj', 'v_proj']
+2026-04-29 08:52:39,638 [INFO] load_corpus(/workspace/data/v3-data/cpt_structured_v3.jsonl) -> 53,675 rows (skipped 0)
+2026-04-29 08:52:39,660 [INFO] load_corpus(/workspace/data/v3-data/replay_korean_5k.jsonl) -> 5,000 rows (skipped 0)
+2026-04-29 08:52:39,661 [WARNING] replay rows 부족: desired=5,368 available=5,000 -> available rows only
+2026-04-29 08:52:39,667 [INFO] replay mix 적용: main=53,675 replay=5,000 total=58,675 effective_ratio=0.0852
+2026-04-29 08:52:39,669 [INFO] build_dataset(train) -> 58,675 rows
+2026-04-29 08:52:39,863 [INFO] load_corpus(/workspace/data/val_set.v3.jsonl) -> 412 rows (skipped 0)
+2026-04-29 08:52:39,864 [INFO] build_dataset(val) -> 412 rows
+2026-04-29 08:52:51,464 [INFO] packing train: source_rows=58675 -> packed_sequences=4538 (12.93x fewer rows), tokens=4180923, avg_tokens_per_sequence=921.3
+2026-04-29 08:52:51,544 [INFO] packing val: source_rows=412 -> packed_sequences=38 (10.84x fewer rows), tokens=33303, avg_tokens_per_sequence=876.4
+2026-04-29 08:52:52,755 [INFO] tokenize 완료: train 4,538 rows / ~4,180,923 tokens, val 38 rows
+2026-04-29 08:52:52,756 [INFO] steps_per_epoch=284 total_steps=284 warmup=8
+2026-04-29 08:52:52,757 [INFO] [step] DataCollator build
+2026-04-29 08:52:52,758 [INFO] [step] DataCollatorForPackedCPT OK (preserves EOS in labels)
+2026-04-29 08:52:52,759 [INFO] [step] building training_args_kwargs
+2026-04-29 08:52:52,760 [INFO] [step] instantiate TrainingArguments (report_to=none, push_to_hub=True, optim=paged_adamw_32bit)
+2026-04-29 08:52:52,786 [INFO] [step] TrainingArguments OK
+2026-04-29 08:52:52,800 [INFO] staged warmup embed-only: enabled 4/508 parameter tensors, trainable params=19,939,328/194,527,232
+2026-04-29 08:52:52,801 [INFO] [step] instantiate Trainer
+2026-04-29 08:52:53,199 [INFO] [step] Trainer OK
+2026-04-29 08:52:53,201 [INFO] 학습 시작 — trainer.train()
+2026-04-29 08:52:57,098 [INFO] staged embed warmup active: first 20 optimizer steps keep non-embed LoRA grads cleared
+2026-04-29 09:01:51,920 [INFO] staged embed warmup complete at global_step=20; full LoRA gradients restored
+2026-04-29 10:55:14,069 [INFO] LoRA adapter 저장 → /workspace/out/cpt-lora
+2026-04-29 10:55:42,131 [INFO] CPT 완료 (2.08h) → /workspace/out/cpt-lora
