@@ -568,6 +568,23 @@ if [ "${SKIP_SFT}" = "1" ] || [ "${SKIP_SFT}" = "true" ]; then
 else
     notify "dalbit SFT start"
     SFT_START=$(date +%s)
+    # A-path warm-restart: paged_adamw_32bit -> paged_adamw_8bit incompat,
+    # move optimizer/scheduler/rng/trainer_state to backup so HF Trainer
+    # falls back to weight-only resume (LoRA weight preserved, step=0).
+    SFT_CKPT_PARENT_A="${OUT_DIR}/sft-ckpt"
+    if [ -d "${SFT_CKPT_PARENT_A}" ]; then
+        for d in "${SFT_CKPT_PARENT_A}"/checkpoint-*/; do
+            [ -d "${d}" ] || continue
+            backup_a="${d%/}/__backup-pre-warm-restart"
+            mkdir -p "${backup_a}"
+            for f in optimizer.pt scheduler.pt rng_state.pth trainer_state.json; do
+                if [ -f "${d%/}/${f}" ]; then
+                    mv "${d%/}/${f}" "${backup_a}/"
+                fi
+            done
+            log "[4/6] warm-restart prep: moved optimizer/scheduler/rng/trainer_state from ${d} to ${backup_a}"
+        done
+    fi
     run_timeout "${SFT_TIMEOUT_HOURS}" env \
     BASE_MODEL="${CPT_MERGED}" \
     SFT_RAW_JSONL="${TRAIN_CPT_JSONL}" \
