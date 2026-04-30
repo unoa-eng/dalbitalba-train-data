@@ -580,14 +580,14 @@ else
             backup_a="${d%/}/__backup-pre-warm-restart"
             mkdir -p "${backup_a}"
             # If a previous run wrongly moved trainer_state/rng to backup, restore them
-            for f in trainer_state.json rng_state.pth; do
+            for f in trainer_state.json; do
                 if [ ! -f "${d%/}/${f}" ] && [ -f "${backup_a}/${f}" ]; then
                     mv "${backup_a}/${f}" "${d%/}/${f}"
                     log "[4/6] restored ${f} from backup -> ${d}"
                 fi
             done
             # Move only the format-incompatible optimizer state to backup
-            for f in optimizer.pt scheduler.pt; do
+            for f in optimizer.pt scheduler.pt rng_state.pth; do
                 if [ -f "${d%/}/${f}" ]; then
                     mv "${d%/}/${f}" "${backup_a}/"
                 fi
