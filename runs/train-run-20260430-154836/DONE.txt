@@ -1,0 +1,13 @@
+timestamp=2026-04-30T15:48:36Z
+status=done_ok
+base_model=Qwen/Qwen3-8B-Base
+cpt_elapsed_min=2
+sft_elapsed_min=846
+total_elapsed_min=857
+cpt_out=/workspace/out/cpt-lora
+cpt_merged=/workspace/out/cpt-merged-fp16
+sft_out=/workspace/out/sft-lora
+hf_status=upload_partial
+hf_repo_cpt=UNOA/dalbitalba-qwen3-cpt-20260430-0130
+hf_repo_sft=UNOA/dalbitalba-qwen3-sft-20260430-0130
+pod_id=6kcrjcrka8jod1
