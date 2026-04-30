@@ -1,0 +1,1487 @@
+2026-04-30T00:00:32Z ==========================================
+2026-04-30T00:00:32Z dalbitalba chain_train.sh v3 시작
+2026-04-30T00:00:32Z   pod          : 6kcrjcrka8jod1
+2026-04-30T00:00:32Z   base         : Qwen/Qwen3-8B-Base
+2026-04-30T00:00:32Z   hf_repo_cpt  : UNOA/dalbitalba-qwen3-cpt-20260430-0000
+2026-04-30T00:00:32Z   hf_repo_sft  : UNOA/dalbitalba-qwen3-sft-20260430-0000
+2026-04-30T00:00:32Z   cpt_lr       : 1e-4
+2026-04-30T00:00:32Z   cpt_epochs   : 1
+2026-04-30T00:00:32Z   sft_epochs   : 1
+2026-04-30T00:00:32Z   skip_sft     : 0
+2026-04-30T00:00:32Z   cpt_jsonl    : /workspace/data/v3-data/cpt_structured_v3.jsonl
+2026-04-30T00:00:32Z   sft_input    : /workspace/data/v3-data/sft_5task_v3.jsonl
+2026-04-30T00:00:32Z   val_jsonl    : /workspace/data/val_set.v3.jsonl
+2026-04-30T00:00:32Z   timeouts     : cpt=32h merge=2h sft=24h upload=1h
+2026-04-30T00:00:32Z ==========================================
+2026-04-30T00:00:33Z [1/6] pip install
+2026-04-30T00:01:08Z [1.5/6] pre-flight smoke test
+2026-04-30T00:01:15Z [1.5/6] pre-flight OK
+2026-04-30T00:01:15Z [2/6] CPT 학습 시작 (base=Qwen/Qwen3-8B-Base)
+2026-04-30T00:04:13Z [2/6] CPT 완료 (2m)
+2026-04-30T00:04:13Z [3/6] CPT adapter → fp16 merge
+2026-04-30T00:07:02Z [3/6] merge 완료
+2026-04-30T00:07:02Z [4/6] SFT stage (base=/workspace/out/cpt-merged-fp16)
+2026-04-30T00:07:03Z [4/6] warm-restart prep: optimizer-only backup for /workspace/out/sft-ckpt/checkpoint-850/
+2026-04-30T00:07:03Z [4/6] warm-restart prep: optimizer-only backup for /workspace/out/sft-ckpt/checkpoint-900/
+2026-04-30T00:07:03Z [4/6] warm-restart prep: optimizer-only backup for /workspace/out/sft-ckpt/checkpoint-950/
+2026-04-30T00:08:55Z [WARN] SFT 실패 exit=1 — CPT merged만 배포
+2026-04-30T00:08:55Z [5/6] HF 최종 upload (adapter dirs)
+2026-04-30T00:09:51Z [5/6] HF upload 완료
+2026-04-30T00:09:51Z [DONE] done_cpt_only (total 8m)
+timestamp=2026-04-30T00:09:51Z
+status=done_cpt_only
+base_model=Qwen/Qwen3-8B-Base
+cpt_elapsed_min=2
+sft_elapsed_min=1
+total_elapsed_min=8
+cpt_out=/workspace/out/cpt-lora
+cpt_merged=/workspace/out/cpt-merged-fp16
+sft_out=/workspace/out/sft-lora
+hf_status=uploaded
+hf_repo_cpt=UNOA/dalbitalba-qwen3-cpt-20260430-0000
+hf_repo_sft=UNOA/dalbitalba-qwen3-sft-20260430-0000
+pod_id=6kcrjcrka8jod1
+------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+--- disk ---
+Filesystem                    Size  Used Avail Use% Mounted on
+mfs#ca-mtl-1.runpod.net:9421  965T  773T  192T  81% /workspace
+overlay                        40G   16M   40G   1% /
+--- mem ---
+               total        used        free      shared  buff/cache   available
+Mem:           503Gi        35Gi        96Gi       497Mi       371Gi       464Gi
+Swap:             0B          0B          0B
+--- python ---
+/usr/bin/python3
+Python 3.11.10
+pip 24.2 from /usr/local/lib/python3.11/dist-packages/pip (python 3.11)
+--- /workspace ---
+total 14834
+drwxrwxrwx  8 root root 3006205 Apr 30 00:00 .
+drwxr-xr-x  1 root root      70 Apr 30 00:00 ..
+-rwxrwxrwx  1 root root   27898 Apr 30 00:00 chain_train.sh
+drwxrwxrwx  3 root root 2027922 Apr 29 08:49 data
+drwxrwxrwx  4 root root 3001532 Apr 29 08:50 hf_cache
+drwxrwxrwx  2 root root 1000653 Apr 29 15:02 logs
+-rw-rw-rw-  1 root root     593 Apr 29 23:07 merge_cpt.log
+drwxrwxrwx  7 root root 3004620 Apr 29 15:02 out
+-rw-rw-rw-  1 root root    8735 Apr 29 23:01 preflight.log
+drwxrwxrwx 15 root root 2025440 Apr 30 00:00 repo
+drwxrwxrwx  2 root root 1000326 Apr 29 08:49 scripts
+-rw-rw-rw-  1 root root   21745 Apr 29 23:04 train_cpt.log
+-rw-rw-rw-  1 root root   35258 Apr 30 00:00 train_cpt.py
+-rw-rw-rw-  1 root root    8563 Apr 29 23:09 train_sft.log
+-rw-rw-rw-  1 root root   16594 Apr 30 00:00 train_sft.py
+------
+2026-04-30T00:00:33Z [1/6] pip install
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+--- pip list (training deps) ---
+accelerate                        0.34.2
+bitsandbytes                      0.49.2
+datasets                          2.21.0
+numpy                             1.26.3
+peft                              0.13.2
+protobuf                          7.34.1
+PyYAML                            6.0.2
+safetensors                       0.7.0
+sentencepiece                     0.2.1
+tiktoken                          0.12.0
+tokenizers                        0.21.4
+torch                             2.4.1+cu124
+transformers                      4.51.3
+trl                               0.12.1
+wandb                             0.26.1
+2026-04-30T00:01:08Z [1.5/6] pre-flight smoke test
+[OK ] import torch: 2.4.1+cu124
+[OK ] torch.cuda.is_available: True
+[OK ] torch.version.cuda: 12.4
+[OK ] device_name: NVIDIA A40
+[OK ] device_capability: (8, 6)
+[OK ] import transformers: 4.51.3
+[OK ] import peft: 0.13.2
+[OK ] import bitsandbytes: 0.49.2
+[OK ] import trl: 0.12.1
+[OK ] import accelerate: 0.34.2
+[OK ] import datasets: 2.21.0
+[OK ] import huggingface_hub: 0.36.2
+[OK ] import safetensors: 0.7.0
+[OK ] import flash_attn: 2.6.3
+[OK ] bnb quantize 4bit: q.shape=(8192, 1) y.shape=(128, 128) mae=0.0742
+[OK ] qwen3 in CONFIG_MAPPING: qwen3 in MAPPING: True
+[OK ] HF whoami: UNOA
+[OK ] load Qwen3-8B-Base config: arch=['Qwen3ForCausalLM'] vocab=151936 hidden=4096
+[OK ] load Qwen3-8B-Base tokenizer: vocab=151643 sample_ids=[126246, 144370, 91145, 11, 124685, 37087, 129413, 131793]...
+============================================================
+preflight result: 19 steps, 0 FAIL
+  [OK  ] import torch: 2.4.1+cu124
+  [OK  ] torch.cuda.is_available: True
+  [OK  ] torch.version.cuda: 12.4
+  [OK  ] device_name: NVIDIA A40
+  [OK  ] device_capability: (8, 6)
+  [OK  ] import transformers: 4.51.3
+  [OK  ] import peft: 0.13.2
+  [OK  ] import bitsandbytes: 0.49.2
+  [OK  ] import trl: 0.12.1
+  [OK  ] import accelerate: 0.34.2
+  [OK  ] import datasets: 2.21.0
+  [OK  ] import huggingface_hub: 0.36.2
+  [OK  ] import safetensors: 0.7.0
+  [OK  ] import flash_attn: 2.6.3
+  [OK  ] bnb quantize 4bit: q.shape=(8192, 1) y.shape=(128, 128) mae=0.0742
+  [OK  ] qwen3 in CONFIG_MAPPING: qwen3 in MAPPING: True
+  [OK  ] HF whoami: UNOA
+  [OK  ] load Qwen3-8B-Base config: arch=['Qwen3ForCausalLM'] vocab=151936 hidden=4096
+  [OK  ] load Qwen3-8B-Base tokenizer: vocab=151643 sample_ids=[126246, 144370, 91145, 11, 124685, 37087, 129413, 131793]...
+[OK ] import torch: 2.4.1+cu124
+[OK ] torch.cuda.is_available: True
+[OK ] torch.version.cuda: 12.4
+[OK ] device_name: NVIDIA A40
+[OK ] device_capability: (8, 6)
+[OK ] import transformers: 4.51.3
+[OK ] import peft: 0.13.2
+[OK ] import bitsandbytes: 0.49.2
+[OK ] import trl: 0.12.1
+[OK ] import accelerate: 0.34.2
+[OK ] import datasets: 2.21.0
+[OK ] import huggingface_hub: 0.36.2
+[OK ] import safetensors: 0.7.0
+[OK ] import flash_attn: 2.6.3
+[OK ] bnb quantize 4bit: q.shape=(8192, 1) y.shape=(128, 128) mae=0.0728
+[OK ] qwen3 in CONFIG_MAPPING: qwen3 in MAPPING: True
+[OK ] HF whoami: UNOA
+[OK ] load Qwen3-8B-Base config: arch=['Qwen3ForCausalLM'] vocab=151936 hidden=4096
+[OK ] load Qwen3-8B-Base tokenizer: vocab=151643 sample_ids=[126246, 144370, 91145, 11, 124685, 37087, 129413, 131793]...
+============================================================
+preflight result: 19 steps, 0 FAIL
+  [OK  ] import torch: 2.4.1+cu124
+  [OK  ] torch.cuda.is_available: True
+  [OK  ] torch.version.cuda: 12.4
+  [OK  ] device_name: NVIDIA A40
+  [OK  ] device_capability: (8, 6)
+  [OK  ] import transformers: 4.51.3
+  [OK  ] import peft: 0.13.2
+  [OK  ] import bitsandbytes: 0.49.2
+  [OK  ] import trl: 0.12.1
+  [OK  ] import accelerate: 0.34.2
+  [OK  ] import datasets: 2.21.0
+  [OK  ] import huggingface_hub: 0.36.2
+  [OK  ] import safetensors: 0.7.0
+  [OK  ] import flash_attn: 2.6.3
+  [OK  ] bnb quantize 4bit: q.shape=(8192, 1) y.shape=(128, 128) mae=0.0728
+  [OK  ] qwen3 in CONFIG_MAPPING: qwen3 in MAPPING: True
+  [OK  ] HF whoami: UNOA
+  [OK  ] load Qwen3-8B-Base config: arch=['Qwen3ForCausalLM'] vocab=151936 hidden=4096
+  [OK  ] load Qwen3-8B-Base tokenizer: vocab=151643 sample_ids=[126246, 144370, 91145, 11, 124685, 37087, 129413, 131793]...
+[OK ] import torch: 2.4.1+cu124
+[OK ] torch.cuda.is_available: True
+[OK ] torch.version.cuda: 12.4
+[OK ] device_name: NVIDIA A40
+[OK ] device_capability: (8, 6)
+[OK ] import transformers: 4.51.3
+[OK ] import peft: 0.13.2
+[OK ] import bitsandbytes: 0.49.2
+[OK ] import trl: 0.12.1
+[OK ] import accelerate: 0.34.2
+[OK ] import datasets: 2.21.0
+[OK ] import huggingface_hub: 0.36.2
+[OK ] import safetensors: 0.7.0
+[OK ] import flash_attn: 2.6.3
+[OK ] bnb quantize 4bit: q.shape=(8192, 1) y.shape=(128, 128) mae=0.0713
+[OK ] qwen3 in CONFIG_MAPPING: qwen3 in MAPPING: True
+[OK ] HF whoami: UNOA
+[OK ] load Qwen3-8B-Base config: arch=['Qwen3ForCausalLM'] vocab=151936 hidden=4096
+[OK ] load Qwen3-8B-Base tokenizer: vocab=151643 sample_ids=[126246, 144370, 91145, 11, 124685, 37087, 129413, 131793]...
+============================================================
+preflight result: 19 steps, 0 FAIL
+  [OK  ] import torch: 2.4.1+cu124
+  [OK  ] torch.cuda.is_available: True
+  [OK  ] torch.version.cuda: 12.4
+  [OK  ] device_name: NVIDIA A40
+  [OK  ] device_capability: (8, 6)
+  [OK  ] import transformers: 4.51.3
+  [OK  ] import peft: 0.13.2
+  [OK  ] import bitsandbytes: 0.49.2
+  [OK  ] import trl: 0.12.1
+  [OK  ] import accelerate: 0.34.2
+  [OK  ] import datasets: 2.21.0
+  [OK  ] import huggingface_hub: 0.36.2
+  [OK  ] import safetensors: 0.7.0
+  [OK  ] import flash_attn: 2.6.3
+  [OK  ] bnb quantize 4bit: q.shape=(8192, 1) y.shape=(128, 128) mae=0.0713
+  [OK  ] qwen3 in CONFIG_MAPPING: qwen3 in MAPPING: True
+  [OK  ] HF whoami: UNOA
+  [OK  ] load Qwen3-8B-Base config: arch=['Qwen3ForCausalLM'] vocab=151936 hidden=4096
+  [OK  ] load Qwen3-8B-Base tokenizer: vocab=151643 sample_ids=[126246, 144370, 91145, 11, 124685, 37087, 129413, 131793]...
+[OK ] import torch: 2.4.1+cu124
+[OK ] torch.cuda.is_available: True
+[OK ] torch.version.cuda: 12.4
+[OK ] device_name: NVIDIA A40
+[OK ] device_capability: (8, 6)
+[OK ] import transformers: 4.51.3
+[OK ] import peft: 0.13.2
+[OK ] import bitsandbytes: 0.49.2
+[OK ] import trl: 0.12.1
+[OK ] import accelerate: 0.34.2
+[OK ] import datasets: 2.21.0
+[OK ] import huggingface_hub: 0.36.2
+[OK ] import safetensors: 0.7.0
+[OK ] import flash_attn: 2.6.3
+[OK ] bnb quantize 4bit: q.shape=(8192, 1) y.shape=(128, 128) mae=0.0723
+[OK ] qwen3 in CONFIG_MAPPING: qwen3 in MAPPING: True
+[OK ] HF whoami: UNOA
+[OK ] load Qwen3-8B-Base config: arch=['Qwen3ForCausalLM'] vocab=151936 hidden=4096
+[OK ] load Qwen3-8B-Base tokenizer: vocab=151643 sample_ids=[126246, 144370, 91145, 11, 124685, 37087, 129413, 131793]...
+============================================================
+preflight result: 19 steps, 0 FAIL
+  [OK  ] import torch: 2.4.1+cu124
+  [OK  ] torch.cuda.is_available: True
+  [OK  ] torch.version.cuda: 12.4
+  [OK  ] device_name: NVIDIA A40
+  [OK  ] device_capability: (8, 6)
+  [OK  ] import transformers: 4.51.3
+  [OK  ] import peft: 0.13.2
+  [OK  ] import bitsandbytes: 0.49.2
+  [OK  ] import trl: 0.12.1
+  [OK  ] import accelerate: 0.34.2
+  [OK  ] import datasets: 2.21.0
+  [OK  ] import huggingface_hub: 0.36.2
+  [OK  ] import safetensors: 0.7.0
+  [OK  ] import flash_attn: 2.6.3
+  [OK  ] bnb quantize 4bit: q.shape=(8192, 1) y.shape=(128, 128) mae=0.0723
+  [OK  ] qwen3 in CONFIG_MAPPING: qwen3 in MAPPING: True
+  [OK  ] HF whoami: UNOA
+  [OK  ] load Qwen3-8B-Base config: arch=['Qwen3ForCausalLM'] vocab=151936 hidden=4096
+  [OK  ] load Qwen3-8B-Base tokenizer: vocab=151643 sample_ids=[126246, 144370, 91145, 11, 124685, 37087, 129413, 131793]...
+[OK ] import torch: 2.4.1+cu124
+[OK ] torch.cuda.is_available: True
+[OK ] torch.version.cuda: 12.4
+[OK ] device_name: NVIDIA A40
+[OK ] device_capability: (8, 6)
+[OK ] import transformers: 4.51.3
+[OK ] import peft: 0.13.2
+[OK ] import bitsandbytes: 0.49.2
+[OK ] import trl: 0.12.1
+[OK ] import accelerate: 0.34.2
+[OK ] import datasets: 2.21.0
+[OK ] import huggingface_hub: 0.36.2
+[OK ] import safetensors: 0.7.0
+[OK ] import flash_attn: 2.6.3
+[OK ] bnb quantize 4bit: q.shape=(8192, 1) y.shape=(128, 128) mae=0.0723
+[OK ] qwen3 in CONFIG_MAPPING: qwen3 in MAPPING: True
+[OK ] HF whoami: UNOA
+[OK ] load Qwen3-8B-Base config: arch=['Qwen3ForCausalLM'] vocab=151936 hidden=4096
+[OK ] load Qwen3-8B-Base tokenizer: vocab=151643 sample_ids=[126246, 144370, 91145, 11, 124685, 37087, 129413, 131793]...
+============================================================
+preflight result: 19 steps, 0 FAIL
+  [OK  ] import torch: 2.4.1+cu124
+  [OK  ] torch.cuda.is_available: True
+  [OK  ] torch.version.cuda: 12.4
+  [OK  ] device_name: NVIDIA A40
+  [OK  ] device_capability: (8, 6)
+  [OK  ] import transformers: 4.51.3
+  [OK  ] import peft: 0.13.2
+  [OK  ] import bitsandbytes: 0.49.2
+  [OK  ] import trl: 0.12.1
+  [OK  ] import accelerate: 0.34.2
+  [OK  ] import datasets: 2.21.0
+  [OK  ] import huggingface_hub: 0.36.2
+  [OK  ] import safetensors: 0.7.0
+  [OK  ] import flash_attn: 2.6.3
+  [OK  ] bnb quantize 4bit: q.shape=(8192, 1) y.shape=(128, 128) mae=0.0723
+  [OK  ] qwen3 in CONFIG_MAPPING: qwen3 in MAPPING: True
+  [OK  ] HF whoami: UNOA
+  [OK  ] load Qwen3-8B-Base config: arch=['Qwen3ForCausalLM'] vocab=151936 hidden=4096
+  [OK  ] load Qwen3-8B-Base tokenizer: vocab=151643 sample_ids=[126246, 144370, 91145, 11, 124685, 37087, 129413, 131793]...
+[OK ] import torch: 2.4.1+cu124
+[OK ] torch.cuda.is_available: True
+[OK ] torch.version.cuda: 12.4
+[OK ] device_name: NVIDIA A40
+[OK ] device_capability: (8, 6)
+[OK ] import transformers: 4.51.3
+[OK ] import peft: 0.13.2
+[OK ] import bitsandbytes: 0.49.2
+[OK ] import trl: 0.12.1
+[OK ] import accelerate: 0.34.2
+[OK ] import datasets: 2.21.0
+[OK ] import huggingface_hub: 0.36.2
+[OK ] import safetensors: 0.7.0
+[OK ] import flash_attn: 2.6.3
+[OK ] bnb quantize 4bit: q.shape=(8192, 1) y.shape=(128, 128) mae=0.0718
+[OK ] qwen3 in CONFIG_MAPPING: qwen3 in MAPPING: True
+[OK ] HF whoami: UNOA
+[OK ] load Qwen3-8B-Base config: arch=['Qwen3ForCausalLM'] vocab=151936 hidden=4096
+[OK ] load Qwen3-8B-Base tokenizer: vocab=151643 sample_ids=[126246, 144370, 91145, 11, 124685, 37087, 129413, 131793]...
+============================================================
+preflight result: 19 steps, 0 FAIL
+  [OK  ] import torch: 2.4.1+cu124
+  [OK  ] torch.cuda.is_available: True
+  [OK  ] torch.version.cuda: 12.4
+  [OK  ] device_name: NVIDIA A40
+  [OK  ] device_capability: (8, 6)
+  [OK  ] import transformers: 4.51.3
+  [OK  ] import peft: 0.13.2
+  [OK  ] import bitsandbytes: 0.49.2
+  [OK  ] import trl: 0.12.1
+  [OK  ] import accelerate: 0.34.2
+  [OK  ] import datasets: 2.21.0
+  [OK  ] import huggingface_hub: 0.36.2
+  [OK  ] import safetensors: 0.7.0
+  [OK  ] import flash_attn: 2.6.3
+  [OK  ] bnb quantize 4bit: q.shape=(8192, 1) y.shape=(128, 128) mae=0.0718
+  [OK  ] qwen3 in CONFIG_MAPPING: qwen3 in MAPPING: True
+  [OK  ] HF whoami: UNOA
+  [OK  ] load Qwen3-8B-Base config: arch=['Qwen3ForCausalLM'] vocab=151936 hidden=4096
+  [OK  ] load Qwen3-8B-Base tokenizer: vocab=151643 sample_ids=[126246, 144370, 91145, 11, 124685, 37087, 129413, 131793]...
+2026-04-30T00:01:15Z [1.5/6] pre-flight OK
+{"id":"6qfzgr0J850x","time":1777507275,"expires":1777550475,"event":"message","topic":"dalbit_ai_alert","message":"dalbit preflight OK — starting CPT on 6kcrjcrka8jod1"}
+2026-04-30T00:01:15Z [2/6] CPT 학습 시작 (base=Qwen/Qwen3-8B-Base)
+{"id":"bxNmNt5SdOQl","time":1777507275,"expires":1777550475,"event":"message","topic":"dalbit_ai_alert","message":"dalbit CPT start — 6kcrjcrka8jod1"}
+2026-04-30 00:01:19,303 [INFO] ============================================================
+2026-04-30 00:01:19,313 [INFO] CPT v2 시작
+2026-04-30 00:01:19,315 [INFO]   base         : Qwen/Qwen3-8B-Base
+2026-04-30 00:01:19,316 [INFO]   input        : /workspace/data/v3-data/cpt_structured_v3.jsonl
+2026-04-30 00:01:19,317 [INFO]   replay       : /workspace/data/v3-data/replay_korean_5k.jsonl
+2026-04-30 00:01:19,317 [INFO]   val          : /workspace/data/val_set.v3.jsonl
+2026-04-30 00:01:19,318 [INFO]   output       : /workspace/out/cpt-lora
+2026-04-30 00:01:19,319 [INFO]   hub_model_id : UNOA/dalbitalba-qwen3-cpt-20260430-0000
+2026-04-30 00:01:19,320 [INFO]   tokenizer_dir: /workspace/repo/v3-data/tokenizer
+2026-04-30 00:01:19,320 [INFO]   extend_tokens: True
+2026-04-30 00:01:19,321 [INFO]   LoRA r=64 α=64 rsLoRA=True DoRA=False
+2026-04-30 00:01:19,322 [INFO]   seq_len=1024 eff_batch=16 lr=0.0001 epochs=1
+2026-04-30 00:01:19,322 [INFO]   packing      : True (embed_warmup_steps=20)
+2026-04-30 00:01:19,323 [INFO]   seed         : 42
+2026-04-30 00:01:19,324 [INFO] ============================================================
+2026-04-30 00:01:19,350 [INFO] GPU: NVIDIA A40 (47.7GB)
+2026-04-30 00:01:19,359 [INFO] structured CPT markers detected in /workspace/data/v3-data/cpt_structured_v3.jsonl (sample row 1)
+2026-04-30 00:01:19,362 [INFO] structured CPT detected; loading tokenizer from CPT_TOKENIZER_DIR=/workspace/repo/v3-data/tokenizer
+2026-04-30 00:01:19,728 [INFO] runtime tokenizer manifest loaded: /workspace/repo/v3-data/tokenizer/token_list.json (11 tokens)
+2026-04-30 00:01:19,759 [INFO] runtime tokenizer extension enabled: requested=11 added=0 total_vocab=151680
+2026-04-30 00:01:19,789 [INFO] tokenizer size: base_vocab=151643 total_vocab=151680 structured=True source=/workspace/repo/v3-data/tokenizer
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:15<01:01, 15.28s/it]Loading checkpoint shards:  40%|████      | 2/5 [00:32<00:49, 16.59s/it]Loading checkpoint shards:  60%|██████    | 3/5 [00:50<00:34, 17.04s/it]Loading checkpoint shards:  80%|████████  | 4/5 [01:05<00:16, 16.23s/it]Loading checkpoint shards: 100%|██████████| 5/5 [01:08<00:00, 11.55s/it]Loading checkpoint shards: 100%|██████████| 5/5 [01:08<00:00, 13.72s/it]
+2026-04-30 00:02:50,905 [INFO] resize_token_embeddings: 151936 -> 151680
+2026-04-30 00:02:50,972 [INFO] CPT_LORA_EMBED=1 -> target_modules=down_proj,embed_tokens,gate_proj,k_proj,lm_head,o_proj,q_proj,up_proj,v_proj
+2026-04-30 00:02:50,973 [INFO] LoRA target_modules=['down_proj', 'embed_tokens', 'gate_proj', 'k_proj', 'lm_head', 'o_proj', 'q_proj', 'up_proj', 'v_proj']
+trainable params: 194,527,232 || all params: 8,383,165,440 || trainable%: 2.3205
+2026-04-30 00:03:04,482 [INFO] load_corpus(/workspace/data/v3-data/cpt_structured_v3.jsonl) -> 53,675 rows (skipped 0)
+2026-04-30 00:03:04,501 [INFO] load_corpus(/workspace/data/v3-data/replay_korean_5k.jsonl) -> 5,000 rows (skipped 0)
+2026-04-30 00:03:04,501 [WARNING] replay rows 부족: desired=5,368 available=5,000 -> available rows only
+2026-04-30 00:03:04,507 [INFO] replay mix 적용: main=53,675 replay=5,000 total=58,675 effective_ratio=0.0852
+2026-04-30 00:03:04,513 [INFO] build_dataset(train) -> 58,675 rows
+2026-04-30 00:03:04,647 [INFO] load_corpus(/workspace/data/val_set.v3.jsonl) -> 412 rows (skipped 0)
+2026-04-30 00:03:04,648 [INFO] build_dataset(val) -> 412 rows
+tokenize train:   0%|          | 0/58675 [00:00<?, ? examples/s]tokenize train:   2%|▏         | 1000/58675 [00:00<00:06, 8446.99 examples/s]tokenize train:   3%|▎         | 2000/58675 [00:00<00:06, 8536.49 examples/s]tokenize train:   5%|▌         | 3000/58675 [00:00<00:06, 8058.66 examples/s]tokenize train:   7%|▋         | 4000/58675 [00:00<00:06, 8156.34 examples/s]tokenize train:   9%|▊         | 5000/58675 [00:00<00:06, 8227.85 examples/s]tokenize train:  10%|█         | 6000/58675 [00:00<00:06, 8213.02 examples/s]tokenize train:  12%|█▏        | 7000/58675 [00:00<00:06, 8112.87 examples/s]tokenize train:  14%|█▎        | 8000/58675 [00:00<00:06, 8417.39 examples/s]tokenize train:  15%|█▌        | 9000/58675 [00:01<00:05, 8403.62 examples/s]tokenize train:  17%|█▋        | 10000/58675 [00:01<00:05, 8374.70 examples/s]tokenize train:  19%|█▊        | 11000/58675 [00:01<00:05, 8498.05 examples/s]tokenize train:  20%|██        | 12000/58675 [00:01<00:05, 8511.99 examples/s]tokenize train:  22%|██▏       | 13000/58675 [00:01<00:05, 8604.96 examples/s]tokenize train:  24%|██▍       | 14000/58675 [00:01<00:05, 8517.83 examples/s]tokenize train:  26%|██▌       | 15000/58675 [00:01<00:05, 8505.13 examples/s]tokenize train:  27%|██▋       | 16000/58675 [00:01<00:05, 8485.88 examples/s]tokenize train:  29%|██▉       | 17000/58675 [00:02<00:05, 8234.39 examples/s]tokenize train:  31%|███       | 18000/58675 [00:02<00:04, 8209.79 examples/s]tokenize train:  32%|███▏      | 19000/58675 [00:02<00:04, 8095.38 examples/s]tokenize train:  34%|███▍      | 20000/58675 [00:02<00:04, 8001.08 examples/s]tokenize train:  36%|███▌      | 21000/58675 [00:02<00:04, 8228.38 examples/s]tokenize train:  37%|███▋      | 22000/58675 [00:02<00:04, 8323.27 examples/s]tokenize train:  39%|███▉      | 23000/58675 [00:02<00:04, 8485.69 examples/s]tokenize train:  41%|████      | 24000/58675 [00:02<00:04, 8401.86 examples/s]tokenize train:  43%|████▎     | 25000/58675 [00:02<00:04, 8394.10 examples/s]tokenize train:  44%|████▍     | 26000/58675 [00:03<00:03, 8428.69 examples/s]tokenize train:  46%|████▌     | 27000/58675 [00:03<00:05, 6091.77 examples/s]tokenize train:  48%|████▊     | 28000/58675 [00:03<00:04, 6511.05 examples/s]tokenize train:  49%|████▉     | 29000/58675 [00:03<00:04, 7011.51 examples/s]tokenize train:  51%|█████     | 30000/58675 [00:03<00:03, 7462.22 examples/s]tokenize train:  53%|█████▎    | 31000/58675 [00:03<00:03, 7651.74 examples/s]tokenize train:  55%|█████▍    | 32000/58675 [00:03<00:03, 7646.11 examples/s]tokenize train:  56%|█████▌    | 33000/58675 [00:04<00:03, 7750.14 examples/s]tokenize train:  58%|█████▊    | 34000/58675 [00:04<00:03, 7899.82 examples/s]tokenize train:  60%|█████▉    | 35000/58675 [00:04<00:02, 7998.31 examples/s]tokenize train:  61%|██████▏   | 36000/58675 [00:04<00:02, 8171.26 examples/s]tokenize train:  63%|██████▎   | 37000/58675 [00:04<00:02, 7994.43 examples/s]tokenize train:  65%|██████▍   | 38000/58675 [00:04<00:02, 8181.07 examples/s]tokenize train:  66%|██████▋   | 39000/58675 [00:04<00:02, 8212.53 examples/s]tokenize train:  68%|██████▊   | 40000/58675 [00:04<00:02, 8362.82 examples/s]tokenize train:  70%|██████▉   | 41000/58675 [00:05<00:02, 8588.36 examples/s]tokenize train:  72%|███████▏  | 42000/58675 [00:05<00:01, 8722.39 examples/s]tokenize train:  73%|███████▎  | 43000/58675 [00:05<00:01, 8317.45 examples/s]tokenize train:  75%|███████▍  | 44000/58675 [00:05<00:01, 8403.82 examples/s]tokenize train:  77%|███████▋  | 45000/58675 [00:05<00:01, 8642.44 examples/s]tokenize train:  78%|███████▊  | 46000/58675 [00:05<00:01, 8744.46 examples/s]tokenize train:  80%|████████  | 47000/58675 [00:05<00:01, 8656.79 examples/s]tokenize train:  82%|████████▏ | 48000/58675 [00:05<00:01, 8803.10 examples/s]tokenize train:  84%|████████▎ | 49000/58675 [00:05<00:01, 8713.70 examples/s]tokenize train:  85%|████████▌ | 50000/58675 [00:06<00:00, 8679.26 examples/s]tokenize train:  87%|████████▋ | 51000/58675 [00:06<00:00, 8742.20 examples/s]tokenize train:  89%|████████▊ | 52000/58675 [00:06<00:00, 8600.48 examples/s]tokenize train:  90%|█████████ | 53000/58675 [00:06<00:00, 8562.19 examples/s]tokenize train:  92%|█████████▏| 54000/58675 [00:06<00:00, 8556.12 examples/s]tokenize train:  94%|█████████▎| 55000/58675 [00:06<00:00, 8610.45 examples/s]tokenize train:  95%|█████████▌| 56000/58675 [00:06<00:00, 8436.44 examples/s]tokenize train:  97%|█████████▋| 57000/58675 [00:06<00:00, 8214.88 examples/s]tokenize train:  99%|█████████▉| 58000/58675 [00:07<00:00, 8100.82 examples/s]tokenize train: 100%|██████████| 58675/58675 [00:07<00:00, 8193.85 examples/s]
+tokenize val:   0%|          | 0/412 [00:00<?, ? examples/s]tokenize val: 100%|██████████| 412/412 [00:00<00:00, 6957.80 examples/s]
+2026-04-30 00:03:14,679 [INFO] packing train: source_rows=58675 -> packed_sequences=4538 (12.93x fewer rows), tokens=4180923, avg_tokens_per_sequence=921.3
+2026-04-30 00:03:14,756 [INFO] packing val: source_rows=412 -> packed_sequences=38 (10.84x fewer rows), tokens=33303, avg_tokens_per_sequence=876.4
+2026-04-30 00:03:15,929 [INFO] tokenize 완료: train 4,538 rows / ~4,180,923 tokens, val 38 rows
+2026-04-30 00:03:15,931 [INFO] steps_per_epoch=284 total_steps=284 warmup=8
+2026-04-30 00:03:15,932 [INFO] [step] DataCollator build
+2026-04-30 00:03:15,933 [INFO] [step] DataCollatorForPackedCPT OK (preserves EOS in labels)
+2026-04-30 00:03:15,934 [INFO] [step] building training_args_kwargs
+2026-04-30 00:03:15,936 [INFO] [step] instantiate TrainingArguments (report_to=none, push_to_hub=True, optim=paged_adamw_32bit)
+2026-04-30 00:03:15,962 [INFO] [step] TrainingArguments OK
+2026-04-30 00:03:15,968 [INFO] resume from /workspace/out/cpt-ckpt/checkpoint-283
+2026-04-30 00:03:15,976 [INFO] resume checkpoint already past embed warmup boundary (checkpoint step=283, warmup=20) -> skip staged warmup
+2026-04-30 00:03:15,977 [INFO] [step] instantiate Trainer
+/workspace/train_cpt.py:581: FutureWarning: `tokenizer` is deprecated and will be removed in version 5.0.0 for `EmbedWarmupTrainer.__init__`. Use `processing_class` instead.
+  super().__init__(*args, **kwargs)
+No label_names provided for model class `PeftModelForCausalLM`. Since `PeftModel` hides base models input arguments, if label_names is not given, label_names can't be set automatically within `Trainer`. Note that empty label_names list will be used instead.
+2026-04-30 00:03:16,383 [INFO] [step] Trainer OK
+2026-04-30 00:03:16,384 [INFO] 학습 시작 — trainer.train()
+  0%|          | 0/283 [00:00<?, ?it/s]                                         0%|          | 0/283 [00:00<?, ?it/s]  0%|          | 0/283 [00:00<?, ?it/s]
+{'train_runtime': 0.0121, 'train_samples_per_second': 376369.365, 'train_steps_per_second': 23471.25, 'train_loss': 0.0, 'epoch': 1.0}
+2026-04-30 00:03:52,988 [INFO] LoRA adapter 저장 → /workspace/out/cpt-lora
+/usr/local/lib/python3.11/dist-packages/peft/utils/save_and_load.py:227: UserWarning: Setting `save_embedding_layers` to `True` as embedding layers found in `target_modules`.
+  warnings.warn("Setting `save_embedding_layers` to `True` as embedding layers found in `target_modules`.")
+2026-04-30 00:04:11,969 [INFO] CPT 완료 (0.05h) → /workspace/out/cpt-lora
+2026-04-30T00:04:13Z [2/6] CPT 완료 (2m)
+{"id":"8sabKDcuWtPl","time":1777507453,"expires":1777550653,"event":"message","topic":"dalbit_ai_alert","message":"dalbit CPT done (2m)"}
+2026-04-30T00:04:13Z [3/6] CPT adapter → fp16 merge
+[merge] base  : Qwen/Qwen3-8B-Base
+[merge] lora  : /workspace/out/cpt-lora
+[merge] out   : /workspace/out/cpt-merged-fp16
+[merge] tokenizer source: /workspace/out/cpt-lora
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:00<00:00, 49.90it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:00<00:00, 49.83it/s]
+[merge] loaded base in torch.bfloat16
+[merge] resize_token_embeddings: 151936 -> 151680
+[merge] merge_and_unload done
+[merge] saved merged fp16 model → /workspace/out/cpt-merged-fp16
+2026-04-30T00:07:02Z [3/6] merge 완료
+2026-04-30T00:07:02Z [4/6] SFT stage (base=/workspace/out/cpt-merged-fp16)
+{"id":"jXy8C4gjbb08","time":1777507623,"expires":1777550823,"event":"message","topic":"dalbit_ai_alert","message":"dalbit SFT start"}
+2026-04-30T00:07:03Z [4/6] warm-restart prep: optimizer-only backup for /workspace/out/sft-ckpt/checkpoint-850/
+2026-04-30T00:07:03Z [4/6] warm-restart prep: optimizer-only backup for /workspace/out/sft-ckpt/checkpoint-900/
+2026-04-30T00:07:03Z [4/6] warm-restart prep: optimizer-only backup for /workspace/out/sft-ckpt/checkpoint-950/
+2026-04-30 00:07:07,753 [INFO] ============================================================
+2026-04-30 00:07:07,755 [INFO] SFT v2 시작
+2026-04-30 00:07:07,756 [INFO]   base          : /workspace/out/cpt-merged-fp16
+2026-04-30 00:07:07,757 [INFO]   raw_jsonl     : /workspace/data/v3-data/cpt_structured_v3.jsonl
+2026-04-30 00:07:07,758 [INFO]   input_jsonl   : /workspace/data/v3-data/sft_5task_v3.jsonl
+2026-04-30 00:07:07,759 [INFO]   val_jsonl     : /workspace/data/val_set.v3.jsonl
+2026-04-30 00:07:07,760 [INFO]   output        : /workspace/out/sft-lora
+2026-04-30 00:07:07,761 [INFO]   hub_model_id  : UNOA/dalbitalba-qwen3-sft-20260430-0000
+2026-04-30 00:07:07,762 [INFO]   LoRA r=64 α=64 rsLoRA=True DoRA=False
+2026-04-30 00:07:07,762 [INFO]   seq_len=1024 eff_batch=16 lr=5e-05 epochs=1
+2026-04-30 00:07:07,763 [INFO] ============================================================
+2026-04-30 00:07:07,790 [INFO] GPU: NVIDIA A40
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:16<00:50, 16.86s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:35<00:35, 17.81s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:49<00:16, 16.05s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:50<00:00, 10.24s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:50<00:00, 12.66s/it]
+trainable params: 174,587,904 || all params: 8,363,226,112 || trainable%: 2.0876
+2026-04-30 00:08:33,752 [INFO]   load /workspace/data/v3-data/cpt_structured_v3.jsonl -> 53,675
+2026-04-30 00:08:34,057 [INFO]   load /workspace/data/v3-data/sft_5task_v3.jsonl -> 58,476
+2026-04-30 00:08:34,066 [INFO]   load /workspace/data/val_set.v3.jsonl -> 412
+2026-04-30 00:08:34,067 [INFO] mix policy: raw=0.80 pair=0.20
+2026-04-30 00:08:34,075 [INFO] supervised row formats: {'instruction': 58476}
+2026-04-30 00:08:34,076 [INFO] sampled sizes: raw=53,675 supervised=13,419 / 58,476 available
+2026-04-30 00:08:45,819 [INFO] merged train size: 67,094
+2026-04-30 00:08:47,860 [INFO] val size: 412
+2026-04-30 00:08:48,079 [INFO] total_steps=4194 warmup=209
+/workspace/train_sft.py:424: FutureWarning: `tokenizer` is deprecated and will be removed in version 5.0.0 for `Trainer.__init__`. Use `processing_class` instead.
+  trainer = Trainer(
+No label_names provided for model class `PeftModelForCausalLM`. Since `PeftModel` hides base models input arguments, if label_names is not given, label_names can't be set automatically within `Trainer`. Note that empty label_names list will be used instead.
+2026-04-30 00:08:48,629 [INFO] resume from /workspace/out/sft-ckpt/checkpoint-850
+2026-04-30 00:08:48,630 [INFO] SFT 학습 시작
+  0%|          | 0/4193 [00:00<?, ?it/s]Traceback (most recent call last):
+  File "/workspace/train_sft.py", line 453, in <module>
+    main()
+  File "/workspace/train_sft.py", line 442, in main
+    trainer.train(resume_from_checkpoint=resume_from)
+  File "/usr/local/lib/python3.11/dist-packages/transformers/trainer.py", line 2236, in train
+    return inner_training_loop(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/transformers/trainer.py", line 2534, in _inner_training_loop
+    self._load_rng_state(resume_from_checkpoint)
+  File "/usr/local/lib/python3.11/dist-packages/transformers/trainer.py", line 3130, in _load_rng_state
+    checkpoint_rng_state = torch.load(rng_file, weights_only=True)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/torch/serialization.py", line 1096, in load
+    raise pickle.UnpicklingError(_get_wo_message(str(e))) from None
+_pickle.UnpicklingError: Weights only load failed. This file can still be loaded, to do so you have two options 
+	(1) Re-running `torch.load` with `weights_only` set to `False` will likely succeed, but it can result in arbitrary code execution. Do it only if you got the file from a trusted source.
+	(2) Alternatively, to load with `weights_only=True` please check the recommended steps in the following error message.
+	WeightsUnpickler error: Unsupported global: GLOBAL numpy.core.multiarray._reconstruct was not an allowed global by default. Please use `torch.serialization.add_safe_globals([_reconstruct])` to allowlist this global if you trust this class/function.
+
+Check the documentation of torch.load to learn more about types accepted by default with weights_only https://pytorch.org/docs/stable/generated/torch.load.html.
+  0%|          | 0/4193 [00:00<?, ?it/s]
+2026-04-30T00:08:55Z [WARN] SFT 실패 exit=1 — CPT merged만 배포
+{"id":"Adec2YlAQFgg","time":1777507735,"expires":1777550935,"event":"message","topic":"dalbit_ai_alert","message":"dalbit SFT failed rc=1 ====HEAD====|2026-04-29 11:01:39,670 [INFO] ============================================================|2026-04-29 11:01:39,673 [INFO] SFT v2 시작|2026-04-29 11:01:39,675 [INFO]   base          : /workspace/out/cpt-merged-fp16|2026-04-29 11:01:39,677 [INFO]   raw_jsonl     : /workspace/data/v3-data/cpt_structured_v3.jsonl|2026-04-29 11:01:39,680 [INFO]   input_jsonl   : /workspace/data/v3-data/sft_5task_v3.jsonl|2026-04-29 11:01:39,683 [INFO]   val_jsonl     : /workspace/data/val_set.v3.jsonl|2026-04-29 11:01:39,685 [INFO]   output        : /workspace/out/sft-lora|2026-04-29 11:01:39,687 [INFO]   hub_model_id  : UNOA/dalbitalba-qwen3-sft-20260429-0849|2026-04-29 11:01:39,690 [INFO]   LoRA r=64 α=64 rsLoRA=True DoRA=False|2026-04-29 11:01:39,692 [INFO]   seq_len=1024 eff_batch=16 lr=5e-05 epochs=1|2026-04-29 11:01:39,694 [INFO] ============================================================|2026-04-29 11:01:39,726 [INFO] GPU: NVIDIA A40|2026-04-29 11:03:39,895 [INFO]   load /workspace/data/v3-data/cpt_structured_v3.jsonl -\u003e 53,675|2026-04-29 11:03:40,193 [INFO]   load /workspace/data/v3-data/sft_5task_v3.jsonl -\u003e 58,476|2026-04-29 11:03:40,203 [INFO]   load /workspace/data/val_set.v3.jsonl -\u003e 412|====TAIL====|2026-04-29 23:09:55,726 [INFO] resume from /workspace/out/sft-ckpt/checkpoint-850|2026-04-29 23:09:55,727 [INFO] SFT 학습 시작|2026-04-30 00:07:07,753 [INFO] ============================================================|2026-04-30 00:07:07,755 [INFO] SFT v2 시작|2026-04-30 00:07:07,756 [INFO]   base          : /workspace/out/cpt-merged-fp16|2026-04-30 00:07:07,757 [INFO]   raw_jsonl     : /workspace/data/v3-data/cpt_structured_v3.jsonl|2026-04-30 00:07:07,758 [INFO]   input_jsonl   : /workspace/data/v3-data/sft_5task_v3.jsonl|2026-04-30 00:07:07,759 [INFO]   val_jsonl     : /workspace/data/val_set.v3.jsonl|2026-04-30 00:07:07,760 [INFO]   output        : /workspace/out/sft-lora|2026-04-30 00:07:07,761 [INFO]   hub_model_id  : UNOA/dalbitalba-qwen3-sft-20260430-0000|2026-04-30 00:07:07,762 [INFO]   LoRA r=64 α=64 rsLoRA=True DoRA=False|2026-04-30 00:07:07,762 [INFO]   seq_len=1024 eff_batch=16 lr=5e-05 epochs=1|2026-04-30 00:07:07,763 [INFO] ============================================================|2026-04-30 00:07:07,790 [INFO] GPU: NVIDIA A40|2026-04-30 00:08:33,752 [INFO]   load /workspace/data/v3-data/cpt_structured_v3.jsonl -\u003e 53,675|2026-04-30 00:08:34,057 [INFO]   load /workspace/data/v3-data/sft_5task_v3.jsonl -\u003e 58,476|2026-04-30 00:08:34,066 [INFO]   load /workspace/data/val_set.v3.jsonl -\u003e 412|2026-04-30 00:08:34,067 [INFO] mix policy: raw=0.80 pair=0.20|2026-04-30 00:08:34,075 [INFO] supervised row formats: {'instruction': 58476}|2026-04-30 00:08:34,076 [INFO] sampled sizes: raw=53,675 supervised=13,419 / 58,476 available|2026-04-30 00:08:45,819 [INFO] merged train size: 67,094|2026-04-30 00:08:47,860 [INFO] val size: 412|2026-04-30 00:08:48,079 [INFO] total_steps=4194 warmup=209|2026-04-30 00:08:48,629 [INFO] resume from /workspace/out/sft-ckpt/checkpoint-850|2026-04-30 00:08:48,630 [INFO] SFT 학습 시작|"}
+2026-04-30T00:08:55Z [5/6] HF 최종 upload (adapter dirs)
+Processing Files (0 / 0)      : |          |  0.00B /  0.00B            
+New Data Upload               : |          |  0.00B /  0.00B            [A
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:   1%|          | 31.9MB / 5.75GB            [A[A[A
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:   1%|          | 31.9MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :   1%|          | 43.4MB / 5.76GB, 72.2MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:   1%|▏         | 72.0MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :   1%|▏         | 83.4MB / 5.76GB,  104MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:   2%|▏         |  104MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :   2%|▏         |  115MB / 5.76GB,  115MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:   2%|▏         |  136MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :   3%|▎         |  147MB / 5.76GB,  123MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:   3%|▎         |  168MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :   3%|▎         |  179MB / 5.76GB,  128MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:   3%|▎         |  200MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :   4%|▎         |  211MB / 5.76GB,  132MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:   4%|▍         |  232MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :   4%|▍         |  243MB / 5.76GB,  135MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:   4%|▍         |  256MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :   5%|▍         |  267MB / 5.76GB,  134MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:   5%|▌         |  288MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :   5%|▌         |  299MB / 5.76GB,  136MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:   6%|▌         |  320MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :   6%|▌         |  331MB / 5.76GB,  138MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:   6%|▌         |  352MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :   6%|▋         |  363MB / 5.76GB,  140MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:   7%|▋         |  384MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :   7%|▋         |  395MB / 5.76GB,  141MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:   7%|▋         |  416MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :   7%|▋         |  427MB / 5.76GB,  142MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:   8%|▊         |  440MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :   8%|▊         |  451MB / 5.76GB,  141MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:   8%|▊         |  472MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :   8%|▊         |  483MB / 5.76GB,  142MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:   9%|▉         |  504MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :   9%|▉         |  515MB / 5.76GB,  143MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:   9%|▉         |  536MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  10%|▉         |  547MB / 5.76GB,  144MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  10%|▉         |  568MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  10%|█         |  579MB / 5.76GB,  145MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  10%|█         |  592MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  10%|█         |  603MB / 5.76GB,  144MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  11%|█         |  624MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  11%|█         |  635MB / 5.76GB,  144MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  11%|█▏        |  656MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  12%|█▏        |  667MB / 5.76GB,  145MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  12%|█▏        |  688MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  12%|█▏        |  699MB / 5.76GB,  146MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  13%|█▎        |  720MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  13%|█▎        |  731MB / 5.76GB,  146MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  13%|█▎        |  744MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  13%|█▎        |  755MB / 5.76GB,  145MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  13%|█▎        |  776MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  14%|█▎        |  787MB / 5.76GB,  146MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  14%|█▍        |  800MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  14%|█▍        |  811MB / 5.76GB,  145MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  14%|█▍        |  832MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  15%|█▍        |  843MB / 5.76GB,  145MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  15%|█▌        |  864MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  15%|█▌        |  875MB / 5.76GB,  146MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  16%|█▌        |  896MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  16%|█▌        |  907MB / 5.76GB,  146MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  16%|█▌        |  928MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  16%|█▋        |  939MB / 5.76GB,  147MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  17%|█▋        |  960MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  17%|█▋        |  971MB / 5.76GB,  147MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  17%|█▋        |  984MB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  17%|█▋        |  995MB / 5.76GB,  146MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  18%|█▊        | 1.01GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  18%|█▊        | 1.02GB / 5.76GB,  146MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  18%|█▊        | 1.04GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  18%|█▊        | 1.05GB / 5.76GB,  146MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  19%|█▊        | 1.07GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  19%|█▉        | 1.08GB / 5.76GB,  146MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  19%|█▉        | 1.10GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  19%|█▉        | 1.11GB / 5.76GB,  146MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  20%|█▉        | 1.13GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  20%|█▉        | 1.14GB / 5.76GB,  146MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  20%|██        | 1.16GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  20%|██        | 1.17GB / 5.76GB,  146MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  21%|██        | 1.19GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  21%|██        | 1.20GB / 5.76GB,  147MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  21%|██▏       | 1.22GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  21%|██▏       | 1.24GB / 5.76GB,  147MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  22%|██▏       | 1.25GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  22%|██▏       | 1.26GB / 5.76GB,  146MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  22%|██▏       | 1.28GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  22%|██▏       | 1.29GB / 5.76GB,  147MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  23%|██▎       | 1.31GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  23%|██▎       | 1.32GB / 5.76GB,  147MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  23%|██▎       | 1.34GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  24%|██▎       | 1.36GB / 5.76GB,  147MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  24%|██▍       | 1.38GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  24%|██▍       | 1.39GB / 5.76GB,  148MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  24%|██▍       | 1.40GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  25%|██▍       | 1.41GB / 5.76GB,  147MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  25%|██▍       | 1.43GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  25%|██▌       | 1.44GB / 5.76GB,  147MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  25%|██▌       | 1.46GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  25%|██▌       | 1.47GB / 5.76GB,  147MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  26%|██▌       | 1.49GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  26%|██▌       | 1.50GB / 5.76GB,  147MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  26%|██▋       | 1.52GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  27%|██▋       | 1.53GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  27%|██▋       | 1.54GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  27%|██▋       | 1.56GB / 5.76GB,  152MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  27%|██▋       | 1.58GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  28%|██▊       | 1.59GB / 5.76GB,  151MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  28%|██▊       | 1.61GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  28%|██▊       | 1.62GB / 5.76GB,  151MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  29%|██▊       | 1.64GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  29%|██▊       | 1.65GB / 5.76GB,  151MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  29%|██▉       | 1.66GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  29%|██▉       | 1.68GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  30%|██▉       | 1.70GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  30%|██▉       | 1.71GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  30%|██▉       | 1.72GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  30%|███       | 1.73GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  30%|███       | 1.75GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  31%|███       | 1.76GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  31%|███       | 1.78GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  31%|███       | 1.80GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  32%|███▏      | 1.82GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  32%|███▏      | 1.83GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  32%|███▏      | 1.84GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  32%|███▏      | 1.85GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  33%|███▎      | 1.87GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  33%|███▎      | 1.88GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  33%|███▎      | 1.90GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  33%|███▎      | 1.92GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  34%|███▎      | 1.94GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  34%|███▍      | 1.95GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  34%|███▍      | 1.96GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  34%|███▍      | 1.97GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  35%|███▍      | 1.99GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  35%|███▍      | 2.00GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  35%|███▌      | 2.02GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  35%|███▌      | 2.03GB / 5.76GB,  148MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  36%|███▌      | 2.05GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  36%|███▌      | 2.06GB / 5.76GB,  148MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  36%|███▌      | 2.08GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  36%|███▋      | 2.09GB / 5.76GB,  148MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  37%|███▋      | 2.11GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  37%|███▋      | 2.12GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  37%|███▋      | 2.13GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  37%|███▋      | 2.14GB / 5.76GB,  147MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  38%|███▊      | 2.17GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  38%|███▊      | 2.18GB / 5.76GB,  148MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  38%|███▊      | 2.20GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  38%|███▊      | 2.21GB / 5.76GB,  148MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  39%|███▉      | 2.23GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  39%|███▉      | 2.24GB / 5.76GB,  148MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  39%|███▉      | 2.26GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  40%|███▉      | 2.28GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  40%|███▉      | 2.30GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  40%|████      | 2.31GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  40%|████      | 2.32GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  40%|████      | 2.33GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  41%|████      | 2.35GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  41%|████      | 2.36GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  41%|████▏     | 2.38GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  42%|████▏     | 2.40GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  42%|████▏     | 2.42GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  42%|████▏     | 2.43GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  43%|████▎     | 2.45GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  43%|████▎     | 2.46GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  43%|████▎     | 2.48GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  43%|████▎     | 2.49GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  44%|████▎     | 2.50GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  44%|████▎     | 2.52GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  44%|████▍     | 2.53GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  44%|████▍     | 2.54GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  45%|████▍     | 2.56GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  45%|████▍     | 2.57GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  45%|████▌     | 2.59GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  45%|████▌     | 2.60GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  46%|████▌     | 2.62GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  46%|████▌     | 2.64GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  46%|████▌     | 2.65GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  46%|████▌     | 2.66GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  47%|████▋     | 2.68GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  47%|████▋     | 2.69GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  47%|████▋     | 2.70GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  47%|████▋     | 2.72GB / 5.76GB,  148MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  48%|████▊     | 2.74GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  48%|████▊     | 2.75GB / 5.76GB,  148MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  48%|████▊     | 2.77GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  48%|████▊     | 2.78GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  49%|████▊     | 2.80GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  49%|████▉     | 2.81GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  49%|████▉     | 2.83GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  49%|████▉     | 2.84GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  50%|████▉     | 2.86GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  50%|████▉     | 2.88GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  50%|█████     | 2.90GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  50%|█████     | 2.91GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  51%|█████     | 2.92GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  51%|█████     | 2.93GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  51%|█████▏    | 2.95GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  51%|█████▏    | 2.96GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  52%|█████▏    | 2.98GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  52%|█████▏    | 3.00GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  52%|█████▏    | 3.02GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  53%|█████▎    | 3.03GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  53%|█████▎    | 3.04GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  53%|█████▎    | 3.05GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  53%|█████▎    | 3.07GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  54%|█████▎    | 3.08GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  54%|█████▍    | 3.10GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  54%|█████▍    | 3.11GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  54%|█████▍    | 3.13GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  55%|█████▍    | 3.14GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  55%|█████▍    | 3.16GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  55%|█████▌    | 3.17GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  56%|█████▌    | 3.19GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  56%|█████▌    | 3.20GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  56%|█████▌    | 3.22GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  56%|█████▌    | 3.24GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  57%|█████▋    | 3.26GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  57%|█████▋    | 3.27GB / 5.76GB,  151MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  57%|█████▋    | 3.28GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  57%|█████▋    | 3.29GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  58%|█████▊    | 3.31GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  58%|█████▊    | 3.32GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  58%|█████▊    | 3.34GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  58%|█████▊    | 3.36GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  59%|█████▊    | 3.37GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  59%|█████▊    | 3.38GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  59%|█████▉    | 3.40GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  59%|█████▉    | 3.41GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  60%|█████▉    | 3.43GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  60%|█████▉    | 3.44GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  60%|██████    | 3.46GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  60%|██████    | 3.48GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  61%|██████    | 3.50GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  61%|██████    | 3.51GB / 5.76GB,  151MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  61%|██████▏   | 3.53GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  61%|██████▏   | 3.54GB / 5.76GB,  151MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  62%|██████▏   | 3.55GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  62%|██████▏   | 3.56GB / 5.76GB,  151MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  62%|██████▏   | 3.58GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  62%|██████▏   | 3.60GB / 5.76GB,  151MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  63%|██████▎   | 3.61GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  63%|██████▎   | 3.62GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  63%|██████▎   | 3.64GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  63%|██████▎   | 3.65GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  64%|██████▍   | 3.67GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  64%|██████▍   | 3.68GB / 5.76GB,  151MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  64%|██████▍   | 3.70GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  64%|██████▍   | 3.71GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  65%|██████▍   | 3.73GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  65%|██████▍   | 3.74GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  65%|██████▌   | 3.76GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  65%|██████▌   | 3.77GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  66%|██████▌   | 3.79GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  66%|██████▌   | 3.80GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  67%|██████▋   | 3.82GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  67%|██████▋   | 3.84GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  67%|██████▋   | 3.86GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  67%|██████▋   | 3.87GB / 5.76GB,  151MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  67%|██████▋   | 3.88GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  68%|██████▊   | 3.89GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  68%|██████▊   | 3.91GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  68%|██████▊   | 3.92GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  68%|██████▊   | 3.94GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  69%|██████▊   | 3.95GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  69%|██████▉   | 3.97GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  69%|██████▉   | 3.98GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  70%|██████▉   | 4.00GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  70%|██████▉   | 4.01GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  70%|███████   | 4.02GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  70%|███████   | 4.04GB / 5.76GB,  149MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  71%|███████   | 4.06GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  71%|███████   | 4.07GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  71%|███████   | 4.09GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  71%|███████   | 4.10GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  72%|███████▏  | 4.12GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  72%|███████▏  | 4.13GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  72%|███████▏  | 4.15GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  72%|███████▏  | 4.16GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  73%|███████▎  | 4.18GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  73%|███████▎  | 4.20GB / 5.76GB,  151MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  73%|███████▎  | 4.21GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  73%|███████▎  | 4.22GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  74%|███████▍  | 4.24GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  74%|███████▍  | 4.25GB / 5.76GB,  151MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  74%|███████▍  | 4.27GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  74%|███████▍  | 4.28GB / 5.76GB,  151MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  75%|███████▍  | 4.30GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  75%|███████▍  | 4.32GB / 5.76GB,  151MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  75%|███████▌  | 4.33GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  75%|███████▌  | 4.34GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  76%|███████▌  | 4.36GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  76%|███████▌  | 4.37GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  76%|███████▋  | 4.39GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  76%|███████▋  | 4.40GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  77%|███████▋  | 4.42GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  77%|███████▋  | 4.44GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  78%|███████▊  | 4.46GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  78%|███████▊  | 4.47GB / 5.76GB,  151MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  78%|███████▊  | 4.48GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  78%|███████▊  | 4.49GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  78%|███████▊  | 4.51GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  79%|███████▊  | 4.52GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  79%|███████▉  | 4.54GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  79%|███████▉  | 4.56GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  79%|███████▉  | 4.57GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  80%|███████▉  | 4.58GB / 5.76GB,  150MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  80%|████████  | 4.61GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  80%|████████  | 4.62GB / 5.76GB,  151MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  81%|████████  | 4.64GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  81%|████████  | 4.65GB / 5.76GB,  151MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  82%|████████▏ | 4.69GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  82%|████████▏ | 4.70GB / 5.76GB,  153MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  82%|████████▏ | 4.73GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  82%|████████▏ | 4.74GB / 5.76GB,  154MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  83%|████████▎ | 4.77GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  83%|████████▎ | 4.78GB / 5.76GB,  154MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  84%|████████▎ | 4.80GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  84%|████████▎ | 4.81GB / 5.76GB,  155MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  84%|████████▍ | 4.83GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  84%|████████▍ | 4.84GB / 5.76GB,  155MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  85%|████████▍ | 4.86GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  85%|████████▍ | 4.88GB / 5.76GB,  155MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  85%|████████▌ | 4.90GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  85%|████████▌ | 4.91GB / 5.76GB,  155MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  86%|████████▌ | 4.93GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  86%|████████▌ | 4.94GB / 5.76GB,  155MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  86%|████████▋ | 4.96GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  86%|████████▋ | 4.97GB / 5.76GB,  156MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  87%|████████▋ | 4.99GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  87%|████████▋ | 5.00GB / 5.76GB,  156MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  87%|████████▋ | 5.02GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  87%|████████▋ | 5.03GB / 5.76GB,  155MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  88%|████████▊ | 5.05GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  88%|████████▊ | 5.06GB / 5.76GB,  155MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  89%|████████▊ | 5.09GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  89%|████████▊ | 5.10GB / 5.76GB,  156MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  89%|████████▉ | 5.11GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  89%|████████▉ | 5.12GB / 5.76GB,  155MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  89%|████████▉ | 5.14GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  90%|████████▉ | 5.16GB / 5.76GB,  156MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  90%|█████████ | 5.18GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  90%|█████████ | 5.19GB / 5.76GB,  156MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  91%|█████████ | 5.21GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  91%|█████████ | 5.22GB / 5.76GB,  157MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  91%|█████████ | 5.24GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  91%|█████████ | 5.25GB / 5.76GB,  157MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  92%|█████████▏| 5.26GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  92%|█████████▏| 5.28GB / 5.76GB,  156MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  92%|█████████▏| 5.30GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  92%|█████████▏| 5.32GB / 5.76GB,  158MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  93%|█████████▎| 5.34GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  93%|█████████▎| 5.35GB / 5.76GB,  158MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  93%|█████████▎| 5.37GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  93%|█████████▎| 5.38GB / 5.76GB,  158MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  94%|█████████▍| 5.40GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  94%|█████████▍| 5.41GB / 5.76GB,  158MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  94%|█████████▍| 5.43GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  95%|█████████▍| 5.44GB / 5.76GB,  158MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  95%|█████████▌| 5.46GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  95%|█████████▌| 5.48GB / 5.76GB,  158MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  96%|█████████▌| 5.50GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  96%|█████████▌| 5.51GB / 5.76GB,  158MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  96%|█████████▌| 5.53GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  96%|█████████▌| 5.54GB / 5.76GB,  158MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  97%|█████████▋| 5.56GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  97%|█████████▋| 5.57GB / 5.76GB,  159MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  97%|█████████▋| 5.59GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  97%|█████████▋| 5.60GB / 5.76GB,  159MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  98%|█████████▊| 5.62GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  98%|█████████▊| 5.64GB / 5.76GB,  159MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  98%|█████████▊| 5.66GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  98%|█████████▊| 5.67GB / 5.76GB,  160MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  99%|█████████▉| 5.68GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  99%|█████████▉| 5.69GB / 5.76GB,  159MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors:  99%|█████████▉| 5.71GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      :  99%|█████████▉| 5.72GB / 5.76GB,  159MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors: 100%|█████████▉| 5.74GB / 5.75GB            [A[A[AProcessing Files (1 / 2)      : 100%|█████████▉| 5.76GB / 5.76GB,  159MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors: 100%|██████████| 5.75GB / 5.75GB            [A[A[AProcessing Files (2 / 2)      : 100%|██████████| 5.76GB / 5.76GB,  157MB/s  
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors: 100%|██████████| 5.75GB / 5.75GB            [A[A[A
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors: 100%|██████████| 5.75GB / 5.75GB            [A[A[A
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors: 100%|██████████| 5.75GB / 5.75GB            [A[A[A
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors: 100%|██████████| 5.75GB / 5.75GB            [A[A[A
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors: 100%|██████████| 5.75GB / 5.75GB            [A[A[A
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors: 100%|██████████| 5.75GB / 5.75GB            [A[A[A
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors: 100%|██████████| 5.75GB / 5.75GB            [A[A[A
+
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            [A[A
+
+
+  ...adapter_model.safetensors: 100%|██████████| 5.75GB / 5.75GB            [A[A[AProcessing Files (2 / 2)      : 100%|██████████| 5.76GB / 5.76GB,  136MB/s  
+New Data Upload               : |          |  0.00B /  0.00B,  0.00B/s  
+  ...t/cpt-lora/tokenizer.json: 100%|██████████| 11.4MB / 11.4MB            
+  ...adapter_model.safetensors: 100%|██████████| 5.75GB / 5.75GB            
+[push] /workspace/out/cpt-lora -> UNOA/dalbitalba-qwen3-cpt-20260430-0000/cpt-lora
+[hf] cpt_push=True sft_push=False
+2026-04-30T00:09:51Z [5/6] HF upload 완료
+2026-04-30T00:09:51Z [DONE] done_cpt_only (total 8m)
+timestamp=2026-04-30T00:09:51Z
+status=done_cpt_only
+base_model=Qwen/Qwen3-8B-Base
+cpt_elapsed_min=2
+sft_elapsed_min=1
+total_elapsed_min=8
+cpt_out=/workspace/out/cpt-lora
+cpt_merged=/workspace/out/cpt-merged-fp16
+sft_out=/workspace/out/sft-lora
+hf_status=uploaded
+hf_repo_cpt=UNOA/dalbitalba-qwen3-cpt-20260430-0000
+hf_repo_sft=UNOA/dalbitalba-qwen3-sft-20260430-0000
+pod_id=6kcrjcrka8jod1
+{"id":"w7MQXFvHEiqK","time":1777507791,"expires":1777550991,"event":"message","topic":"dalbit_ai_alert","message":"dalbit chain done_cpt_only (8m) cpt=UNOA/dalbitalba-qwen3-cpt-20260430-0000 sft=UNOA/dalbitalba-qwen3-sft-20260430-0000"}

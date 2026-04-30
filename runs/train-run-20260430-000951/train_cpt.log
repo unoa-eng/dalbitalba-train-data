@@ -1,0 +1,283 @@
+2026-04-29 08:50:39,975 [INFO] ============================================================
+2026-04-29 08:50:39,981 [INFO] CPT v2 시작
+2026-04-29 08:50:39,984 [INFO]   base         : Qwen/Qwen3-8B-Base
+2026-04-29 08:50:39,985 [INFO]   input        : /workspace/data/v3-data/cpt_structured_v3.jsonl
+2026-04-29 08:50:39,986 [INFO]   replay       : /workspace/data/v3-data/replay_korean_5k.jsonl
+2026-04-29 08:50:39,988 [INFO]   val          : /workspace/data/val_set.v3.jsonl
+2026-04-29 08:50:39,989 [INFO]   output       : /workspace/out/cpt-lora
+2026-04-29 08:50:39,990 [INFO]   hub_model_id : UNOA/dalbitalba-qwen3-cpt-20260429-0849
+2026-04-29 08:50:39,991 [INFO]   tokenizer_dir: /workspace/repo/v3-data/tokenizer
+2026-04-29 08:50:39,993 [INFO]   extend_tokens: True
+2026-04-29 08:50:39,994 [INFO]   LoRA r=64 α=64 rsLoRA=True DoRA=False
+2026-04-29 08:50:39,995 [INFO]   seq_len=1024 eff_batch=16 lr=0.0001 epochs=1
+2026-04-29 08:50:39,996 [INFO]   packing      : True (embed_warmup_steps=20)
+2026-04-29 08:50:39,997 [INFO]   seed         : 42
+2026-04-29 08:50:39,998 [INFO] ============================================================
+2026-04-29 08:50:40,088 [INFO] GPU: NVIDIA A40 (47.7GB)
+2026-04-29 08:50:40,134 [INFO] structured CPT markers detected in /workspace/data/v3-data/cpt_structured_v3.jsonl (sample row 1)
+2026-04-29 08:50:40,139 [INFO] structured CPT detected; loading tokenizer from CPT_TOKENIZER_DIR=/workspace/repo/v3-data/tokenizer
+2026-04-29 08:50:40,626 [INFO] runtime tokenizer manifest loaded: /workspace/repo/v3-data/tokenizer/token_list.json (11 tokens)
+2026-04-29 08:50:40,666 [INFO] runtime tokenizer extension enabled: requested=11 added=0 total_vocab=151680
+2026-04-29 08:50:40,711 [INFO] tokenizer size: base_vocab=151643 total_vocab=151680 structured=True source=/workspace/repo/v3-data/tokenizer
+2026-04-29 08:52:21,456 [INFO] resize_token_embeddings: 151936 -> 151680
+2026-04-29 08:52:21,523 [INFO] CPT_LORA_EMBED=1 -> target_modules=down_proj,embed_tokens,gate_proj,k_proj,lm_head,o_proj,q_proj,up_proj,v_proj
+2026-04-29 08:52:21,529 [INFO] LoRA target_modules=['down_proj', 'embed_tokens', 'gate_proj', 'k_proj', 'lm_head', 'o_proj', 'q_proj', 'up_proj', 'v_proj']
+2026-04-29 08:52:39,638 [INFO] load_corpus(/workspace/data/v3-data/cpt_structured_v3.jsonl) -> 53,675 rows (skipped 0)
+2026-04-29 08:52:39,660 [INFO] load_corpus(/workspace/data/v3-data/replay_korean_5k.jsonl) -> 5,000 rows (skipped 0)
+2026-04-29 08:52:39,661 [WARNING] replay rows 부족: desired=5,368 available=5,000 -> available rows only
+2026-04-29 08:52:39,667 [INFO] replay mix 적용: main=53,675 replay=5,000 total=58,675 effective_ratio=0.0852
+2026-04-29 08:52:39,669 [INFO] build_dataset(train) -> 58,675 rows
+2026-04-29 08:52:39,863 [INFO] load_corpus(/workspace/data/val_set.v3.jsonl) -> 412 rows (skipped 0)
+2026-04-29 08:52:39,864 [INFO] build_dataset(val) -> 412 rows
+2026-04-29 08:52:51,464 [INFO] packing train: source_rows=58675 -> packed_sequences=4538 (12.93x fewer rows), tokens=4180923, avg_tokens_per_sequence=921.3
+2026-04-29 08:52:51,544 [INFO] packing val: source_rows=412 -> packed_sequences=38 (10.84x fewer rows), tokens=33303, avg_tokens_per_sequence=876.4
+2026-04-29 08:52:52,755 [INFO] tokenize 완료: train 4,538 rows / ~4,180,923 tokens, val 38 rows
+2026-04-29 08:52:52,756 [INFO] steps_per_epoch=284 total_steps=284 warmup=8
+2026-04-29 08:52:52,757 [INFO] [step] DataCollator build
+2026-04-29 08:52:52,758 [INFO] [step] DataCollatorForPackedCPT OK (preserves EOS in labels)
+2026-04-29 08:52:52,759 [INFO] [step] building training_args_kwargs
+2026-04-29 08:52:52,760 [INFO] [step] instantiate TrainingArguments (report_to=none, push_to_hub=True, optim=paged_adamw_32bit)
+2026-04-29 08:52:52,786 [INFO] [step] TrainingArguments OK
+2026-04-29 08:52:52,800 [INFO] staged warmup embed-only: enabled 4/508 parameter tensors, trainable params=19,939,328/194,527,232
+2026-04-29 08:52:52,801 [INFO] [step] instantiate Trainer
+2026-04-29 08:52:53,199 [INFO] [step] Trainer OK
+2026-04-29 08:52:53,201 [INFO] 학습 시작 — trainer.train()
+2026-04-29 08:52:57,098 [INFO] staged embed warmup active: first 20 optimizer steps keep non-embed LoRA grads cleared
+2026-04-29 09:01:51,920 [INFO] staged embed warmup complete at global_step=20; full LoRA gradients restored
+2026-04-29 10:55:14,069 [INFO] LoRA adapter 저장 → /workspace/out/cpt-lora
+2026-04-29 10:55:42,131 [INFO] CPT 완료 (2.08h) → /workspace/out/cpt-lora
+2026-04-29 15:24:35,895 [INFO] ============================================================
+2026-04-29 15:24:35,897 [INFO] CPT v2 시작
+2026-04-29 15:24:35,898 [INFO]   base         : Qwen/Qwen3-8B-Base
+2026-04-29 15:24:35,899 [INFO]   input        : /workspace/data/v3-data/cpt_structured_v3.jsonl
+2026-04-29 15:24:35,900 [INFO]   replay       : /workspace/data/v3-data/replay_korean_5k.jsonl
+2026-04-29 15:24:35,901 [INFO]   val          : /workspace/data/val_set.v3.jsonl
+2026-04-29 15:24:35,901 [INFO]   output       : /workspace/out/cpt-lora
+2026-04-29 15:24:35,902 [INFO]   hub_model_id : UNOA/dalbitalba-qwen3-cpt-20260429-1523
+2026-04-29 15:24:35,903 [INFO]   tokenizer_dir: /workspace/repo/v3-data/tokenizer
+2026-04-29 15:24:35,922 [INFO]   extend_tokens: True
+2026-04-29 15:24:35,924 [INFO]   LoRA r=64 α=64 rsLoRA=True DoRA=False
+2026-04-29 15:24:35,925 [INFO]   seq_len=1024 eff_batch=16 lr=0.0001 epochs=1
+2026-04-29 15:24:35,926 [INFO]   packing      : True (embed_warmup_steps=20)
+2026-04-29 15:24:35,927 [INFO]   seed         : 42
+2026-04-29 15:24:35,929 [INFO] ============================================================
+2026-04-29 15:24:35,957 [INFO] GPU: NVIDIA A40 (47.7GB)
+2026-04-29 15:24:35,967 [INFO] structured CPT markers detected in /workspace/data/v3-data/cpt_structured_v3.jsonl (sample row 1)
+2026-04-29 15:24:35,971 [INFO] structured CPT detected; loading tokenizer from CPT_TOKENIZER_DIR=/workspace/repo/v3-data/tokenizer
+2026-04-29 15:24:36,424 [INFO] runtime tokenizer manifest loaded: /workspace/repo/v3-data/tokenizer/token_list.json (11 tokens)
+2026-04-29 15:24:36,460 [INFO] runtime tokenizer extension enabled: requested=11 added=0 total_vocab=151680
+2026-04-29 15:24:36,517 [INFO] tokenizer size: base_vocab=151643 total_vocab=151680 structured=True source=/workspace/repo/v3-data/tokenizer
+2026-04-29 15:26:13,235 [INFO] resize_token_embeddings: 151936 -> 151680
+2026-04-29 15:26:13,303 [INFO] CPT_LORA_EMBED=1 -> target_modules=down_proj,embed_tokens,gate_proj,k_proj,lm_head,o_proj,q_proj,up_proj,v_proj
+2026-04-29 15:26:13,321 [INFO] LoRA target_modules=['down_proj', 'embed_tokens', 'gate_proj', 'k_proj', 'lm_head', 'o_proj', 'q_proj', 'up_proj', 'v_proj']
+2026-04-29 15:26:30,423 [INFO] load_corpus(/workspace/data/v3-data/cpt_structured_v3.jsonl) -> 53,675 rows (skipped 0)
+2026-04-29 15:26:30,445 [INFO] load_corpus(/workspace/data/v3-data/replay_korean_5k.jsonl) -> 5,000 rows (skipped 0)
+2026-04-29 15:26:30,446 [WARNING] replay rows 부족: desired=5,368 available=5,000 -> available rows only
+2026-04-29 15:26:30,452 [INFO] replay mix 적용: main=53,675 replay=5,000 total=58,675 effective_ratio=0.0852
+2026-04-29 15:26:30,454 [INFO] build_dataset(train) -> 58,675 rows
+2026-04-29 15:26:30,591 [INFO] load_corpus(/workspace/data/val_set.v3.jsonl) -> 412 rows (skipped 0)
+2026-04-29 15:26:30,592 [INFO] build_dataset(val) -> 412 rows
+2026-04-29 15:26:41,531 [INFO] packing train: source_rows=58675 -> packed_sequences=4538 (12.93x fewer rows), tokens=4180923, avg_tokens_per_sequence=921.3
+2026-04-29 15:26:41,609 [INFO] packing val: source_rows=412 -> packed_sequences=38 (10.84x fewer rows), tokens=33303, avg_tokens_per_sequence=876.4
+2026-04-29 15:26:42,800 [INFO] tokenize 완료: train 4,538 rows / ~4,180,923 tokens, val 38 rows
+2026-04-29 15:26:42,801 [INFO] steps_per_epoch=284 total_steps=284 warmup=8
+2026-04-29 15:26:42,802 [INFO] [step] DataCollator build
+2026-04-29 15:26:42,820 [INFO] [step] DataCollatorForPackedCPT OK (preserves EOS in labels)
+2026-04-29 15:26:42,823 [INFO] [step] building training_args_kwargs
+2026-04-29 15:26:42,824 [INFO] [step] instantiate TrainingArguments (report_to=none, push_to_hub=True, optim=paged_adamw_32bit)
+2026-04-29 15:26:42,853 [INFO] [step] TrainingArguments OK
+2026-04-29 15:26:42,858 [INFO] resume from /workspace/out/cpt-ckpt/checkpoint-283
+2026-04-29 15:26:42,868 [INFO] resume checkpoint already past embed warmup boundary (checkpoint step=283, warmup=20) -> skip staged warmup
+2026-04-29 15:26:42,869 [INFO] [step] instantiate Trainer
+2026-04-29 15:26:43,183 [INFO] [step] Trainer OK
+2026-04-29 15:26:43,184 [INFO] 학습 시작 — trainer.train()
+2026-04-29 15:27:23,873 [INFO] LoRA adapter 저장 → /workspace/out/cpt-lora
+2026-04-29 15:27:42,880 [INFO] CPT 완료 (0.05h) → /workspace/out/cpt-lora
+2026-04-29 17:01:24,845 [INFO] ============================================================
+2026-04-29 17:01:24,847 [INFO] CPT v2 시작
+2026-04-29 17:01:24,848 [INFO]   base         : Qwen/Qwen3-8B-Base
+2026-04-29 17:01:24,849 [INFO]   input        : /workspace/data/v3-data/cpt_structured_v3.jsonl
+2026-04-29 17:01:24,850 [INFO]   replay       : /workspace/data/v3-data/replay_korean_5k.jsonl
+2026-04-29 17:01:24,851 [INFO]   val          : /workspace/data/val_set.v3.jsonl
+2026-04-29 17:01:24,852 [INFO]   output       : /workspace/out/cpt-lora
+2026-04-29 17:01:24,853 [INFO]   hub_model_id : UNOA/dalbitalba-qwen3-cpt-20260429-1700
+2026-04-29 17:01:24,854 [INFO]   tokenizer_dir: /workspace/repo/v3-data/tokenizer
+2026-04-29 17:01:24,855 [INFO]   extend_tokens: True
+2026-04-29 17:01:24,856 [INFO]   LoRA r=64 α=64 rsLoRA=True DoRA=False
+2026-04-29 17:01:24,857 [INFO]   seq_len=1024 eff_batch=16 lr=0.0001 epochs=1
+2026-04-29 17:01:24,857 [INFO]   packing      : True (embed_warmup_steps=20)
+2026-04-29 17:01:24,859 [INFO]   seed         : 42
+2026-04-29 17:01:24,860 [INFO] ============================================================
+2026-04-29 17:01:24,888 [INFO] GPU: NVIDIA A40 (47.7GB)
+2026-04-29 17:01:24,895 [INFO] structured CPT markers detected in /workspace/data/v3-data/cpt_structured_v3.jsonl (sample row 1)
+2026-04-29 17:01:24,899 [INFO] structured CPT detected; loading tokenizer from CPT_TOKENIZER_DIR=/workspace/repo/v3-data/tokenizer
+2026-04-29 17:01:25,284 [INFO] runtime tokenizer manifest loaded: /workspace/repo/v3-data/tokenizer/token_list.json (11 tokens)
+2026-04-29 17:01:25,317 [INFO] runtime tokenizer extension enabled: requested=11 added=0 total_vocab=151680
+2026-04-29 17:01:25,356 [INFO] tokenizer size: base_vocab=151643 total_vocab=151680 structured=True source=/workspace/repo/v3-data/tokenizer
+2026-04-29 17:02:56,860 [INFO] resize_token_embeddings: 151936 -> 151680
+2026-04-29 17:02:56,926 [INFO] CPT_LORA_EMBED=1 -> target_modules=down_proj,embed_tokens,gate_proj,k_proj,lm_head,o_proj,q_proj,up_proj,v_proj
+2026-04-29 17:02:56,927 [INFO] LoRA target_modules=['down_proj', 'embed_tokens', 'gate_proj', 'k_proj', 'lm_head', 'o_proj', 'q_proj', 'up_proj', 'v_proj']
+2026-04-29 17:03:12,280 [INFO] load_corpus(/workspace/data/v3-data/cpt_structured_v3.jsonl) -> 53,675 rows (skipped 0)
+2026-04-29 17:03:12,322 [INFO] load_corpus(/workspace/data/v3-data/replay_korean_5k.jsonl) -> 5,000 rows (skipped 0)
+2026-04-29 17:03:12,324 [WARNING] replay rows 부족: desired=5,368 available=5,000 -> available rows only
+2026-04-29 17:03:12,332 [INFO] replay mix 적용: main=53,675 replay=5,000 total=58,675 effective_ratio=0.0852
+2026-04-29 17:03:12,333 [INFO] build_dataset(train) -> 58,675 rows
+2026-04-29 17:03:12,485 [INFO] load_corpus(/workspace/data/val_set.v3.jsonl) -> 412 rows (skipped 0)
+2026-04-29 17:03:12,486 [INFO] build_dataset(val) -> 412 rows
+2026-04-29 17:03:22,977 [INFO] packing train: source_rows=58675 -> packed_sequences=4538 (12.93x fewer rows), tokens=4180923, avg_tokens_per_sequence=921.3
+2026-04-29 17:03:23,055 [INFO] packing val: source_rows=412 -> packed_sequences=38 (10.84x fewer rows), tokens=33303, avg_tokens_per_sequence=876.4
+2026-04-29 17:03:24,225 [INFO] tokenize 완료: train 4,538 rows / ~4,180,923 tokens, val 38 rows
+2026-04-29 17:03:24,226 [INFO] steps_per_epoch=284 total_steps=284 warmup=8
+2026-04-29 17:03:24,227 [INFO] [step] DataCollator build
+2026-04-29 17:03:24,229 [INFO] [step] DataCollatorForPackedCPT OK (preserves EOS in labels)
+2026-04-29 17:03:24,230 [INFO] [step] building training_args_kwargs
+2026-04-29 17:03:24,232 [INFO] [step] instantiate TrainingArguments (report_to=none, push_to_hub=True, optim=paged_adamw_32bit)
+2026-04-29 17:03:24,261 [INFO] [step] TrainingArguments OK
+2026-04-29 17:03:24,266 [INFO] resume from /workspace/out/cpt-ckpt/checkpoint-283
+2026-04-29 17:03:24,273 [INFO] resume checkpoint already past embed warmup boundary (checkpoint step=283, warmup=20) -> skip staged warmup
+2026-04-29 17:03:24,274 [INFO] [step] instantiate Trainer
+2026-04-29 17:03:24,625 [INFO] [step] Trainer OK
+2026-04-29 17:03:24,630 [INFO] 학습 시작 — trainer.train()
+2026-04-29 17:04:04,545 [INFO] LoRA adapter 저장 → /workspace/out/cpt-lora
+2026-04-29 17:04:25,690 [INFO] CPT 완료 (0.05h) → /workspace/out/cpt-lora
+2026-04-29 18:31:19,823 [INFO] ============================================================
+2026-04-29 18:31:19,826 [INFO] CPT v2 시작
+2026-04-29 18:31:19,827 [INFO]   base         : Qwen/Qwen3-8B-Base
+2026-04-29 18:31:19,828 [INFO]   input        : /workspace/data/v3-data/cpt_structured_v3.jsonl
+2026-04-29 18:31:19,829 [INFO]   replay       : /workspace/data/v3-data/replay_korean_5k.jsonl
+2026-04-29 18:31:19,830 [INFO]   val          : /workspace/data/val_set.v3.jsonl
+2026-04-29 18:31:19,831 [INFO]   output       : /workspace/out/cpt-lora
+2026-04-29 18:31:19,832 [INFO]   hub_model_id : UNOA/dalbitalba-qwen3-cpt-20260429-1830
+2026-04-29 18:31:19,833 [INFO]   tokenizer_dir: /workspace/repo/v3-data/tokenizer
+2026-04-29 18:31:19,834 [INFO]   extend_tokens: True
+2026-04-29 18:31:19,835 [INFO]   LoRA r=64 α=64 rsLoRA=True DoRA=False
+2026-04-29 18:31:19,836 [INFO]   seq_len=1024 eff_batch=16 lr=0.0001 epochs=1
+2026-04-29 18:31:19,837 [INFO]   packing      : True (embed_warmup_steps=20)
+2026-04-29 18:31:19,837 [INFO]   seed         : 42
+2026-04-29 18:31:19,839 [INFO] ============================================================
+2026-04-29 18:31:19,867 [INFO] GPU: NVIDIA A40 (47.7GB)
+2026-04-29 18:31:19,876 [INFO] structured CPT markers detected in /workspace/data/v3-data/cpt_structured_v3.jsonl (sample row 1)
+2026-04-29 18:31:19,880 [INFO] structured CPT detected; loading tokenizer from CPT_TOKENIZER_DIR=/workspace/repo/v3-data/tokenizer
+2026-04-29 18:31:20,302 [INFO] runtime tokenizer manifest loaded: /workspace/repo/v3-data/tokenizer/token_list.json (11 tokens)
+2026-04-29 18:31:20,352 [INFO] runtime tokenizer extension enabled: requested=11 added=0 total_vocab=151680
+2026-04-29 18:31:20,382 [INFO] tokenizer size: base_vocab=151643 total_vocab=151680 structured=True source=/workspace/repo/v3-data/tokenizer
+2026-04-29 18:32:49,045 [INFO] resize_token_embeddings: 151936 -> 151680
+2026-04-29 18:32:49,106 [INFO] CPT_LORA_EMBED=1 -> target_modules=down_proj,embed_tokens,gate_proj,k_proj,lm_head,o_proj,q_proj,up_proj,v_proj
+2026-04-29 18:32:49,123 [INFO] LoRA target_modules=['down_proj', 'embed_tokens', 'gate_proj', 'k_proj', 'lm_head', 'o_proj', 'q_proj', 'up_proj', 'v_proj']
+2026-04-29 18:33:04,367 [INFO] load_corpus(/workspace/data/v3-data/cpt_structured_v3.jsonl) -> 53,675 rows (skipped 0)
+2026-04-29 18:33:04,386 [INFO] load_corpus(/workspace/data/v3-data/replay_korean_5k.jsonl) -> 5,000 rows (skipped 0)
+2026-04-29 18:33:04,387 [WARNING] replay rows 부족: desired=5,368 available=5,000 -> available rows only
+2026-04-29 18:33:04,392 [INFO] replay mix 적용: main=53,675 replay=5,000 total=58,675 effective_ratio=0.0852
+2026-04-29 18:33:04,394 [INFO] build_dataset(train) -> 58,675 rows
+2026-04-29 18:33:04,529 [INFO] load_corpus(/workspace/data/val_set.v3.jsonl) -> 412 rows (skipped 0)
+2026-04-29 18:33:04,530 [INFO] build_dataset(val) -> 412 rows
+2026-04-29 18:33:14,848 [INFO] packing train: source_rows=58675 -> packed_sequences=4538 (12.93x fewer rows), tokens=4180923, avg_tokens_per_sequence=921.3
+2026-04-29 18:33:14,941 [INFO] packing val: source_rows=412 -> packed_sequences=38 (10.84x fewer rows), tokens=33303, avg_tokens_per_sequence=876.4
+2026-04-29 18:33:16,114 [INFO] tokenize 완료: train 4,538 rows / ~4,180,923 tokens, val 38 rows
+2026-04-29 18:33:16,124 [INFO] steps_per_epoch=284 total_steps=284 warmup=8
+2026-04-29 18:33:16,126 [INFO] [step] DataCollator build
+2026-04-29 18:33:16,127 [INFO] [step] DataCollatorForPackedCPT OK (preserves EOS in labels)
+2026-04-29 18:33:16,128 [INFO] [step] building training_args_kwargs
+2026-04-29 18:33:16,129 [INFO] [step] instantiate TrainingArguments (report_to=none, push_to_hub=True, optim=paged_adamw_32bit)
+2026-04-29 18:33:16,154 [INFO] [step] TrainingArguments OK
+2026-04-29 18:33:16,159 [INFO] resume from /workspace/out/cpt-ckpt/checkpoint-283
+2026-04-29 18:33:16,169 [INFO] resume checkpoint already past embed warmup boundary (checkpoint step=283, warmup=20) -> skip staged warmup
+2026-04-29 18:33:16,170 [INFO] [step] instantiate Trainer
+2026-04-29 18:33:17,849 [INFO] [step] Trainer OK
+2026-04-29 18:33:17,850 [INFO] 학습 시작 — trainer.train()
+2026-04-29 18:33:58,750 [INFO] LoRA adapter 저장 → /workspace/out/cpt-lora
+2026-04-29 18:34:18,083 [INFO] CPT 완료 (0.05h) → /workspace/out/cpt-lora
+2026-04-29 23:01:34,150 [INFO] ============================================================
+2026-04-29 23:01:34,152 [INFO] CPT v2 시작
+2026-04-29 23:01:34,152 [INFO]   base         : Qwen/Qwen3-8B-Base
+2026-04-29 23:01:34,153 [INFO]   input        : /workspace/data/v3-data/cpt_structured_v3.jsonl
+2026-04-29 23:01:34,155 [INFO]   replay       : /workspace/data/v3-data/replay_korean_5k.jsonl
+2026-04-29 23:01:34,156 [INFO]   val          : /workspace/data/val_set.v3.jsonl
+2026-04-29 23:01:34,156 [INFO]   output       : /workspace/out/cpt-lora
+2026-04-29 23:01:34,157 [INFO]   hub_model_id : UNOA/dalbitalba-qwen3-cpt-20260429-2300
+2026-04-29 23:01:34,158 [INFO]   tokenizer_dir: /workspace/repo/v3-data/tokenizer
+2026-04-29 23:01:34,159 [INFO]   extend_tokens: True
+2026-04-29 23:01:34,160 [INFO]   LoRA r=64 α=64 rsLoRA=True DoRA=False
+2026-04-29 23:01:34,161 [INFO]   seq_len=1024 eff_batch=16 lr=0.0001 epochs=1
+2026-04-29 23:01:34,162 [INFO]   packing      : True (embed_warmup_steps=20)
+2026-04-29 23:01:34,162 [INFO]   seed         : 42
+2026-04-29 23:01:34,163 [INFO] ============================================================
+2026-04-29 23:01:34,192 [INFO] GPU: NVIDIA A40 (47.7GB)
+2026-04-29 23:01:34,199 [INFO] structured CPT markers detected in /workspace/data/v3-data/cpt_structured_v3.jsonl (sample row 1)
+2026-04-29 23:01:34,202 [INFO] structured CPT detected; loading tokenizer from CPT_TOKENIZER_DIR=/workspace/repo/v3-data/tokenizer
+2026-04-29 23:01:34,657 [INFO] runtime tokenizer manifest loaded: /workspace/repo/v3-data/tokenizer/token_list.json (11 tokens)
+2026-04-29 23:01:34,691 [INFO] runtime tokenizer extension enabled: requested=11 added=0 total_vocab=151680
+2026-04-29 23:01:34,725 [INFO] tokenizer size: base_vocab=151643 total_vocab=151680 structured=True source=/workspace/repo/v3-data/tokenizer
+2026-04-29 23:03:11,523 [INFO] resize_token_embeddings: 151936 -> 151680
+2026-04-29 23:03:11,589 [INFO] CPT_LORA_EMBED=1 -> target_modules=down_proj,embed_tokens,gate_proj,k_proj,lm_head,o_proj,q_proj,up_proj,v_proj
+2026-04-29 23:03:11,590 [INFO] LoRA target_modules=['down_proj', 'embed_tokens', 'gate_proj', 'k_proj', 'lm_head', 'o_proj', 'q_proj', 'up_proj', 'v_proj']
+2026-04-29 23:03:27,435 [INFO] load_corpus(/workspace/data/v3-data/cpt_structured_v3.jsonl) -> 53,675 rows (skipped 0)
+2026-04-29 23:03:27,455 [INFO] load_corpus(/workspace/data/v3-data/replay_korean_5k.jsonl) -> 5,000 rows (skipped 0)
+2026-04-29 23:03:27,456 [WARNING] replay rows 부족: desired=5,368 available=5,000 -> available rows only
+2026-04-29 23:03:27,463 [INFO] replay mix 적용: main=53,675 replay=5,000 total=58,675 effective_ratio=0.0852
+2026-04-29 23:03:27,464 [INFO] build_dataset(train) -> 58,675 rows
+2026-04-29 23:03:27,626 [INFO] load_corpus(/workspace/data/val_set.v3.jsonl) -> 412 rows (skipped 0)
+2026-04-29 23:03:27,626 [INFO] build_dataset(val) -> 412 rows
+2026-04-29 23:03:38,801 [INFO] packing train: source_rows=58675 -> packed_sequences=4538 (12.93x fewer rows), tokens=4180923, avg_tokens_per_sequence=921.3
+2026-04-29 23:03:38,877 [INFO] packing val: source_rows=412 -> packed_sequences=38 (10.84x fewer rows), tokens=33303, avg_tokens_per_sequence=876.4
+2026-04-29 23:03:40,076 [INFO] tokenize 완료: train 4,538 rows / ~4,180,923 tokens, val 38 rows
+2026-04-29 23:03:40,077 [INFO] steps_per_epoch=284 total_steps=284 warmup=8
+2026-04-29 23:03:40,078 [INFO] [step] DataCollator build
+2026-04-29 23:03:40,079 [INFO] [step] DataCollatorForPackedCPT OK (preserves EOS in labels)
+2026-04-29 23:03:40,080 [INFO] [step] building training_args_kwargs
+2026-04-29 23:03:40,081 [INFO] [step] instantiate TrainingArguments (report_to=none, push_to_hub=True, optim=paged_adamw_32bit)
+2026-04-29 23:03:40,111 [INFO] [step] TrainingArguments OK
+2026-04-29 23:03:40,125 [INFO] resume from /workspace/out/cpt-ckpt/checkpoint-283
+2026-04-29 23:03:40,134 [INFO] resume checkpoint already past embed warmup boundary (checkpoint step=283, warmup=20) -> skip staged warmup
+2026-04-29 23:03:40,134 [INFO] [step] instantiate Trainer
+2026-04-29 23:03:40,544 [INFO] [step] Trainer OK
+2026-04-29 23:03:40,545 [INFO] 학습 시작 — trainer.train()
+2026-04-29 23:04:24,503 [INFO] LoRA adapter 저장 → /workspace/out/cpt-lora
+2026-04-29 23:04:45,328 [INFO] CPT 완료 (0.05h) → /workspace/out/cpt-lora
+2026-04-30 00:01:19,303 [INFO] ============================================================
+2026-04-30 00:01:19,313 [INFO] CPT v2 시작
+2026-04-30 00:01:19,315 [INFO]   base         : Qwen/Qwen3-8B-Base
+2026-04-30 00:01:19,316 [INFO]   input        : /workspace/data/v3-data/cpt_structured_v3.jsonl
+2026-04-30 00:01:19,317 [INFO]   replay       : /workspace/data/v3-data/replay_korean_5k.jsonl
+2026-04-30 00:01:19,317 [INFO]   val          : /workspace/data/val_set.v3.jsonl
+2026-04-30 00:01:19,318 [INFO]   output       : /workspace/out/cpt-lora
+2026-04-30 00:01:19,319 [INFO]   hub_model_id : UNOA/dalbitalba-qwen3-cpt-20260430-0000
+2026-04-30 00:01:19,320 [INFO]   tokenizer_dir: /workspace/repo/v3-data/tokenizer
+2026-04-30 00:01:19,320 [INFO]   extend_tokens: True
+2026-04-30 00:01:19,321 [INFO]   LoRA r=64 α=64 rsLoRA=True DoRA=False
+2026-04-30 00:01:19,322 [INFO]   seq_len=1024 eff_batch=16 lr=0.0001 epochs=1
+2026-04-30 00:01:19,322 [INFO]   packing      : True (embed_warmup_steps=20)
+2026-04-30 00:01:19,323 [INFO]   seed         : 42
+2026-04-30 00:01:19,324 [INFO] ============================================================
+2026-04-30 00:01:19,350 [INFO] GPU: NVIDIA A40 (47.7GB)
+2026-04-30 00:01:19,359 [INFO] structured CPT markers detected in /workspace/data/v3-data/cpt_structured_v3.jsonl (sample row 1)
+2026-04-30 00:01:19,362 [INFO] structured CPT detected; loading tokenizer from CPT_TOKENIZER_DIR=/workspace/repo/v3-data/tokenizer
+2026-04-30 00:01:19,728 [INFO] runtime tokenizer manifest loaded: /workspace/repo/v3-data/tokenizer/token_list.json (11 tokens)
+2026-04-30 00:01:19,759 [INFO] runtime tokenizer extension enabled: requested=11 added=0 total_vocab=151680
+2026-04-30 00:01:19,789 [INFO] tokenizer size: base_vocab=151643 total_vocab=151680 structured=True source=/workspace/repo/v3-data/tokenizer
+2026-04-30 00:02:50,905 [INFO] resize_token_embeddings: 151936 -> 151680
+2026-04-30 00:02:50,972 [INFO] CPT_LORA_EMBED=1 -> target_modules=down_proj,embed_tokens,gate_proj,k_proj,lm_head,o_proj,q_proj,up_proj,v_proj
+2026-04-30 00:02:50,973 [INFO] LoRA target_modules=['down_proj', 'embed_tokens', 'gate_proj', 'k_proj', 'lm_head', 'o_proj', 'q_proj', 'up_proj', 'v_proj']
+2026-04-30 00:03:04,482 [INFO] load_corpus(/workspace/data/v3-data/cpt_structured_v3.jsonl) -> 53,675 rows (skipped 0)
+2026-04-30 00:03:04,501 [INFO] load_corpus(/workspace/data/v3-data/replay_korean_5k.jsonl) -> 5,000 rows (skipped 0)
+2026-04-30 00:03:04,501 [WARNING] replay rows 부족: desired=5,368 available=5,000 -> available rows only
+2026-04-30 00:03:04,507 [INFO] replay mix 적용: main=53,675 replay=5,000 total=58,675 effective_ratio=0.0852
+2026-04-30 00:03:04,513 [INFO] build_dataset(train) -> 58,675 rows
+2026-04-30 00:03:04,647 [INFO] load_corpus(/workspace/data/val_set.v3.jsonl) -> 412 rows (skipped 0)
+2026-04-30 00:03:04,648 [INFO] build_dataset(val) -> 412 rows
+2026-04-30 00:03:14,679 [INFO] packing train: source_rows=58675 -> packed_sequences=4538 (12.93x fewer rows), tokens=4180923, avg_tokens_per_sequence=921.3
+2026-04-30 00:03:14,756 [INFO] packing val: source_rows=412 -> packed_sequences=38 (10.84x fewer rows), tokens=33303, avg_tokens_per_sequence=876.4
+2026-04-30 00:03:15,929 [INFO] tokenize 완료: train 4,538 rows / ~4,180,923 tokens, val 38 rows
+2026-04-30 00:03:15,931 [INFO] steps_per_epoch=284 total_steps=284 warmup=8
+2026-04-30 00:03:15,932 [INFO] [step] DataCollator build
+2026-04-30 00:03:15,933 [INFO] [step] DataCollatorForPackedCPT OK (preserves EOS in labels)
+2026-04-30 00:03:15,934 [INFO] [step] building training_args_kwargs
+2026-04-30 00:03:15,936 [INFO] [step] instantiate TrainingArguments (report_to=none, push_to_hub=True, optim=paged_adamw_32bit)
+2026-04-30 00:03:15,962 [INFO] [step] TrainingArguments OK
+2026-04-30 00:03:15,968 [INFO] resume from /workspace/out/cpt-ckpt/checkpoint-283
+2026-04-30 00:03:15,976 [INFO] resume checkpoint already past embed warmup boundary (checkpoint step=283, warmup=20) -> skip staged warmup
+2026-04-30 00:03:15,977 [INFO] [step] instantiate Trainer
+2026-04-30 00:03:16,383 [INFO] [step] Trainer OK
+2026-04-30 00:03:16,384 [INFO] 학습 시작 — trainer.train()
+2026-04-30 00:03:52,988 [INFO] LoRA adapter 저장 → /workspace/out/cpt-lora
+2026-04-30 00:04:11,969 [INFO] CPT 완료 (0.05h) → /workspace/out/cpt-lora
