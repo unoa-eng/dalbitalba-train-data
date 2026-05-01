@@ -209,7 +209,7 @@ git config user.name "${GITHUB_NAME:-dalbitalba-eval}"
 log "[1/5] install python dependencies"
 run_timeout "${EVAL_INSTALL_TIMEOUT_HOURS}" "pip install" \
   ${PIP} install -q --no-cache-dir --upgrade \
-  "transformers==4.51.3" \
+  "transformers>=4.55.0,<5" \
   "peft==0.13.2" \
   "bitsandbytes==0.49.2" \
   "accelerate==0.34.2" \
