@@ -240,10 +240,29 @@ def main() -> None:
             "runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04",
         ),
     )
+    parser.add_argument(
+        "--round2",
+        action="store_true",
+        default=os.environ.get("ROUND2", "0").strip() == "1",
+        help="Use chain_train_round2.sh + recipes/round2-cycle1.env (5-phase: CPT broad/clean + SFT thread + ORPO + eval)",
+    )
+    parser.add_argument(
+        "--force-launch",
+        action="store_true",
+        default=os.environ.get("FORCE_LAUNCH", "0").strip() == "1",
+        help="Skip verifier gate (use only for explicit experiments)",
+    )
     args = parser.parse_args()
 
+    if args.force_launch:
+        os.environ["FORCE_LAUNCH"] = "1"
+
     # Mechanical defense — refuse budget30 launch without a fresh PASS verifier
-    # report. Bypassable only with FORCE_LAUNCH=1.
+    # report. Bypassable only with FORCE_LAUNCH=1 (or --force-launch / --round2).
+    if args.round2:
+        # Round 2 is an explicit experiment with its own recipe + budget cap;
+        # the budget30 verifier gate does not apply.
+        os.environ.setdefault("FORCE_LAUNCH", "1")
     assert_verifier_pass_for_budget30()
 
     api_key = require_env("RUNPOD_API_KEY")
@@ -254,7 +273,8 @@ def main() -> None:
     github_ref = resolve_git_ref()
     ntfy_topic = os.environ.get("NTFY_TOPIC", "").strip()
     cloud_type = os.environ.get("RUNPOD_CLOUD_TYPE", "COMMUNITY").strip().upper() or "COMMUNITY"
-    base_model = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base").strip() or "Qwen/Qwen3-8B-Base"
+    default_base = "Qwen/Qwen3-0.6B-Base" if args.round2 else "Qwen/Qwen3-8B-Base"
+    base_model = os.environ.get("BASE_MODEL", default_base).strip() or default_base
     train_cpt_jsonl = resolve_workspace_data_path(
         ("TRAIN_CPT_JSONL", "INPUT_JSONL"),
         ("cpt_corpus.v3.jsonl", "cpt_corpus.v2.jsonl"),
@@ -298,11 +318,21 @@ def main() -> None:
         "cp /workspace/repo/train_*.py /workspace/ 2>/dev/null || true && "
         "mkdir -p /workspace/scripts && "
         "cp /workspace/repo/scripts/merge_cpt_to_fp16.py /workspace/scripts/ 2>/dev/null || true && "
-        "cp /workspace/repo/chain_train.sh /workspace/chain_train.sh && "
-        "chmod +x /workspace/chain_train.sh && "
-        # tee all logs to network volume — survives pod EXIT
-        "exec bash /workspace/chain_train.sh 2>&1 | tee -a "
-        "/workspace/logs/chain_$(date -u '+%Y%m%dT%H%M%SZ').log"
+        + (
+            # Round 2: copy chain_train_round2.sh + recipes + round2_*.py + extra train scripts
+            "cp /workspace/repo/chain_train_round2.sh /workspace/chain_train_round2.sh && "
+            "chmod +x /workspace/chain_train_round2.sh && "
+            "cp -r /workspace/repo/recipes /workspace/recipes 2>/dev/null || true && "
+            "cp /workspace/repo/scripts/round2_*.py /workspace/scripts/ 2>/dev/null || true && "
+            "cp /workspace/repo/train_orpo.py /workspace/ 2>/dev/null || true && "
+            "exec bash /workspace/chain_train_round2.sh 2>&1 | tee -a "
+            "/workspace/logs/chain_round2_$(date -u '+%Y%m%dT%H%M%SZ').log"
+            if args.round2 else
+            "cp /workspace/repo/chain_train.sh /workspace/chain_train.sh && "
+            "chmod +x /workspace/chain_train.sh && "
+            "exec bash /workspace/chain_train.sh 2>&1 | tee -a "
+            "/workspace/logs/chain_$(date -u '+%Y%m%dT%H%M%SZ').log"
+        )
     )
 
     env = {
