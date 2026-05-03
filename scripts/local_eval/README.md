@@ -17,7 +17,7 @@ Verified specs (M4 16GB, MPS bf16):
 
 - `local_inference_smoke.py` — 0.6B base smoke test (~30s end-to-end)
 - `audit_ad_patterns.py` — broad ad/leakage pattern audit across CPT/SFT corpora
-- `audit_ad_targeted.py` — precise hard-ad markers (학원광고/공식어/대량판매)
+- `audit_corpus_pattern.py` — generic regex-pattern auditor across train/val/AI corpora. Replace EXAMPLE_PATTERNS for new investigations. **Not a quality gate** — one-off forensic tool. Current patterns reflect 2026-05-03 academy-ad hallucination probe.
 - `verify_metrics.py` — L1+L3 sanity check on metrics.json + L2 5-sample dump
 - `print_metrics.py` — pretty-print metrics.json + per-term domain alignment
 
