@@ -1,0 +1,10 @@
+{
+  "timestamp": "2026-05-03T12:09:06Z",
+  "status": "failed_rc_1",
+  "github_repo": "unoa-eng/dalbitalba-train-data",
+  "hf_adapter_repo": "UNOA/dalbitalba-qwen3-sft-20260430-0130",
+  "sft_adapter_repo": "UNOA/dalbitalba-qwen3-sft-20260430-0130",
+  "eval_mode": "phase6",
+  "base_model": "Qwen/Qwen3-8B-Base",
+  "pod_id": "__SELF__"
+}
