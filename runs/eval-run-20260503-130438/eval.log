@@ -1,0 +1,27 @@
+[2026-05-03 12:58:11 UTC] === dalbitalba eval chain start ===
+[2026-05-03 12:58:11 UTC] [1/5] install python dependencies
+[2026-05-03 12:58:11 UTC] [stage:start] pip install timeout=0.15h
+[2026-05-03 12:58:11 UTC] [stage:start] pip install timeout=0.15h
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 24.2 -> 26.1
+[notice] To update, run: python3 -m pip install --upgrade pip
+[2026-05-03 12:58:32 UTC] [1/5] verify python imports
+torch 2.4.1+cu124 cuda True 1
+transformers 4.55.4
+peft 0.13.2
+bitsandbytes 0.49.2
+accelerate 0.34.2
+[2026-05-03 12:58:37 UTC] [2/5] generate ai samples (phase6 deterministic gate)
+[2026-05-03 12:58:37 UTC] [phase6] source=sft_adapter repo=UNOA/dalbitalba-qwen3-sft-20260430-0130
+[2026-05-03 12:58:37 UTC] [stage:start] phase6:generate timeout=0.1h
+[2026-05-03 12:58:37 UTC] [stage:start] phase6:generate timeout=0.1h
+[model] base source: Qwen/Qwen3-8B-Base
+[tokenizer-attempt-fail] UNOA/dalbitalba-qwen3-sft-20260430-0130/sft-lora: TypeError: expected str, bytes or os.PathLike object, not NoneType
+[tokenizer-attempt-fail] UNOA/dalbitalba-qwen3-sft-20260430-0130/cpt-lora: TypeError: expected str, bytes or os.PathLike object, not NoneType
+[tokenizer] source: UNOA/dalbitalba-qwen3-sft-20260430-0130
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:00<00:02,  1.96it/s]Loading checkpoint shards:  40%|████      | 2/5 [00:01<00:01,  1.51it/s]Loading checkpoint shards:  60%|██████    | 3/5 [00:01<00:01,  1.71it/s]Loading checkpoint shards:  80%|████████  | 4/5 [00:02<00:00,  1.73it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:02<00:00,  2.36it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:02<00:00,  2.01it/s]
+[model] resize_token_embeddings: 151936 -> 151680
+[adapter-attempt-fail] UNOA/dalbitalba-qwen3-sft-20260430-0130 subfolder=sft-lora: ValueError: Can't find 'adapter_config.json' at 'UNOA/dalbitalba-qwen3-sft-20260430-0130'
+[adapter-attempt-fail] UNOA/dalbitalba-qwen3-sft-20260430-0130 subfolder=cpt-lora: ValueError: Can't find 'adapter_config.json' at 'UNOA/dalbitalba-qwen3-sft-20260430-0130'
+[2026-05-03 13:04:38 UTC] [exit] non-zero rc=124 — persisting failure artifacts
