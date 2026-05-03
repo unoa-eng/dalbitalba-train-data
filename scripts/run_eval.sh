@@ -63,8 +63,14 @@ stop_pod() {
     RUNPOD_POD_ID="$(curl -fsS -m 5 http://169.254.169.254/latest/meta-data/instance-id 2>/dev/null || curl -fsS -m 5 http://metadata.runpod.io/pod-id 2>/dev/null || true)"
   fi
   if [[ -n "${RUNPOD_POD_ID:-}" ]] && [[ -n "${RUNPOD_API_KEY:-}" ]]; then
-    runpodctl stop pod "${RUNPOD_POD_ID}" >/dev/null 2>&1 || \
-      curl -fsS -X POST -H "Authorization: Bearer ${RUNPOD_API_KEY}" "https://rest.runpod.io/v1/pods/${RUNPOD_POD_ID}/stop" >/dev/null 2>&1 || true
+    # Prefer DELETE (full terminate) — prevents container auto-restart loop / branch storm.
+    if curl -fsS -m 15 -X DELETE -H "Authorization: Bearer ${RUNPOD_API_KEY}" "https://rest.runpod.io/v1/pods/${RUNPOD_POD_ID}" >/dev/null 2>&1; then
+      log "[stop] pod terminated via DELETE"
+    else
+      log "[stop] DELETE failed; falling back to /stop"
+      runpodctl stop pod "${RUNPOD_POD_ID}" >/dev/null 2>&1 || \
+        curl -fsS -m 15 -X POST -H "Authorization: Bearer ${RUNPOD_API_KEY}" "https://rest.runpod.io/v1/pods/${RUNPOD_POD_ID}/stop" >/dev/null 2>&1 || true
+    fi
   fi
 }
 
