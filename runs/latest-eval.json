@@ -1,6 +1,6 @@
 {
-  "branch": "eval-run-20260503-121012",
-  "status": "failed_rc_1",
+  "branch": "eval-run-20260503-130438",
+  "status": "failed_rc_124",
   "hf_adapter_repo": "UNOA/dalbitalba-qwen3-sft-20260430-0130",
-  "timestamp": "2026-05-03T12:10:12Z"
+  "timestamp": "2026-05-03T13:04:38Z"
 }
