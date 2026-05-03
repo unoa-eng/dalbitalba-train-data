@@ -1,0 +1,640 @@
+{
+  "metrics": {
+    "n_ai": 123,
+    "n_raw": 412,
+    "bigram_jsd": 0.44833586309639306,
+    "length_kl": 1.1455678280708592,
+    "digit_density_delta": 0.010575382562706105,
+    "english_density_delta": 0.009058222387180674,
+    "domain_keyword_alignment": 0.0,
+    "tone_distribution_match": 0.2118557107901176,
+    "korean_retention_ppl": 1.4253738044679192,
+    "mauve_score": null
+  },
+  "details": {
+    "domain_keyword_alignment": {
+      "aligned_terms": 4,
+      "total_terms": 20,
+      "aligned_fraction": 0.2,
+      "minimum_ratio_term": "쩜오",
+      "minimum_ratio": 0.0,
+      "per_term": {
+        "쩜오": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0825242718446602,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "텐카": {
+          "generated_ratio": 0.008130081300813009,
+          "raw_ratio": 0.02912621359223301,
+          "ratio": 0.2791327913279133,
+          "aligned": false,
+          "source_absent": false
+        },
+        "호빠": {
+          "generated_ratio": 0.024390243902439025,
+          "raw_ratio": 0.021844660194174758,
+          "ratio": 1.1165311653116532,
+          "aligned": true,
+          "source_absent": false
+        },
+        "도파민": {
+          "generated_ratio": 0.016260162601626018,
+          "raw_ratio": 0.06796116504854369,
+          "ratio": 0.23925667828106856,
+          "aligned": false,
+          "source_absent": false
+        },
+        "하이퍼": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0024271844660194173,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "퍼펙트": {
+          "generated_ratio": 0.008130081300813009,
+          "raw_ratio": 0.024271844660194174,
+          "ratio": 0.334959349593496,
+          "aligned": false,
+          "source_absent": false
+        },
+        "마담": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.021844660194174758,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "TC": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.04611650485436893,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "티씨": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.01699029126213592,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "빠꾸": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0,
+          "ratio": 1.0,
+          "aligned": true,
+          "source_absent": true
+        },
+        "밀빵": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0703883495145631,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "풀묶": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0,
+          "ratio": 1.0,
+          "aligned": true,
+          "source_absent": true
+        },
+        "팁": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.04611650485436893,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "초이스": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.04854368932038835,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "케어": {
+          "generated_ratio": 0.008130081300813009,
+          "raw_ratio": 0.12378640776699029,
+          "ratio": 0.06567830384186195,
+          "aligned": false,
+          "source_absent": false
+        },
+        "갯수": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.050970873786407765,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "강남": {
+          "generated_ratio": 0.032520325203252036,
+          "raw_ratio": 0.15776699029126215,
+          "ratio": 0.20612883051907444,
+          "aligned": false,
+          "source_absent": false
+        },
+        "역삼": {
+          "generated_ratio": 0.024390243902439025,
+          "raw_ratio": 0.0024271844660194173,
+          "ratio": 10.04878048780488,
+          "aligned": true,
+          "source_absent": false
+        },
+        "선릉": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.007281553398058253,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "논현": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0024271844660194173,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        }
+      }
+    },
+    "tone_distribution_match": {
+      "generated": {
+        "반말": 0.3089430894308943,
+        "존댓말": 0.3170731707317073,
+        "혼합": 0.37398373983739835
+      },
+      "raw": {
+        "반말": 0.0970873786407767,
+        "존댓말": 0.3446601941747573,
+        "혼합": 0.558252427184466
+      },
+      "absolute_deltas": {
+        "반말": 0.2118557107901176,
+        "존댓말": 0.027587023443049974
+      },
+      "within_threshold": false
+    },
+    "korean_retention_ppl": {
+      "status": "ok",
+      "corpus": "v3-data/replay_korean_5k.jsonl",
+      "rows": 100,
+      "base_ppl": 15.403113197374964,
+      "adapted_ppl": 21.955194058792365,
+      "ppl_ratio": 1.4253738044679192,
+      "catastrophic_forgetting": false
+    },
+    "kind_counts": {
+      "generated": {
+        "post": 57,
+        "comment": 66
+      },
+      "raw": {
+        "post": 202,
+        "comment": 210
+      }
+    },
+    "kind_breakdown_mode": "explicit_kind_field",
+    "kind_breakdown": {
+      "post": {
+        "metrics": {
+          "n_ai": 57,
+          "n_raw": 202,
+          "bigram_jsd": 0.6097753310930538,
+          "length_kl": 16.861398285676135,
+          "digit_density_delta": 0.010845230580988451,
+          "english_density_delta": 0.009732718007617035,
+          "domain_keyword_alignment": 0.0,
+          "tone_distribution_match": 0.24509293034566612,
+          "korean_retention_ppl": null,
+          "mauve_score": null
+        },
+        "details": {
+          "domain_keyword_alignment": {
+            "aligned_terms": 10,
+            "total_terms": 20,
+            "aligned_fraction": 0.5,
+            "minimum_ratio_term": "쩜오",
+            "minimum_ratio": 0.0,
+            "per_term": {
+              "쩜오": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.01485148514851485,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "텐카": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.019801980198019802,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "호빠": {
+                "generated_ratio": 0.017543859649122806,
+                "raw_ratio": 0.019801980198019802,
+                "ratio": 0.8859649122807017,
+                "aligned": true,
+                "source_absent": false
+              },
+              "도파민": {
+                "generated_ratio": 0.017543859649122806,
+                "raw_ratio": 0.019801980198019802,
+                "ratio": 0.8859649122807017,
+                "aligned": true,
+                "source_absent": false
+              },
+              "하이퍼": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0049504950495049506,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "퍼펙트": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.009900990099009901,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "마담": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.009900990099009901,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "TC": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "티씨": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "빠꾸": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "밀빵": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0049504950495049506,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "풀묶": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "팁": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "초이스": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "케어": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.01485148514851485,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "갯수": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.009900990099009901,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "강남": {
+                "generated_ratio": 0.017543859649122806,
+                "raw_ratio": 0.034653465346534656,
+                "ratio": 0.506265664160401,
+                "aligned": true,
+                "source_absent": false
+              },
+              "역삼": {
+                "generated_ratio": 0.03508771929824561,
+                "raw_ratio": 0.0049504950495049506,
+                "ratio": 7.087719298245614,
+                "aligned": true,
+                "source_absent": false
+              },
+              "선릉": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.01485148514851485,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "논현": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0049504950495049506,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              }
+            }
+          },
+          "tone_distribution_match": {
+            "generated": {
+              "반말": 0.40350877192982454,
+              "존댓말": 0.08771929824561403,
+              "혼합": 0.5087719298245614
+            },
+            "raw": {
+              "반말": 0.15841584158415842,
+              "존댓말": 0.10396039603960396,
+              "혼합": 0.7376237623762376
+            },
+            "absolute_deltas": {
+              "반말": 0.24509293034566612,
+              "존댓말": 0.016241097793989925
+            },
+            "within_threshold": false
+          },
+          "korean_retention_ppl": {
+            "status": "skipped",
+            "reason": "disabled"
+          }
+        },
+        "gate": {
+          "verdict": "FAIL",
+          "violations": [
+            "bigram_jsd=0.6098 > 0.08",
+            "length_kl=16.8614 > 0.1",
+            "domain_keyword_alignment=0.0000 < 0.5",
+            "tone_distribution_match=0.2451 > 0.15",
+            "korean_retention_ppl=None (required metric unavailable)"
+          ]
+        }
+      },
+      "comment": {
+        "metrics": {
+          "n_ai": 66,
+          "n_raw": 210,
+          "bigram_jsd": 0.45105671664817226,
+          "length_kl": 0.6960197441795476,
+          "digit_density_delta": 0.03260226759563573,
+          "english_density_delta": 0.007473572159245979,
+          "domain_keyword_alignment": 0.0,
+          "tone_distribution_match": 0.18917748917748917,
+          "korean_retention_ppl": null,
+          "mauve_score": null
+        },
+        "details": {
+          "domain_keyword_alignment": {
+            "aligned_terms": 7,
+            "total_terms": 20,
+            "aligned_fraction": 0.35,
+            "minimum_ratio_term": "쩜오",
+            "minimum_ratio": 0.0,
+            "per_term": {
+              "쩜오": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.14761904761904762,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "텐카": {
+                "generated_ratio": 0.015151515151515152,
+                "raw_ratio": 0.0380952380952381,
+                "ratio": 0.3977272727272727,
+                "aligned": false,
+                "source_absent": false
+              },
+              "호빠": {
+                "generated_ratio": 0.030303030303030304,
+                "raw_ratio": 0.023809523809523808,
+                "ratio": 1.272727272727273,
+                "aligned": true,
+                "source_absent": false
+              },
+              "도파민": {
+                "generated_ratio": 0.015151515151515152,
+                "raw_ratio": 0.11428571428571428,
+                "ratio": 0.1325757575757576,
+                "aligned": false,
+                "source_absent": false
+              },
+              "하이퍼": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "퍼펙트": {
+                "generated_ratio": 0.015151515151515152,
+                "raw_ratio": 0.0380952380952381,
+                "ratio": 0.3977272727272727,
+                "aligned": false,
+                "source_absent": false
+              },
+              "마담": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.03333333333333333,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "TC": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.09047619047619047,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "티씨": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.03333333333333333,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "빠꾸": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "밀빵": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.13333333333333333,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "풀묶": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "팁": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.09047619047619047,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "초이스": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.09523809523809523,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "케어": {
+                "generated_ratio": 0.015151515151515152,
+                "raw_ratio": 0.22857142857142856,
+                "ratio": 0.0662878787878788,
+                "aligned": false,
+                "source_absent": false
+              },
+              "갯수": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.09047619047619047,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "강남": {
+                "generated_ratio": 0.045454545454545456,
+                "raw_ratio": 0.2761904761904762,
+                "ratio": 0.164576802507837,
+                "aligned": false,
+                "source_absent": false
+              },
+              "역삼": {
+                "generated_ratio": 0.015151515151515152,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "선릉": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "논현": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              }
+            }
+          },
+          "tone_distribution_match": {
+            "generated": {
+              "반말": 0.22727272727272727,
+              "존댓말": 0.5151515151515151,
+              "혼합": 0.25757575757575757
+            },
+            "raw": {
+              "반말": 0.0380952380952381,
+              "존댓말": 0.5761904761904761,
+              "혼합": 0.38571428571428573
+            },
+            "absolute_deltas": {
+              "반말": 0.18917748917748917,
+              "존댓말": 0.061038961038961004
+            },
+            "within_threshold": false
+          },
+          "korean_retention_ppl": {
+            "status": "skipped",
+            "reason": "disabled"
+          }
+        },
+        "gate": {
+          "verdict": "FAIL",
+          "violations": [
+            "bigram_jsd=0.4511 > 0.08",
+            "length_kl=0.6960 > 0.1",
+            "digit_density_delta=0.0326 > 0.03",
+            "domain_keyword_alignment=0.0000 < 0.5",
+            "tone_distribution_match=0.1892 > 0.15",
+            "korean_retention_ppl=None (required metric unavailable)"
+          ]
+        }
+      }
+    }
+  },
+  "gate": {
+    "verdict": "FAIL",
+    "violations": [
+      "bigram_jsd=0.4483 > 0.08",
+      "length_kl=1.1456 > 0.1",
+      "domain_keyword_alignment=0.0000 < 0.5",
+      "tone_distribution_match=0.2119 > 0.15"
+    ]
+  },
+  "thresholds": {
+    "bigram_jsd": {
+      "op": "le",
+      "value": 0.08
+    },
+    "length_kl": {
+      "op": "le",
+      "value": 0.1
+    },
+    "digit_density_delta": {
+      "op": "le",
+      "value": 0.03
+    },
+    "english_density_delta": {
+      "op": "le",
+      "value": 0.02
+    },
+    "domain_keyword_alignment": {
+      "op": "ge",
+      "value": 0.5
+    },
+    "tone_distribution_match": {
+      "op": "le",
+      "value": 0.15
+    },
+    "korean_retention_ppl": {
+      "op": "le",
+      "value": 1.5
+    },
+    "mauve_score": {
+      "op": "ge",
+      "value": 0.8
+    }
+  }
+}
