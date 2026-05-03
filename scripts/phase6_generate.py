@@ -226,6 +226,7 @@ def main() -> int:
     if SFT_ADAPTER_REPO:
         model = load_peft_adapter(model, peft, SFT_ADAPTER_REPO, adapter_kwargs)
 
+    t_start = time.time()
     with open(INPUT_PATH, "r", encoding="utf-8") as src, open(
         OUTPUT_PATH, "w", encoding="utf-8"
     ) as dst:
@@ -241,6 +242,9 @@ def main() -> int:
             kind = derive_kind(row)
 
             inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+            t_sample_start = time.time()
+            print(f"[gen-start {i}/{MAX_ROWS} since_start={t_sample_start - t_start:.1f}s]", flush=True)
+            t_g0 = time.time()
             outputs = model.generate(
                 **inputs,
                 max_new_tokens=MAX_NEW_TOKENS,
@@ -250,14 +254,19 @@ def main() -> int:
                 min_p=MIN_P,
                 pad_token_id=tokenizer.eos_token_id,
             )
+            print(f"[gen-pass1 {i}/{MAX_ROWS} latency={time.time() - t_g0:.2f}s]", flush=True)
 
             decoded = tokenizer.decode(outputs[0], skip_special_tokens=True)
             continuation = decoded[len(prompt) :] if decoded.startswith(prompt) else decoded
 
             # 격식체/AI 문체 재시도 (최대 2회)
+            n_retries = 0
             for _retry in range(2):
                 if not FORMAL_FILTER_RE.search(continuation):
                     break
+                n_retries += 1
+                t_r0 = time.time()
+                print(f"[retry-start {i}/{MAX_ROWS} attempt={n_retries}]", flush=True)
                 outputs = model.generate(
                     **inputs,
                     max_new_tokens=MAX_NEW_TOKENS,
@@ -267,6 +276,7 @@ def main() -> int:
                     min_p=MIN_P,
                     pad_token_id=tokenizer.eos_token_id,
                 )
+                print(f"[retry-done {i}/{MAX_ROWS} attempt={n_retries} latency={time.time() - t_r0:.2f}s]", flush=True)
                 decoded = tokenizer.decode(outputs[0], skip_special_tokens=True)
                 continuation = decoded[len(prompt) :] if decoded.startswith(prompt) else decoded
 
@@ -278,12 +288,8 @@ def main() -> int:
                 + "\n"
             )
 
-            now_t = time.time()
-            if not hasattr(main, "_gen_t0"):
-                main._gen_t0 = now_t
-            elapsed = now_t - main._gen_t0
-            if i <= 5 or i % 10 == 0 or i == MAX_ROWS:
-                print(f"[gen {i}/{MAX_ROWS}] elapsed={elapsed:.1f}s avg={elapsed/i:.2f}s/sample", flush=True)
+            t_sample_end = time.time()
+            print(f"[gen-done {i}/{MAX_ROWS} sample_latency={t_sample_end - t_sample_start:.2f}s total={t_sample_end - t_start:.1f}s retries={n_retries}]", flush=True)
 
     return 0
 
