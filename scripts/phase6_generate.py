@@ -21,6 +21,8 @@ MAX_NEW_TOKENS = int(os.environ.get("MAX_NEW_TOKENS", "200"))
 TEMPERATURE = float(os.environ.get("TEMPERATURE", "1.1"))
 TOP_P = float(os.environ.get("TOP_P", "0.9"))
 MIN_P = float(os.environ.get("MIN_P", "0.05"))
+REPETITION_PENALTY = float(os.environ.get("REPETITION_PENALTY", "1.15"))
+NO_REPEAT_NGRAM_SIZE = int(os.environ.get("NO_REPEAT_NGRAM_SIZE", "4"))
 KIND_ORDER = {"post", "comment"}
 COMMENT_HINT_RE = re.compile(r"(댓글|답글|comment|reply)")
 POST_HINT_RE = re.compile(r"(게시글|본문|post|원글)")
@@ -252,6 +254,8 @@ def main() -> int:
                 temperature=TEMPERATURE,
                 top_p=TOP_P,
                 min_p=MIN_P,
+                repetition_penalty=REPETITION_PENALTY,
+                no_repeat_ngram_size=NO_REPEAT_NGRAM_SIZE,
                 pad_token_id=tokenizer.eos_token_id,
             )
             print(f"[gen-pass1 {i}/{MAX_ROWS} latency={time.time() - t_g0:.2f}s]", flush=True)
@@ -274,6 +278,8 @@ def main() -> int:
                     temperature=min(TEMPERATURE + 0.1, 1.5),
                     top_p=TOP_P,
                     min_p=MIN_P,
+                    repetition_penalty=REPETITION_PENALTY,
+                    no_repeat_ngram_size=NO_REPEAT_NGRAM_SIZE,
                     pad_token_id=tokenizer.eos_token_id,
                 )
                 print(f"[retry-done {i}/{MAX_ROWS} attempt={n_retries} latency={time.time() - t_r0:.2f}s]", flush=True)
