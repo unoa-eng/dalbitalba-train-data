@@ -220,6 +220,7 @@ run_timeout "${EVAL_INSTALL_TIMEOUT_HOURS}" "pip install" \
   "tokenizers>=0.21,<0.22" \
   "tiktoken>=0.7.0" \
   "protobuf" \
+  "hf_transfer" \
   anthropic \
   openai \
   jinja2 \
