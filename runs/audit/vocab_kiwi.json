@@ -1,0 +1,2016 @@
+{
+  "min_freq": 20,
+  "target_n": 250,
+  "n_unique_nouns": 18927,
+  "n_after_freq_filter": 1345,
+  "n_fragmented": 1287,
+  "n_final": 250,
+  "candidates": [
+    {
+      "term": "쩜오",
+      "freq": 0,
+      "bpe_tokens": -1,
+      "score": -1,
+      "seed": true
+    },
+    {
+      "term": "텐카",
+      "freq": 94,
+      "bpe_tokens": 2,
+      "seed_cooc": 94,
+      "cooc_ratio": 1.0,
+      "score": 13.661630674801621,
+      "seed": true
+    },
+    {
+      "term": "호빠",
+      "freq": 174,
+      "bpe_tokens": 2,
+      "seed_cooc": 174,
+      "cooc_ratio": 1.0,
+      "score": 15.494357921770543,
+      "seed": true
+    },
+    {
+      "term": "도파민",
+      "freq": 858,
+      "bpe_tokens": 3,
+      "seed_cooc": 858,
+      "cooc_ratio": 1.0,
+      "score": 40.53461353190553,
+      "seed": true
+    },
+    {
+      "term": "하이퍼",
+      "freq": 0,
+      "bpe_tokens": -1,
+      "score": -1,
+      "seed": true
+    },
+    {
+      "term": "퍼펙트",
+      "freq": 159,
+      "bpe_tokens": 3,
+      "seed_cooc": 159,
+      "cooc_ratio": 1.0,
+      "score": 30.45104289140296,
+      "seed": true
+    },
+    {
+      "term": "마담",
+      "freq": 618,
+      "bpe_tokens": 2,
+      "seed_cooc": 618,
+      "cooc_ratio": 1.0,
+      "score": 19.284315818053788,
+      "seed": true
+    },
+    {
+      "term": "TC",
+      "freq": 0,
+      "bpe_tokens": -1,
+      "score": -1,
+      "seed": true
+    },
+    {
+      "term": "티씨",
+      "freq": 323,
+      "bpe_tokens": 2,
+      "seed_cooc": 323,
+      "cooc_ratio": 1.0,
+      "score": 17.342230547376985,
+      "seed": true
+    },
+    {
+      "term": "빠꾸",
+      "freq": 0,
+      "bpe_tokens": -1,
+      "score": -1,
+      "seed": true
+    },
+    {
+      "term": "밀빵",
+      "freq": 0,
+      "bpe_tokens": -1,
+      "score": -1,
+      "seed": true
+    },
+    {
+      "term": "풀묶",
+      "freq": 0,
+      "bpe_tokens": -1,
+      "score": -1,
+      "seed": true
+    },
+    {
+      "term": "팁",
+      "freq": 0,
+      "bpe_tokens": -1,
+      "score": -1,
+      "seed": true
+    },
+    {
+      "term": "초이스",
+      "freq": 1107,
+      "bpe_tokens": 3,
+      "seed_cooc": 1107,
+      "cooc_ratio": 1.0,
+      "score": 42.061871203843374,
+      "seed": true
+    },
+    {
+      "term": "케어",
+      "freq": 556,
+      "bpe_tokens": 2,
+      "seed_cooc": 556,
+      "cooc_ratio": 1.0,
+      "score": 18.96769571978185,
+      "seed": true
+    },
+    {
+      "term": "갯수",
+      "freq": 664,
+      "bpe_tokens": 2,
+      "seed_cooc": 664,
+      "cooc_ratio": 1.0,
+      "score": 19.499361121967564,
+      "seed": true
+    },
+    {
+      "term": "강남",
+      "freq": 693,
+      "bpe_tokens": 2,
+      "seed_cooc": 693,
+      "cooc_ratio": 1.0,
+      "score": 19.627415881520413,
+      "seed": true
+    },
+    {
+      "term": "역삼",
+      "freq": 22,
+      "bpe_tokens": 2,
+      "seed_cooc": 22,
+      "cooc_ratio": 1.0,
+      "score": 9.406482647787449,
+      "seed": true
+    },
+    {
+      "term": "선릉",
+      "freq": 50,
+      "bpe_tokens": 2,
+      "seed_cooc": 50,
+      "cooc_ratio": 1.0,
+      "score": 11.795476898172977,
+      "seed": true
+    },
+    {
+      "term": "논현",
+      "freq": 71,
+      "bpe_tokens": 2,
+      "seed_cooc": 71,
+      "cooc_ratio": 1.0,
+      "score": 12.829998357048165,
+      "seed": true
+    },
+    {
+      "term": "강남역",
+      "freq": 281,
+      "bpe_tokens": 3,
+      "seed_cooc": 281,
+      "cooc_ratio": 1.0,
+      "score": 33.85144242562868
+    },
+    {
+      "term": "하이사",
+      "freq": 257,
+      "bpe_tokens": 3,
+      "seed_cooc": 257,
+      "cooc_ratio": 1.0,
+      "score": 33.317757509529706
+    },
+    {
+      "term": "전화번호",
+      "freq": 561,
+      "bpe_tokens": 3,
+      "seed_cooc": 391,
+      "cooc_ratio": 0.696969696969697,
+      "score": 30.31446340252131
+    },
+    {
+      "term": "강남하퍼",
+      "freq": 27,
+      "bpe_tokens": 4,
+      "seed_cooc": 27,
+      "cooc_ratio": 1.0,
+      "score": 29.989840591576833
+    },
+    {
+      "term": "아베크",
+      "freq": 64,
+      "bpe_tokens": 5,
+      "seed_cooc": 25,
+      "cooc_ratio": 0.390625,
+      "score": 29.74250929800641
+    },
+    {
+      "term": "사라있네",
+      "freq": 33,
+      "bpe_tokens": 4,
+      "seed_cooc": 28,
+      "cooc_ratio": 0.8484848484848485,
+      "score": 28.53146242643985
+    },
+    {
+      "term": "스트레스",
+      "freq": 501,
+      "bpe_tokens": 3,
+      "seed_cooc": 307,
+      "cooc_ratio": 0.6127744510978044,
+      "score": 27.679597339146817
+    },
+    {
+      "term": "오픈",
+      "freq": 111,
+      "bpe_tokens": 4,
+      "seed_cooc": 51,
+      "cooc_ratio": 0.4594594594594595,
+      "score": 27.163250259077163
+    },
+    {
+      "term": "비강남",
+      "freq": 82,
+      "bpe_tokens": 3,
+      "seed_cooc": 82,
+      "cooc_ratio": 1.0,
+      "score": 26.51304364677959
+    },
+    {
+      "term": "강남구",
+      "freq": 73,
+      "bpe_tokens": 3,
+      "seed_cooc": 73,
+      "cooc_ratio": 1.0,
+      "score": 25.824390559225023
+    },
+    {
+      "term": "가라오케",
+      "freq": 68,
+      "bpe_tokens": 4,
+      "seed_cooc": 33,
+      "cooc_ratio": 0.4852941176470588,
+      "score": 25.031041394824975
+    },
+    {
+      "term": "논현동",
+      "freq": 36,
+      "bpe_tokens": 3,
+      "seed_cooc": 36,
+      "cooc_ratio": 1.0,
+      "score": 21.665507475865347
+    },
+    {
+      "term": "퍼블릭",
+      "freq": 173,
+      "bpe_tokens": 3,
+      "seed_cooc": 93,
+      "cooc_ratio": 0.5375722543352601,
+      "score": 21.411570548185157
+    },
+    {
+      "term": "역삼동",
+      "freq": 32,
+      "bpe_tokens": 3,
+      "seed_cooc": 32,
+      "cooc_ratio": 1.0,
+      "score": 20.979045368798882
+    },
+    {
+      "term": "엘리트",
+      "freq": 178,
+      "bpe_tokens": 3,
+      "seed_cooc": 90,
+      "cooc_ratio": 0.5056179775280899,
+      "score": 20.866113690910005
+    },
+    {
+      "term": "아가씨",
+      "freq": 661,
+      "bpe_tokens": 3,
+      "seed_cooc": 180,
+      "cooc_ratio": 0.2723146747352496,
+      "score": 20.065555620610244
+    },
+    {
+      "term": "강하늘",
+      "freq": 26,
+      "bpe_tokens": 3,
+      "seed_cooc": 26,
+      "cooc_ratio": 1.0,
+      "score": 19.775021196025975
+    },
+    {
+      "term": "마인드",
+      "freq": 334,
+      "bpe_tokens": 3,
+      "seed_cooc": 97,
+      "cooc_ratio": 0.2904191616766467,
+      "score": 18.38240072337506
+    },
+    {
+      "term": "라운딩",
+      "freq": 160,
+      "bpe_tokens": 3,
+      "seed_cooc": 62,
+      "cooc_ratio": 0.3875,
+      "score": 18.038985495694842
+    },
+    {
+      "term": "대치동",
+      "freq": 23,
+      "bpe_tokens": 3,
+      "seed_cooc": 21,
+      "cooc_ratio": 0.9130434782608695,
+      "score": 17.962912954140563
+    },
+    {
+      "term": "카페베네",
+      "freq": 34,
+      "bpe_tokens": 4,
+      "seed_cooc": 11,
+      "cooc_ratio": 0.3235294117647059,
+      "score": 17.567602186182985
+    },
+    {
+      "term": "유앤미",
+      "freq": 219,
+      "bpe_tokens": 3,
+      "seed_cooc": 63,
+      "cooc_ratio": 0.2876712328767123,
+      "score": 16.993621036452648
+    },
+    {
+      "term": "마동석",
+      "freq": 21,
+      "bpe_tokens": 3,
+      "seed_cooc": 18,
+      "cooc_ratio": 0.8571428571428571,
+      "score": 16.77994474680229
+    },
+    {
+      "term": "largodu",
+      "freq": 257,
+      "bpe_tokens": 2,
+      "seed_cooc": 257,
+      "cooc_ratio": 1.0,
+      "score": 16.658878754764853
+    },
+    {
+      "term": "메이크업",
+      "freq": 50,
+      "bpe_tokens": 4,
+      "seed_cooc": 10,
+      "cooc_ratio": 0.2,
+      "score": 16.513667657442166
+    },
+    {
+      "term": "금요일",
+      "freq": 72,
+      "bpe_tokens": 3,
+      "seed_cooc": 33,
+      "cooc_ratio": 0.4583333333333333,
+      "score": 16.44676119106883
+    },
+    {
+      "term": "에이블리",
+      "freq": 63,
+      "bpe_tokens": 4,
+      "seed_cooc": 10,
+      "cooc_ratio": 0.15873015873015872,
+      "score": 16.437490281850128
+    },
+    {
+      "term": "일요일",
+      "freq": 110,
+      "bpe_tokens": 3,
+      "seed_cooc": 40,
+      "cooc_ratio": 0.36363636363636365,
+      "score": 16.269286149988062
+    },
+    {
+      "term": "다이어트",
+      "freq": 80,
+      "bpe_tokens": 4,
+      "seed_cooc": 9,
+      "cooc_ratio": 0.1125,
+      "score": 16.149600643421213
+    },
+    {
+      "term": "유흥",
+      "freq": 41,
+      "bpe_tokens": 4,
+      "seed_cooc": 9,
+      "cooc_ratio": 0.21951219512195122,
+      "score": 16.135793230150153
+    },
+    {
+      "term": "여기저기",
+      "freq": 46,
+      "bpe_tokens": 4,
+      "seed_cooc": 9,
+      "cooc_ratio": 0.1956521739130435,
+      "score": 16.070181294094155
+    },
+    {
+      "term": "베팅",
+      "freq": 46,
+      "bpe_tokens": 4,
+      "seed_cooc": 9,
+      "cooc_ratio": 0.1956521739130435,
+      "score": 16.070181294094155
+    },
+    {
+      "term": "출퇴근",
+      "freq": 43,
+      "bpe_tokens": 3,
+      "seed_cooc": 24,
+      "cooc_ratio": 0.5581395348837209,
+      "score": 16.01680263658427
+    },
+    {
+      "term": "카페",
+      "freq": 369,
+      "bpe_tokens": 2,
+      "seed_cooc": 314,
+      "cooc_ratio": 0.8509485094850948,
+      "score": 15.977676142605297
+    },
+    {
+      "term": "추가",
+      "freq": 303,
+      "bpe_tokens": 2,
+      "seed_cooc": 268,
+      "cooc_ratio": 0.8844884488448845,
+      "score": 15.830317628646272
+    },
+    {
+      "term": "에이스",
+      "freq": 159,
+      "bpe_tokens": 3,
+      "seed_cooc": 44,
+      "cooc_ratio": 0.27672955974842767,
+      "score": 15.768150092613272
+    },
+    {
+      "term": "세이렌",
+      "freq": 142,
+      "bpe_tokens": 3,
+      "seed_cooc": 41,
+      "cooc_ratio": 0.2887323943661972,
+      "score": 15.657425312369286
+    },
+    {
+      "term": "메이드",
+      "freq": 64,
+      "bpe_tokens": 3,
+      "seed_cooc": 27,
+      "cooc_ratio": 0.421875,
+      "score": 15.393053057740161
+    },
+    {
+      "term": "토요일",
+      "freq": 74,
+      "bpe_tokens": 3,
+      "seed_cooc": 28,
+      "cooc_ratio": 0.3783783783783784,
+      "score": 15.169552831343793
+    },
+    {
+      "term": "연장",
+      "freq": 443,
+      "bpe_tokens": 2,
+      "seed_cooc": 329,
+      "cooc_ratio": 0.7426636568848759,
+      "score": 15.150119284961354
+    },
+    {
+      "term": "이목구비",
+      "freq": 77,
+      "bpe_tokens": 4,
+      "seed_cooc": 6,
+      "cooc_ratio": 0.07792207792207792,
+      "score": 15.107029308131443
+    },
+    {
+      "term": "이것저것",
+      "freq": 31,
+      "bpe_tokens": 4,
+      "seed_cooc": 7,
+      "cooc_ratio": 0.22580645161290322,
+      "score": 15.092720867031067
+    },
+    {
+      "term": "화요일",
+      "freq": 27,
+      "bpe_tokens": 3,
+      "seed_cooc": 17,
+      "cooc_ratio": 0.6296296296296297,
+      "score": 15.05662778671759
+    },
+    {
+      "term": "구구단",
+      "freq": 88,
+      "bpe_tokens": 3,
+      "seed_cooc": 29,
+      "cooc_ratio": 0.32954545454545453,
+      "score": 14.894111590474827
+    },
+    {
+      "term": "분위기",
+      "freq": 214,
+      "bpe_tokens": 3,
+      "seed_cooc": 41,
+      "cooc_ratio": 0.19158878504672897,
+      "score": 14.85709211519428
+    },
+    {
+      "term": "대기실",
+      "freq": 105,
+      "bpe_tokens": 3,
+      "seed_cooc": 30,
+      "cooc_ratio": 0.2857142857142857,
+      "score": 14.656522867209352
+    },
+    {
+      "term": "이벤트",
+      "freq": 63,
+      "bpe_tokens": 3,
+      "seed_cooc": 24,
+      "cooc_ratio": 0.38095238095238093,
+      "score": 14.655111817553127
+    },
+    {
+      "term": "대부분",
+      "freq": 160,
+      "bpe_tokens": 3,
+      "seed_cooc": 34,
+      "cooc_ratio": 0.2125,
+      "score": 14.48200244020572
+    },
+    {
+      "term": "쿠팡",
+      "freq": 37,
+      "bpe_tokens": 4,
+      "seed_cooc": 6,
+      "cooc_ratio": 0.16216216216216217,
+      "score": 14.452031499453478
+    },
+    {
+      "term": "마찬가지",
+      "freq": 36,
+      "bpe_tokens": 4,
+      "seed_cooc": 6,
+      "cooc_ratio": 0.16666666666666666,
+      "score": 14.443671650576897
+    },
+    {
+      "term": "백사장",
+      "freq": 22,
+      "bpe_tokens": 3,
+      "seed_cooc": 14,
+      "cooc_ratio": 0.6363636363636364,
+      "score": 14.252246436041588
+    },
+    {
+      "term": "걱정",
+      "freq": 474,
+      "bpe_tokens": 2,
+      "seed_cooc": 311,
+      "cooc_ratio": 0.6561181434599156,
+      "score": 14.251040137599087
+    },
+    {
+      "term": "눈치",
+      "freq": 426,
+      "bpe_tokens": 2,
+      "seed_cooc": 288,
+      "cooc_ratio": 0.676056338028169,
+      "score": 14.246238453650427
+    },
+    {
+      "term": "일반인",
+      "freq": 267,
+      "bpe_tokens": 3,
+      "seed_cooc": 36,
+      "cooc_ratio": 0.1348314606741573,
+      "score": 14.197337725791613
+    },
+    {
+      "term": "일주일",
+      "freq": 119,
+      "bpe_tokens": 3,
+      "seed_cooc": 28,
+      "cooc_ratio": 0.23529411764705882,
+      "score": 14.080858067006018
+    },
+    {
+      "term": "목요일",
+      "freq": 27,
+      "bpe_tokens": 3,
+      "seed_cooc": 15,
+      "cooc_ratio": 0.5555555555555556,
+      "score": 14.069307931850862
+    },
+    {
+      "term": "작성자",
+      "freq": 358,
+      "bpe_tokens": 3,
+      "seed_cooc": 35,
+      "cooc_ratio": 0.09776536312849161,
+      "score": 14.06738537582672
+    },
+    {
+      "term": "노래방",
+      "freq": 109,
+      "bpe_tokens": 3,
+      "seed_cooc": 27,
+      "cooc_ratio": 0.24770642201834864,
+      "score": 14.058317424296586
+    },
+    {
+      "term": "수위",
+      "freq": 1071,
+      "bpe_tokens": 2,
+      "seed_cooc": 527,
+      "cooc_ratio": 0.49206349206349204,
+      "score": 13.843812185775292
+    },
+    {
+      "term": "스타일링",
+      "freq": 34,
+      "bpe_tokens": 3,
+      "seed_cooc": 16,
+      "cooc_ratio": 0.47058823529411764,
+      "score": 13.803116003429487
+    },
+    {
+      "term": "컨디션",
+      "freq": 46,
+      "bpe_tokens": 3,
+      "seed_cooc": 18,
+      "cooc_ratio": 0.391304347826087,
+      "score": 13.726613188705425
+    },
+    {
+      "term": "아나운서",
+      "freq": 20,
+      "bpe_tokens": 4,
+      "seed_cooc": 5,
+      "cooc_ratio": 0.25,
+      "score": 13.700350969755405
+    },
+    {
+      "term": "소지섭",
+      "freq": 27,
+      "bpe_tokens": 3,
+      "seed_cooc": 14,
+      "cooc_ratio": 0.5185185185185185,
+      "score": 13.575648004417499
+    },
+    {
+      "term": "택시비",
+      "freq": 37,
+      "bpe_tokens": 3,
+      "seed_cooc": 16,
+      "cooc_ratio": 0.43243243243243246,
+      "score": 13.567213244384899
+    },
+    {
+      "term": "텐프로",
+      "freq": 37,
+      "bpe_tokens": 3,
+      "seed_cooc": 16,
+      "cooc_ratio": 0.43243243243243246,
+      "score": 13.567213244384899
+    },
+    {
+      "term": "메리트",
+      "freq": 43,
+      "bpe_tokens": 3,
+      "seed_cooc": 17,
+      "cooc_ratio": 0.3953488372093023,
+      "score": 13.552679154032843
+    },
+    {
+      "term": "환영",
+      "freq": 170,
+      "bpe_tokens": 2,
+      "seed_cooc": 139,
+      "cooc_ratio": 0.8176470588235294,
+      "score": 13.549795725371716
+    },
+    {
+      "term": "연락",
+      "freq": 1138,
+      "bpe_tokens": 2,
+      "seed_cooc": 513,
+      "cooc_ratio": 0.4507908611599297,
+      "score": 13.383153343497101
+    },
+    {
+      "term": "화장실",
+      "freq": 131,
+      "bpe_tokens": 3,
+      "seed_cooc": 24,
+      "cooc_ratio": 0.183206106870229,
+      "score": 13.343840368594813
+    },
+    {
+      "term": "최대한",
+      "freq": 25,
+      "bpe_tokens": 3,
+      "seed_cooc": 13,
+      "cooc_ratio": 0.52,
+      "score": 13.293033875127648
+    },
+    {
+      "term": "오피",
+      "freq": 37,
+      "bpe_tokens": 4,
+      "seed_cooc": 4,
+      "cooc_ratio": 0.10810810810810811,
+      "score": 13.272273826028705
+    },
+    {
+      "term": "쓰레기",
+      "freq": 90,
+      "bpe_tokens": 3,
+      "seed_cooc": 21,
+      "cooc_ratio": 0.23333333333333334,
+      "score": 13.231854552449427
+    },
+    {
+      "term": "마지막",
+      "freq": 58,
+      "bpe_tokens": 3,
+      "seed_cooc": 18,
+      "cooc_ratio": 0.3103448275862069,
+      "score": 13.216845507832332
+    },
+    {
+      "term": "사이즈",
+      "freq": 1438,
+      "bpe_tokens": 2,
+      "seed_cooc": 585,
+      "cooc_ratio": 0.40681502086230875,
+      "score": 13.188180297331192
+    },
+    {
+      "term": "나머지",
+      "freq": 64,
+      "bpe_tokens": 3,
+      "seed_cooc": 18,
+      "cooc_ratio": 0.28125,
+      "score": 13.044960218423865
+    },
+    {
+      "term": "하퍼",
+      "freq": 1671,
+      "bpe_tokens": 2,
+      "seed_cooc": 632,
+      "cooc_ratio": 0.3782166367444644,
+      "score": 13.03585395233216
+    },
+    {
+      "term": "성형외과",
+      "freq": 45,
+      "bpe_tokens": 4,
+      "seed_cooc": 3,
+      "cooc_ratio": 0.06666666666666667,
+      "score": 13.017380748062923
+    },
+    {
+      "term": "아이디",
+      "freq": 66,
+      "bpe_tokens": 3,
+      "seed_cooc": 18,
+      "cooc_ratio": 0.2727272727272727,
+      "score": 12.996322641753894
+    },
+    {
+      "term": "테이블",
+      "freq": 82,
+      "bpe_tokens": 3,
+      "seed_cooc": 19,
+      "cooc_ratio": 0.23170731707317074,
+      "score": 12.933192022819311
+    },
+    {
+      "term": "보스턴",
+      "freq": 75,
+      "bpe_tokens": 3,
+      "seed_cooc": 18,
+      "cooc_ratio": 0.24,
+      "score": 12.818970687247539
+    },
+    {
+      "term": "월요일",
+      "freq": 44,
+      "bpe_tokens": 3,
+      "seed_cooc": 15,
+      "cooc_ratio": 0.3409090909090909,
+      "score": 12.804228374681983
+    },
+    {
+      "term": "오랜만",
+      "freq": 56,
+      "bpe_tokens": 3,
+      "seed_cooc": 16,
+      "cooc_ratio": 0.2857142857142857,
+      "score": 12.706732556051444
+    },
+    {
+      "term": "이야기",
+      "freq": 84,
+      "bpe_tokens": 3,
+      "seed_cooc": 18,
+      "cooc_ratio": 0.21428571428571427,
+      "score": 12.693289304258048
+    },
+    {
+      "term": "가성비",
+      "freq": 78,
+      "bpe_tokens": 3,
+      "seed_cooc": 17,
+      "cooc_ratio": 0.21794871794871795,
+      "score": 12.548157935289908
+    },
+    {
+      "term": "원초원",
+      "freq": 22,
+      "bpe_tokens": 3,
+      "seed_cooc": 11,
+      "cooc_ratio": 0.5,
+      "score": 12.541976863716599
+    },
+    {
+      "term": "웨이터",
+      "freq": 84,
+      "bpe_tokens": 3,
+      "seed_cooc": 17,
+      "cooc_ratio": 0.20238095238095238,
+      "score": 12.481734482520412
+    },
+    {
+      "term": "여직원",
+      "freq": 44,
+      "bpe_tokens": 3,
+      "seed_cooc": 14,
+      "cooc_ratio": 0.3181818181818182,
+      "score": 12.458168148339228
+    },
+    {
+      "term": "웨이팅",
+      "freq": 45,
+      "bpe_tokens": 3,
+      "seed_cooc": 14,
+      "cooc_ratio": 0.3111111111111111,
+      "score": 12.421814308609065
+    },
+    {
+      "term": "중상띠",
+      "freq": 40,
+      "bpe_tokens": 3,
+      "seed_cooc": 13,
+      "cooc_ratio": 0.325,
+      "score": 12.254787820124216
+    },
+    {
+      "term": "가게",
+      "freq": 1806,
+      "bpe_tokens": 2,
+      "seed_cooc": 567,
+      "cooc_ratio": 0.313953488372093,
+      "score": 12.20836349631293
+    },
+    {
+      "term": "베이직",
+      "freq": 42,
+      "bpe_tokens": 3,
+      "seed_cooc": 13,
+      "cooc_ratio": 0.30952380952380953,
+      "score": 12.179124184150583
+    },
+    {
+      "term": "언니",
+      "freq": 7088,
+      "bpe_tokens": 2,
+      "seed_cooc": 1315,
+      "cooc_ratio": 0.18552483069977427,
+      "score": 12.156137017632487
+    },
+    {
+      "term": "수요일",
+      "freq": 28,
+      "bpe_tokens": 3,
+      "seed_cooc": 11,
+      "cooc_ratio": 0.39285714285714285,
+      "score": 12.026056535665978
+    },
+    {
+      "term": "자존감",
+      "freq": 71,
+      "bpe_tokens": 3,
+      "seed_cooc": 14,
+      "cooc_ratio": 0.19718309859154928,
+      "score": 11.926477345988435
+    },
+    {
+      "term": "블랙홀",
+      "freq": 23,
+      "bpe_tokens": 3,
+      "seed_cooc": 10,
+      "cooc_ratio": 0.43478260869565216,
+      "score": 11.883157800431448
+    },
+    {
+      "term": "정신병자",
+      "freq": 20,
+      "bpe_tokens": 4,
+      "seed_cooc": 3,
+      "cooc_ratio": 0.15,
+      "score": 11.873637507121352
+    },
+    {
+      "term": "아줌마",
+      "freq": 90,
+      "bpe_tokens": 3,
+      "seed_cooc": 14,
+      "cooc_ratio": 0.15555555555555556,
+      "score": 11.82847603931085
+    },
+    {
+      "term": "호불호",
+      "freq": 42,
+      "bpe_tokens": 3,
+      "seed_cooc": 12,
+      "cooc_ratio": 0.2857142857142857,
+      "score": 11.820914649322624
+    },
+    {
+      "term": "원피스",
+      "freq": 58,
+      "bpe_tokens": 3,
+      "seed_cooc": 13,
+      "cooc_ratio": 0.22413793103448276,
+      "score": 11.810798113382084
+    },
+    {
+      "term": "커피",
+      "freq": 32,
+      "bpe_tokens": 4,
+      "seed_cooc": 2,
+      "cooc_ratio": 0.0625,
+      "score": 11.800713019949372
+    },
+    {
+      "term": "싸가지",
+      "freq": 69,
+      "bpe_tokens": 3,
+      "seed_cooc": 13,
+      "cooc_ratio": 0.18840579710144928,
+      "score": 11.698755014338815
+    },
+    {
+      "term": "블라인드",
+      "freq": 47,
+      "bpe_tokens": 4,
+      "seed_cooc": 0,
+      "cooc_ratio": 0.0,
+      "score": 11.613603032723674
+    },
+    {
+      "term": "임팩트",
+      "freq": 38,
+      "bpe_tokens": 3,
+      "seed_cooc": 11,
+      "cooc_ratio": 0.2894736842105263,
+      "score": 11.56914204040941
+    },
+    {
+      "term": "이미지",
+      "freq": 104,
+      "bpe_tokens": 3,
+      "seed_cooc": 12,
+      "cooc_ratio": 0.11538461538461539,
+      "score": 11.45590240038775
+    },
+    {
+      "term": "거짓말",
+      "freq": 47,
+      "bpe_tokens": 3,
+      "seed_cooc": 11,
+      "cooc_ratio": 0.23404255319148937,
+      "score": 11.366505095857212
+    },
+    {
+      "term": "하유호",
+      "freq": 32,
+      "bpe_tokens": 3,
+      "seed_cooc": 10,
+      "cooc_ratio": 0.3125,
+      "score": 11.363649574766061
+    },
+    {
+      "term": "브리핑",
+      "freq": 53,
+      "bpe_tokens": 3,
+      "seed_cooc": 11,
+      "cooc_ratio": 0.20754716981132076,
+      "score": 11.289577490276248
+    },
+    {
+      "term": "번지",
+      "freq": 42,
+      "bpe_tokens": 2,
+      "seed_cooc": 42,
+      "cooc_ratio": 1.0,
+      "score": 11.283600347080688
+    },
+    {
+      "term": "레전드",
+      "freq": 36,
+      "bpe_tokens": 3,
+      "seed_cooc": 10,
+      "cooc_ratio": 0.2777777777777778,
+      "score": 11.233966839337587
+    },
+    {
+      "term": "대가리",
+      "freq": 73,
+      "bpe_tokens": 3,
+      "seed_cooc": 11,
+      "cooc_ratio": 0.1506849315068493,
+      "score": 11.202361201490305
+    },
+    {
+      "term": "연예인",
+      "freq": 132,
+      "bpe_tokens": 3,
+      "seed_cooc": 9,
+      "cooc_ratio": 0.06818181818181818,
+      "score": 11.114429836867622
+    },
+    {
+      "term": "수위조",
+      "freq": 61,
+      "bpe_tokens": 3,
+      "seed_cooc": 10,
+      "cooc_ratio": 0.16393442622950818,
+      "score": 10.960586399627948
+    },
+    {
+      "term": "아무것",
+      "freq": 64,
+      "bpe_tokens": 3,
+      "seed_cooc": 10,
+      "cooc_ratio": 0.15625,
+      "score": 10.957766583476047
+    },
+    {
+      "term": "헤메샵",
+      "freq": 21,
+      "bpe_tokens": 3,
+      "seed_cooc": 8,
+      "cooc_ratio": 0.38095238095238093,
+      "score": 10.89224483564359
+    },
+    {
+      "term": "클래식",
+      "freq": 21,
+      "bpe_tokens": 3,
+      "seed_cooc": 8,
+      "cooc_ratio": 0.38095238095238093,
+      "score": 10.89224483564359
+    },
+    {
+      "term": "가까이",
+      "freq": 21,
+      "bpe_tokens": 3,
+      "seed_cooc": 8,
+      "cooc_ratio": 0.38095238095238093,
+      "score": 10.89224483564359
+    },
+    {
+      "term": "쿠사리",
+      "freq": 21,
+      "bpe_tokens": 3,
+      "seed_cooc": 8,
+      "cooc_ratio": 0.38095238095238093,
+      "score": 10.89224483564359
+    },
+    {
+      "term": "빠꼬미",
+      "freq": 34,
+      "bpe_tokens": 3,
+      "seed_cooc": 9,
+      "cooc_ratio": 0.2647058823529412,
+      "score": 10.875182305732324
+    },
+    {
+      "term": "출근",
+      "freq": 1741,
+      "bpe_tokens": 2,
+      "seed_cooc": 388,
+      "cooc_ratio": 0.22286042504307868,
+      "score": 10.789109884668083
+    },
+    {
+      "term": "커플",
+      "freq": 27,
+      "bpe_tokens": 4,
+      "seed_cooc": 1,
+      "cooc_ratio": 0.037037037037037035,
+      "score": 10.737103421675656
+    },
+    {
+      "term": "몸무게",
+      "freq": 61,
+      "bpe_tokens": 3,
+      "seed_cooc": 9,
+      "cooc_ratio": 0.14754098360655737,
+      "score": 10.689954636674171
+    },
+    {
+      "term": "오후",
+      "freq": 52,
+      "bpe_tokens": 3,
+      "seed_cooc": 9,
+      "cooc_ratio": 0.17307692307692307,
+      "score": 10.689247459563406
+    },
+    {
+      "term": "상주",
+      "freq": 108,
+      "bpe_tokens": 2,
+      "seed_cooc": 69,
+      "cooc_ratio": 0.6388888888888888,
+      "score": 10.685847953966382
+    },
+    {
+      "term": "쌉가능",
+      "freq": 27,
+      "bpe_tokens": 3,
+      "seed_cooc": 8,
+      "cooc_ratio": 0.2962962962962963,
+      "score": 10.613688439817315
+    },
+    {
+      "term": "코로나",
+      "freq": 27,
+      "bpe_tokens": 3,
+      "seed_cooc": 8,
+      "cooc_ratio": 0.2962962962962963,
+      "score": 10.613688439817315
+    },
+    {
+      "term": "마운자",
+      "freq": 106,
+      "bpe_tokens": 3,
+      "seed_cooc": 7,
+      "cooc_ratio": 0.0660377358490566,
+      "score": 10.579989813876013
+    },
+    {
+      "term": "가능",
+      "freq": 899,
+      "bpe_tokens": 2,
+      "seed_cooc": 249,
+      "cooc_ratio": 0.27697441601779754,
+      "score": 10.570573397512861
+    },
+    {
+      "term": "정도",
+      "freq": 1603,
+      "bpe_tokens": 2,
+      "seed_cooc": 345,
+      "cooc_ratio": 0.2152214597629445,
+      "score": 10.557034636844588
+    },
+    {
+      "term": "블렌딩",
+      "freq": 31,
+      "bpe_tokens": 3,
+      "seed_cooc": 8,
+      "cooc_ratio": 0.25806451612903225,
+      "score": 10.509005640747558
+    },
+    {
+      "term": "화이트",
+      "freq": 40,
+      "bpe_tokens": 3,
+      "seed_cooc": 8,
+      "cooc_ratio": 0.2,
+      "score": 10.398001786772062
+    },
+    {
+      "term": "지하철",
+      "freq": 55,
+      "bpe_tokens": 3,
+      "seed_cooc": 8,
+      "cooc_ratio": 0.14545454545454545,
+      "score": 10.392726183352568
+    },
+    {
+      "term": "양아치",
+      "freq": 48,
+      "bpe_tokens": 3,
+      "seed_cooc": 8,
+      "cooc_ratio": 0.16666666666666666,
+      "score": 10.378187461628336
+    },
+    {
+      "term": "가락동",
+      "freq": 21,
+      "bpe_tokens": 3,
+      "seed_cooc": 7,
+      "cooc_ratio": 0.3333333333333333,
+      "score": 10.303474844527718
+    },
+    {
+      "term": "강아지",
+      "freq": 64,
+      "bpe_tokens": 3,
+      "seed_cooc": 7,
+      "cooc_ratio": 0.109375,
+      "score": 10.175068970370615
+    },
+    {
+      "term": "병오",
+      "freq": 39,
+      "bpe_tokens": 2,
+      "seed_cooc": 34,
+      "cooc_ratio": 0.8717948717948718,
+      "score": 10.120771835645927
+    },
+    {
+      "term": "일프",
+      "freq": 220,
+      "bpe_tokens": 2,
+      "seed_cooc": 96,
+      "cooc_ratio": 0.43636363636363634,
+      "score": 10.109286513751426
+    },
+    {
+      "term": "이상",
+      "freq": 998,
+      "bpe_tokens": 2,
+      "seed_cooc": 231,
+      "cooc_ratio": 0.23146292585170342,
+      "score": 10.10407011706101
+    },
+    {
+      "term": "차범근",
+      "freq": 28,
+      "bpe_tokens": 3,
+      "seed_cooc": 7,
+      "cooc_ratio": 0.25,
+      "score": 10.101887489959422
+    },
+    {
+      "term": "자신감",
+      "freq": 30,
+      "bpe_tokens": 3,
+      "seed_cooc": 7,
+      "cooc_ratio": 0.23333333333333334,
+      "score": 10.07302913315643
+    },
+    {
+      "term": "손님",
+      "freq": 413,
+      "bpe_tokens": 2,
+      "seed_cooc": 138,
+      "cooc_ratio": 0.3341404358353511,
+      "score": 10.052836939384118
+    },
+    {
+      "term": "피부과",
+      "freq": 42,
+      "bpe_tokens": 3,
+      "seed_cooc": 7,
+      "cooc_ratio": 0.16666666666666666,
+      "score": 10.029866975182832
+    },
+    {
+      "term": "요즘",
+      "freq": 828,
+      "bpe_tokens": 2,
+      "seed_cooc": 201,
+      "cooc_ratio": 0.2427536231884058,
+      "score": 9.98293573770098
+    },
+    {
+      "term": "보장",
+      "freq": 68,
+      "bpe_tokens": 2,
+      "seed_cooc": 45,
+      "cooc_ratio": 0.6617647058823529,
+      "score": 9.838070995975984
+    },
+    {
+      "term": "우울증",
+      "freq": 55,
+      "bpe_tokens": 3,
+      "seed_cooc": 6,
+      "cooc_ratio": 0.10909090909090909,
+      "score": 9.807220482882002
+    },
+    {
+      "term": "생각",
+      "freq": 1532,
+      "bpe_tokens": 2,
+      "seed_cooc": 256,
+      "cooc_ratio": 0.1671018276762402,
+      "score": 9.786359634734978
+    },
+    {
+      "term": "하루",
+      "freq": 489,
+      "bpe_tokens": 2,
+      "seed_cooc": 138,
+      "cooc_ratio": 0.2822085889570552,
+      "score": 9.69063420080792
+    },
+    {
+      "term": "글쓴이",
+      "freq": 44,
+      "bpe_tokens": 3,
+      "seed_cooc": 6,
+      "cooc_ratio": 0.13636363636363635,
+      "score": 9.689686337597177
+    },
+    {
+      "term": "목소리",
+      "freq": 43,
+      "bpe_tokens": 3,
+      "seed_cooc": 6,
+      "cooc_ratio": 0.13953488372093023,
+      "score": 9.68048511002346
+    },
+    {
+      "term": "개소리",
+      "freq": 43,
+      "bpe_tokens": 3,
+      "seed_cooc": 6,
+      "cooc_ratio": 0.13953488372093023,
+      "score": 9.68048511002346
+    },
+    {
+      "term": "엉덩이",
+      "freq": 41,
+      "bpe_tokens": 3,
+      "seed_cooc": 6,
+      "cooc_ratio": 0.14634146341463414,
+      "score": 9.663243403366758
+    },
+    {
+      "term": "도깨비",
+      "freq": 40,
+      "bpe_tokens": 3,
+      "seed_cooc": 6,
+      "cooc_ratio": 0.15,
+      "score": 9.6552873734312
+    },
+    {
+      "term": "퇴근",
+      "freq": 443,
+      "bpe_tokens": 2,
+      "seed_cooc": 129,
+      "cooc_ratio": 0.291196388261851,
+      "score": 9.64598875454851
+    },
+    {
+      "term": "신분증",
+      "freq": 25,
+      "bpe_tokens": 3,
+      "seed_cooc": 6,
+      "cooc_ratio": 0.24,
+      "score": 9.643965752543586
+    },
+    {
+      "term": "유튜브",
+      "freq": 26,
+      "bpe_tokens": 3,
+      "seed_cooc": 6,
+      "cooc_ratio": 0.23076923076923078,
+      "score": 9.633984685243425
+    },
+    {
+      "term": "속바지",
+      "freq": 26,
+      "bpe_tokens": 3,
+      "seed_cooc": 6,
+      "cooc_ratio": 0.23076923076923078,
+      "score": 9.633984685243425
+    },
+    {
+      "term": "엔트리",
+      "freq": 27,
+      "bpe_tokens": 3,
+      "seed_cooc": 6,
+      "cooc_ratio": 0.2222222222222222,
+      "score": 9.626368584950589
+    },
+    {
+      "term": "미용실",
+      "freq": 28,
+      "bpe_tokens": 3,
+      "seed_cooc": 6,
+      "cooc_ratio": 0.21428571428571427,
+      "score": 9.620845228532783
+    },
+    {
+      "term": "드라마",
+      "freq": 29,
+      "bpe_tokens": 3,
+      "seed_cooc": 6,
+      "cooc_ratio": 0.20689655172413793,
+      "score": 9.617178803320577
+    },
+    {
+      "term": "아이돌",
+      "freq": 76,
+      "bpe_tokens": 3,
+      "seed_cooc": 4,
+      "cooc_ratio": 0.05263157894736842,
+      "score": 9.602096195676564
+    },
+    {
+      "term": "하이",
+      "freq": 392,
+      "bpe_tokens": 2,
+      "seed_cooc": 118,
+      "cooc_ratio": 0.3010204081632653,
+      "score": 9.570286827178306
+    },
+    {
+      "term": "이사",
+      "freq": 147,
+      "bpe_tokens": 2,
+      "seed_cooc": 66,
+      "cooc_ratio": 0.4489795918367347,
+      "score": 9.484504927756381
+    },
+    {
+      "term": "영업",
+      "freq": 460,
+      "bpe_tokens": 2,
+      "seed_cooc": 125,
+      "cooc_ratio": 0.2717391304347826,
+      "score": 9.466766544625262
+    },
+    {
+      "term": "산부인과",
+      "freq": 22,
+      "bpe_tokens": 4,
+      "seed_cooc": 0,
+      "cooc_ratio": 0.0,
+      "score": 9.406482647787449
+    },
+    {
+      "term": "회원",
+      "freq": 2940,
+      "bpe_tokens": 2,
+      "seed_cooc": 255,
+      "cooc_ratio": 0.08673469387755102,
+      "score": 9.371919060548057
+    },
+    {
+      "term": "아저씨",
+      "freq": 44,
+      "bpe_tokens": 3,
+      "seed_cooc": 5,
+      "cooc_ratio": 0.11363636363636363,
+      "score": 9.343626111254421
+    },
+    {
+      "term": "두쫀쿠",
+      "freq": 41,
+      "bpe_tokens": 3,
+      "seed_cooc": 5,
+      "cooc_ratio": 0.12195121951219512,
+      "score": 9.298592708900086
+    },
+    {
+      "term": "사람",
+      "freq": 1618,
+      "bpe_tokens": 2,
+      "seed_cooc": 207,
+      "cooc_ratio": 0.12793572311495674,
+      "score": 9.28034236951357
+    },
+    {
+      "term": "추천",
+      "freq": 515,
+      "bpe_tokens": 2,
+      "seed_cooc": 124,
+      "cooc_ratio": 0.2407766990291262,
+      "score": 9.25394070303385
+    },
+    {
+      "term": "비제이",
+      "freq": 56,
+      "bpe_tokens": 3,
+      "seed_cooc": 4,
+      "cooc_ratio": 0.07142857142857142,
+      "score": 9.241260040764686
+    },
+    {
+      "term": "자신",
+      "freq": 146,
+      "bpe_tokens": 2,
+      "seed_cooc": 62,
+      "cooc_ratio": 0.4246575342465753,
+      "score": 9.228882181029169
+    },
+    {
+      "term": "장사",
+      "freq": 77,
+      "bpe_tokens": 2,
+      "seed_cooc": 43,
+      "cooc_ratio": 0.5584415584415584,
+      "score": 9.222643360394851
+    },
+    {
+      "term": "얼굴",
+      "freq": 1332,
+      "bpe_tokens": 2,
+      "seed_cooc": 183,
+      "cooc_ratio": 0.1373873873873874,
+      "score": 9.17224329554313
+    },
+    {
+      "term": "고윤정",
+      "freq": 31,
+      "bpe_tokens": 3,
+      "seed_cooc": 5,
+      "cooc_ratio": 0.16129032258064516,
+      "score": 9.167430452567018
+    },
+    {
+      "term": "아우라",
+      "freq": 29,
+      "bpe_tokens": 3,
+      "seed_cooc": 5,
+      "cooc_ratio": 0.1724137931034483,
+      "score": 9.148048129987867
+    },
+    {
+      "term": "동훈",
+      "freq": 47,
+      "bpe_tokens": 2,
+      "seed_cooc": 32,
+      "cooc_ratio": 0.6808510638297872,
+      "score": 9.142623664059062
+    },
+    {
+      "term": "인트로",
+      "freq": 28,
+      "bpe_tokens": 3,
+      "seed_cooc": 5,
+      "cooc_ratio": 0.17857142857142858,
+      "score": 9.139802967106144
+    },
+    {
+      "term": "사장",
+      "freq": 152,
+      "bpe_tokens": 2,
+      "seed_cooc": 62,
+      "cooc_ratio": 0.40789473684210525,
+      "score": 9.134216225686265
+    },
+    {
+      "term": "Rabbit",
+      "freq": 20,
+      "bpe_tokens": 2,
+      "seed_cooc": 20,
+      "cooc_ratio": 1.0,
+      "score": 9.13356731317027
+    },
+    {
+      "term": "새해",
+      "freq": 83,
+      "bpe_tokens": 2,
+      "seed_cooc": 44,
+      "cooc_ratio": 0.5301204819277109,
+      "score": 9.128550272315742
+    },
+    {
+      "term": "직장인",
+      "freq": 26,
+      "bpe_tokens": 3,
+      "seed_cooc": 5,
+      "cooc_ratio": 0.19230769230769232,
+      "score": 9.126932859704295
+    },
+    {
+      "term": "여의도",
+      "freq": 26,
+      "bpe_tokens": 3,
+      "seed_cooc": 5,
+      "cooc_ratio": 0.19230769230769232,
+      "score": 9.126932859704295
+    },
+    {
+      "term": "당사자",
+      "freq": 22,
+      "bpe_tokens": 3,
+      "seed_cooc": 5,
+      "cooc_ratio": 0.22727272727272727,
+      "score": 9.121437719066618
+    },
+    {
+      "term": "풀출러",
+      "freq": 24,
+      "bpe_tokens": 3,
+      "seed_cooc": 5,
+      "cooc_ratio": 0.20833333333333334,
+      "score": 9.120148170459903
+    },
+    {
+      "term": "승무원",
+      "freq": 24,
+      "bpe_tokens": 3,
+      "seed_cooc": 5,
+      "cooc_ratio": 0.20833333333333334,
+      "score": 9.120148170459903
+    },
+    {
+      "term": "부장",
+      "freq": 149,
+      "bpe_tokens": 2,
+      "seed_cooc": 61,
+      "cooc_ratio": 0.40939597315436244,
+      "score": 9.113303118792517
+    },
+    {
+      "term": "고양이",
+      "freq": 47,
+      "bpe_tokens": 3,
+      "seed_cooc": 4,
+      "cooc_ratio": 0.0851063829787234,
+      "score": 9.060257685103576
+    },
+    {
+      "term": "점프",
+      "freq": 221,
+      "bpe_tokens": 2,
+      "seed_cooc": 74,
+      "cooc_ratio": 0.334841628959276,
+      "score": 9.02075997244738
+    },
+    {
+      "term": "정신병",
+      "freq": 44,
+      "bpe_tokens": 3,
+      "seed_cooc": 4,
+      "cooc_ratio": 0.09090909090909091,
+      "score": 8.997565884911666
+    },
+    {
+      "term": "미션",
+      "freq": 25,
+      "bpe_tokens": 2,
+      "seed_cooc": 22,
+      "cooc_ratio": 0.88,
+      "score": 8.99234644493929
+    },
+    {
+      "term": "하나",
+      "freq": 451,
+      "bpe_tokens": 2,
+      "seed_cooc": 106,
+      "cooc_ratio": 0.23503325942350334,
+      "score": 8.987519479442948
+    },
+    {
+      "term": "밀착",
+      "freq": 23,
+      "bpe_tokens": 2,
+      "seed_cooc": 21,
+      "cooc_ratio": 0.9130434782608695,
+      "score": 8.981456477070282
+    },
+    {
+      "term": "얘기",
+      "freq": 557,
+      "bpe_tokens": 2,
+      "seed_cooc": 117,
+      "cooc_ratio": 0.21005385996409337,
+      "score": 8.981270986074716
+    },
+    {
+      "term": "김태희",
+      "freq": 57,
+      "bpe_tokens": 3,
+      "seed_cooc": 3,
+      "cooc_ratio": 0.05263157894736842,
+      "score": 8.975716128576295
+    },
+    {
+      "term": "장원영",
+      "freq": 68,
+      "bpe_tokens": 3,
+      "seed_cooc": 2,
+      "cooc_ratio": 0.029411764705882353,
+      "score": 8.966343186205961
+    },
+    {
+      "term": "전무",
+      "freq": 42,
+      "bpe_tokens": 2,
+      "seed_cooc": 29,
+      "cooc_ratio": 0.6904761904761905,
+      "score": 8.955238370698957
+    },
+    {
+      "term": "진상",
+      "freq": 220,
+      "bpe_tokens": 2,
+      "seed_cooc": 72,
+      "cooc_ratio": 0.32727272727272727,
+      "score": 8.931505560693008
+    },
+    {
+      "term": "셔츠",
+      "freq": 302,
+      "bpe_tokens": 2,
+      "seed_cooc": 83,
+      "cooc_ratio": 0.27483443708609273,
+      "score": 8.854393884034385
+    },
+    {
+      "term": "상황",
+      "freq": 333,
+      "bpe_tokens": 2,
+      "seed_cooc": 87,
+      "cooc_ratio": 0.26126126126126126,
+      "score": 8.847593043360924
+    },
+    {
+      "term": "평균",
+      "freq": 202,
+      "bpe_tokens": 2,
+      "seed_cooc": 67,
+      "cooc_ratio": 0.3316831683168317,
+      "score": 8.837807965138815
+    },
+    {
+      "term": "에이즈",
+      "freq": 51,
+      "bpe_tokens": 3,
+      "seed_cooc": 3,
+      "cooc_ratio": 0.058823529411764705,
+      "score": 8.832191841534955
+    },
+    {
+      "term": "준수",
+      "freq": 20,
+      "bpe_tokens": 2,
+      "seed_cooc": 19,
+      "cooc_ratio": 0.95,
+      "score": 8.829115069397927
+    },
+    {
+      "term": "케이스",
+      "freq": 50,
+      "bpe_tokens": 3,
+      "seed_cooc": 3,
+      "cooc_ratio": 0.06,
+      "score": 8.80728941730249
+    },
+    {
+      "term": "보건증",
+      "freq": 50,
+      "bpe_tokens": 3,
+      "seed_cooc": 3,
+      "cooc_ratio": 0.06,
+      "score": 8.80728941730249
+    },
+    {
+      "term": "업종",
+      "freq": 295,
+      "bpe_tokens": 2,
+      "seed_cooc": 80,
+      "cooc_ratio": 0.2711864406779661,
+      "score": 8.77665610751677
+    },
+    {
+      "term": "부작용",
+      "freq": 70,
+      "bpe_tokens": 3,
+      "seed_cooc": 1,
+      "cooc_ratio": 0.014285714285714285,
+      "score": 8.768941461342134
+    },
+    {
+      "term": "금수저",
+      "freq": 33,
+      "bpe_tokens": 3,
+      "seed_cooc": 4,
+      "cooc_ratio": 0.12121212121212122,
+      "score": 8.762471606621977
+    },
+    {
+      "term": "기준",
+      "freq": 313,
+      "bpe_tokens": 2,
+      "seed_cooc": 81,
+      "cooc_ratio": 0.25878594249201275,
+      "score": 8.725117151138722
+    },
+    {
+      "term": "나이대",
+      "freq": 30,
+      "bpe_tokens": 3,
+      "seed_cooc": 4,
+      "cooc_ratio": 0.13333333333333333,
+      "score": 8.699434251362371
+    },
+    {
+      "term": "신규",
+      "freq": 108,
+      "bpe_tokens": 2,
+      "seed_cooc": 46,
+      "cooc_ratio": 0.42592592592592593,
+      "score": 8.687681263387303
+    },
+    {
+      "term": "자존심",
+      "freq": 29,
+      "bpe_tokens": 3,
+      "seed_cooc": 4,
+      "cooc_ratio": 0.13793103448275862,
+      "score": 8.678917456655157
+    },
+    {
+      "term": "보증금",
+      "freq": 28,
+      "bpe_tokens": 3,
+      "seed_cooc": 4,
+      "cooc_ratio": 0.14285714285714285,
+      "score": 8.658760705679503
+    },
+    {
+      "term": "뺑이",
+      "freq": 149,
+      "bpe_tokens": 2,
+      "seed_cooc": 54,
+      "cooc_ratio": 0.3624161073825503,
+      "score": 8.642505171696225
+    },
+    {
+      "term": "손질",
+      "freq": 201,
+      "bpe_tokens": 2,
+      "seed_cooc": 63,
+      "cooc_ratio": 0.31343283582089554,
+      "score": 8.635838492787036
+    },
+    {
+      "term": "대표",
+      "freq": 126,
+      "bpe_tokens": 2,
+      "seed_cooc": 49,
+      "cooc_ratio": 0.3888888888888889,
+      "score": 8.611888153704161
+    },
+    {
+      "term": "경상도",
+      "freq": 25,
+      "bpe_tokens": 3,
+      "seed_cooc": 4,
+      "cooc_ratio": 0.16,
+      "score": 8.601374860376714
+    },
+    {
+      "term": "주클럽",
+      "freq": 25,
+      "bpe_tokens": 3,
+      "seed_cooc": 4,
+      "cooc_ratio": 0.16,
+      "score": 8.601374860376714
+    },
+    {
+      "term": "허벅지",
+      "freq": 25,
+      "bpe_tokens": 3,
+      "seed_cooc": 4,
+      "cooc_ratio": 0.16,
+      "score": 8.601374860376714
+    },
+    {
+      "term": "대기",
+      "freq": 147,
+      "bpe_tokens": 2,
+      "seed_cooc": 53,
+      "cooc_ratio": 0.36054421768707484,
+      "score": 8.600644253485177
+    },
+    {
+      "term": "나이",
+      "freq": 569,
+      "bpe_tokens": 2,
+      "seed_cooc": 101,
+      "cooc_ratio": 0.17750439367311072,
+      "score": 8.598393030226445
+    },
+    {
+      "term": "화이팅",
+      "freq": 24,
+      "bpe_tokens": 3,
+      "seed_cooc": 4,
+      "cooc_ratio": 0.16666666666666666,
+      "score": 8.5836688663152
+    },
+    {
+      "term": "헤메렌",
+      "freq": 24,
+      "bpe_tokens": 3,
+      "seed_cooc": 4,
+      "cooc_ratio": 0.16666666666666666,
+      "score": 8.5836688663152
+    },
+    {
+      "term": "단층",
+      "freq": 52,
+      "bpe_tokens": 2,
+      "seed_cooc": 30,
+      "cooc_ratio": 0.5769230769230769,
+      "score": 8.551397967650724
+    },
+    {
+      "term": "방바방",
+      "freq": 22,
+      "bpe_tokens": 3,
+      "seed_cooc": 4,
+      "cooc_ratio": 0.18181818181818182,
+      "score": 8.551347861624954
+    },
+    {
+      "term": "경험담",
+      "freq": 20,
+      "bpe_tokens": 3,
+      "seed_cooc": 4,
+      "cooc_ratio": 0.2,
+      "score": 8.524662825625583
+    },
+    {
+      "term": "덕배",
+      "freq": 20,
+      "bpe_tokens": 2,
+      "seed_cooc": 18,
+      "cooc_ratio": 0.9,
+      "score": 8.524662825625583
+    },
+    {
+      "term": "어린애",
+      "freq": 20,
+      "bpe_tokens": 3,
+      "seed_cooc": 4,
+      "cooc_ratio": 0.2,
+      "score": 8.524662825625583
+    },
+    {
+      "term": "케바케",
+      "freq": 20,
+      "bpe_tokens": 3,
+      "seed_cooc": 4,
+      "cooc_ratio": 0.2,
+      "score": 8.524662825625583
+    },
+    {
+      "term": "기복",
+      "freq": 63,
+      "bpe_tokens": 2,
+      "seed_cooc": 33,
+      "cooc_ratio": 0.5238095238095238,
+      "score": 8.515808218307898
+    },
+    {
+      "term": "노도",
+      "freq": 220,
+      "bpe_tokens": 2,
+      "seed_cooc": 63,
+      "cooc_ratio": 0.2863636363636364,
+      "score": 8.489837703296102
+    },
+    {
+      "term": "부탁",
+      "freq": 101,
+      "bpe_tokens": 2,
+      "seed_cooc": 42,
+      "cooc_ratio": 0.4158415841584158,
+      "score": 8.471484856015742
+    }
+  ]
+}

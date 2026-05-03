@@ -100,3 +100,60 @@
 **Stage 0 + Stage 1 자동화 부분은 완료**. 그러나 Stage 1을 실제로 적용
 가능한 형태로 만들려면 **vocab 후처리 단계가 추가 필요**. 본 audit이 그
 한계를 명시적으로 노출시킴 — 다음 라운드 의사결정에 이 한계를 반영해야 함.
+
+---
+
+## §6. Kiwi 형태소 분석 후속 결과 (2026-05-04 추가)
+
+### 후속 작업
+1. `kiwipiepy==0.23.1` 설치 (.venv-local) — 순수 Python C++ wrapper 한국어
+   형태소 분석기. JVM 불필요.
+2. `scripts/audit/build_vocab_kiwi.py` 작성 — Kiwi로 코퍼스 토큰화 →
+   NNG/NNP/SL/SH/NR (명사/외래어/한자/숫자) 추출 → freq + BPE inefficiency
+   기반 점수
+3. `scripts/extend_tokenizer_v4.py` 실행 — 신규 200 도메인 토큰 + 구조 마커
+   추가 → `tokenizer_v4/` 생성
+
+### 결과 vs char-n-gram 방식 비교
+
+| 항목 | char-n-gram (이전) | **Kiwi** (현재) |
+|---|---|---|
+| 자동 후보 품질 | 노이즈 heavy (cross-word fragment 다수) | **단어 경계 정확** |
+| Top 30 sample | "스받지말", "마담눈치보" 등 fragment | 강남역, 논현동, 가라오케, 엘리트, 퍼블릭, 아가씨 등 진짜 도메인 어휘 |
+| 수동 큐레이션 필요? | 필수 | **거의 불필요** |
+| 토크나이저 적용 가능? | 부적합 | **즉시 적용 가능** |
+
+### tokenizer_v4 BPE 효율 검증
+
+vocab size: 151,669 → **151,879** (+210)
+
+| 도메인 어휘 | 이전 BPE | tokenizer_v4 BPE |
+|---|---|---|
+| 쩜오 | 2 | **1** |
+| 텐카 | 2 | **1** |
+| 밀빵 | 2 | **1** |
+| 마담 | 2 | **1** |
+| 강남역 | 3 | **1** |
+| 논현동 | 3 | **1** |
+| **가라오케** | **4** | **1** |
+| 엘리트 | 3 | **1** |
+| 스트레스 | 3 | **1** |
+| 아가씨 | 3 | **1** |
+
+→ **§4 결론 정정**: 자동 vocab 후처리가 Kiwi로 가능했음. 수동 큐레이션 단계
+없이 tokenizer_v4 직접 빌드 완료.
+
+### 다음 단계 (재정리)
+
+1. ✅ vocab_candidates_top 정제 → vocab_kiwi.json (Kiwi 자동 처리)
+2. ✅ `scripts/extend_tokenizer_v4.py` 실행 → `tokenizer_v4/` 생성
+3. ⏳ 신규 토큰 임베딩 warmup CPT 1 epoch — RunPod, ~$2-5
+4. ⏳ 결과 토큰화 효율 측정 (eval) → before/after 비교
+
+### 한계 잔존
+
+- Kiwi 사전이 일부 도메인 신어 (밀빵/풀묶/빠꾸/TC) 미인식 → CORE_DOMAIN_TERMS
+  강제 포함으로 보충
+- "강하늘" 같은 도메인 외 고유명사 일부 혼입 — 임팩트 낮음
+- 신규 200 토큰 모두 임베딩 학습 전 (랜덤 초기화) → CPT 없이 사용하면
+  오히려 모델 출력 악화 가능
