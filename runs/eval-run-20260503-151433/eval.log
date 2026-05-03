@@ -1,0 +1,1092 @@
+[2026-05-03 14:53:18 UTC] === dalbitalba eval chain start ===
+[2026-05-03 14:53:18 UTC] [1/5] install python dependencies
+[2026-05-03 14:53:18 UTC] [stage:start] pip install timeout=0.1h
+[2026-05-03 14:53:18 UTC] [stage:start] pip install timeout=0.1h
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 24.2 -> 26.1
+[notice] To update, run: python3 -m pip install --upgrade pip
+[2026-05-03 14:53:39 UTC] [1/5] verify python imports
+torch 2.4.1+cu124 cuda True 1
+transformers 4.55.4
+peft 0.13.2
+bitsandbytes 0.49.2
+accelerate 0.34.2
+[2026-05-03 14:53:44 UTC] [2/5] generate ai samples (phase6 deterministic gate)
+[2026-05-03 14:53:44 UTC] [phase6] source=sft_adapter repo=UNOA/dalbitalba-qwen3-sft-20260430-0130
+[2026-05-03 14:53:44 UTC] [stage:start] phase6:generate timeout=0.45h
+[2026-05-03 14:53:44 UTC] [stage:start] phase6:generate timeout=0.45h
+[model] base source: Qwen/Qwen3-8B-Base
+[tokenizer] source: UNOA/dalbitalba-qwen3-sft-20260430-0130
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:00<00:01,  2.12it/s]Loading checkpoint shards:  40%|████      | 2/5 [00:00<00:01,  2.10it/s]Loading checkpoint shards:  60%|██████    | 3/5 [00:01<00:00,  2.02it/s]Loading checkpoint shards:  80%|████████  | 4/5 [00:01<00:00,  2.06it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:02<00:00,  2.76it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:02<00:00,  2.40it/s]
+[model] resize_token_embeddings: 151936 -> 151680
+[gen-start 1/128 since_start=0.0s]
+[gen-pass1 1/128 latency=1.47s]
+[gen-done 1/128 sample_latency=1.47s total=1.5s retries=0]
+[gen-start 2/128 since_start=1.5s]
+[gen-pass1 2/128 latency=8.08s]
+[retry-start 2/128 attempt=1]
+[retry-done 2/128 attempt=1 latency=13.44s]
+[retry-start 2/128 attempt=2]
+[retry-done 2/128 attempt=2 latency=8.42s]
+[gen-done 2/128 sample_latency=29.94s total=31.4s retries=2]
+[gen-start 3/128 since_start=31.4s]
+[gen-pass1 3/128 latency=13.41s]
+[gen-done 3/128 sample_latency=13.41s total=44.8s retries=0]
+[gen-start 4/128 since_start=44.8s]
+[gen-pass1 4/128 latency=0.87s]
+[gen-done 4/128 sample_latency=0.87s total=45.7s retries=0]
+[gen-start 5/128 since_start=45.7s]
+[gen-pass1 5/128 latency=5.83s]
+[retry-start 5/128 attempt=1]
+[retry-done 5/128 attempt=1 latency=13.34s]
+[gen-done 5/128 sample_latency=19.17s total=64.9s retries=1]
+[gen-start 6/128 since_start=64.9s]
+[gen-pass1 6/128 latency=0.14s]
+[gen-done 6/128 sample_latency=0.14s total=65.0s retries=0]
+[gen-start 7/128 since_start=65.0s]
+[gen-pass1 7/128 latency=0.27s]
+[gen-done 7/128 sample_latency=0.27s total=65.3s retries=0]
+[gen-start 8/128 since_start=65.3s]
+[gen-pass1 8/128 latency=11.81s]
+[gen-done 8/128 sample_latency=11.81s total=77.1s retries=0]
+[gen-start 9/128 since_start=77.1s]
+[gen-pass1 9/128 latency=0.47s]
+[gen-done 9/128 sample_latency=0.47s total=77.6s retries=0]
+[gen-start 10/128 since_start=77.6s]
+[gen-pass1 10/128 latency=7.88s]
+[gen-done 10/128 sample_latency=7.88s total=85.4s retries=0]
+[gen-start 11/128 since_start=85.4s]
+[gen-pass1 11/128 latency=0.34s]
+[gen-done 11/128 sample_latency=0.34s total=85.8s retries=0]
+[gen-start 12/128 since_start=85.8s]
+[gen-pass1 12/128 latency=7.67s]
+[gen-done 12/128 sample_latency=7.67s total=93.5s retries=0]
+[gen-start 13/128 since_start=93.5s]
+[gen-pass1 13/128 latency=2.27s]
+[gen-done 13/128 sample_latency=2.27s total=95.7s retries=0]
+[gen-start 14/128 since_start=95.7s]
+[gen-pass1 14/128 latency=13.21s]
+[gen-done 14/128 sample_latency=13.21s total=108.9s retries=0]
+[gen-start 15/128 since_start=108.9s]
+[gen-pass1 15/128 latency=1.13s]
+[gen-done 15/128 sample_latency=1.14s total=110.1s retries=0]
+[gen-start 16/128 since_start=110.1s]
+[gen-pass1 16/128 latency=6.59s]
+[gen-done 16/128 sample_latency=6.59s total=116.7s retries=0]
+[gen-start 17/128 since_start=116.7s]
+[gen-pass1 17/128 latency=5.47s]
+[gen-done 17/128 sample_latency=5.47s total=122.1s retries=0]
+[gen-start 18/128 since_start=122.1s]
+[gen-pass1 18/128 latency=4.89s]
+[gen-done 18/128 sample_latency=4.89s total=127.0s retries=0]
+[gen-start 19/128 since_start=127.0s]
+[gen-pass1 19/128 latency=3.00s]
+[gen-done 19/128 sample_latency=3.00s total=130.0s retries=0]
+[gen-start 20/128 since_start=130.0s]
+[gen-pass1 20/128 latency=2.34s]
+[gen-done 20/128 sample_latency=2.34s total=132.4s retries=0]
+[gen-start 21/128 since_start=132.4s]
+[gen-pass1 21/128 latency=10.42s]
+[retry-start 21/128 attempt=1]
+[retry-done 21/128 attempt=1 latency=6.07s]
+[gen-done 21/128 sample_latency=16.48s total=148.9s retries=1]
+[gen-start 22/128 since_start=148.9s]
+[gen-pass1 22/128 latency=3.67s]
+[gen-done 22/128 sample_latency=3.67s total=152.5s retries=0]
+[gen-start 23/128 since_start=152.5s]
+[gen-pass1 23/128 latency=13.36s]
+[gen-done 23/128 sample_latency=13.36s total=165.9s retries=0]
+[gen-start 24/128 since_start=165.9s]
+[gen-pass1 24/128 latency=1.41s]
+[gen-done 24/128 sample_latency=1.41s total=167.3s retries=0]
+[gen-start 25/128 since_start=167.3s]
+[gen-pass1 25/128 latency=9.65s]
+[gen-done 25/128 sample_latency=9.65s total=176.9s retries=0]
+[gen-start 26/128 since_start=176.9s]
+[gen-pass1 26/128 latency=13.33s]
+[gen-done 26/128 sample_latency=13.33s total=190.3s retries=0]
+[gen-start 27/128 since_start=190.3s]
+[gen-pass1 27/128 latency=6.42s]
+[gen-done 27/128 sample_latency=6.42s total=196.7s retries=0]
+[gen-start 28/128 since_start=196.7s]
+[gen-pass1 28/128 latency=8.86s]
+[gen-done 28/128 sample_latency=8.86s total=205.6s retries=0]
+[gen-start 29/128 since_start=205.6s]
+[gen-pass1 29/128 latency=2.61s]
+[gen-done 29/128 sample_latency=2.61s total=208.2s retries=0]
+[gen-start 30/128 since_start=208.2s]
+[gen-pass1 30/128 latency=10.00s]
+[gen-done 30/128 sample_latency=10.00s total=218.2s retries=0]
+[gen-start 31/128 since_start=218.2s]
+[gen-pass1 31/128 latency=13.36s]
+[gen-done 31/128 sample_latency=13.36s total=231.5s retries=0]
+[gen-start 32/128 since_start=231.5s]
+[gen-pass1 32/128 latency=10.41s]
+[gen-done 32/128 sample_latency=10.41s total=241.9s retries=0]
+[gen-start 33/128 since_start=241.9s]
+[gen-pass1 33/128 latency=12.65s]
+[gen-done 33/128 sample_latency=12.66s total=254.6s retries=0]
+[gen-start 34/128 since_start=254.6s]
+[gen-pass1 34/128 latency=13.34s]
+[gen-done 34/128 sample_latency=13.34s total=267.9s retries=0]
+[gen-start 35/128 since_start=267.9s]
+[gen-pass1 35/128 latency=5.73s]
+[gen-done 35/128 sample_latency=5.73s total=273.7s retries=0]
+[gen-start 36/128 since_start=273.7s]
+[gen-pass1 36/128 latency=10.60s]
+[gen-done 36/128 sample_latency=10.60s total=284.3s retries=0]
+[gen-start 37/128 since_start=284.3s]
+[gen-pass1 37/128 latency=13.35s]
+[retry-start 37/128 attempt=1]
+[retry-done 37/128 attempt=1 latency=7.59s]
+[gen-done 37/128 sample_latency=20.94s total=305.2s retries=1]
+[gen-start 38/128 since_start=305.2s]
+[gen-pass1 38/128 latency=4.27s]
+[gen-done 38/128 sample_latency=4.27s total=309.5s retries=0]
+[gen-start 39/128 since_start=309.5s]
+[gen-pass1 39/128 latency=7.61s]
+[gen-done 39/128 sample_latency=7.61s total=317.1s retries=0]
+[gen-start 40/128 since_start=317.1s]
+[gen-pass1 40/128 latency=3.33s]
+[gen-done 40/128 sample_latency=3.33s total=320.4s retries=0]
+[gen-start 41/128 since_start=320.4s]
+[gen-pass1 41/128 latency=13.33s]
+[gen-done 41/128 sample_latency=13.33s total=333.8s retries=0]
+[gen-start 42/128 since_start=333.8s]
+[gen-pass1 42/128 latency=13.37s]
+[retry-start 42/128 attempt=1]
+[retry-done 42/128 attempt=1 latency=13.35s]
+[gen-done 42/128 sample_latency=26.73s total=360.5s retries=1]
+[gen-start 43/128 since_start=360.5s]
+[gen-pass1 43/128 latency=8.81s]
+[gen-done 43/128 sample_latency=8.81s total=369.3s retries=0]
+[gen-start 44/128 since_start=369.3s]
+[gen-pass1 44/128 latency=3.06s]
+[gen-done 44/128 sample_latency=3.06s total=372.3s retries=0]
+[gen-start 45/128 since_start=372.3s]
+[gen-pass1 45/128 latency=13.33s]
+[gen-done 45/128 sample_latency=13.33s total=385.7s retries=0]
+[gen-start 46/128 since_start=385.7s]
+[gen-pass1 46/128 latency=13.31s]
+[retry-start 46/128 attempt=1]
+[retry-done 46/128 attempt=1 latency=13.22s]
+[gen-done 46/128 sample_latency=26.53s total=412.2s retries=1]
+[gen-start 47/128 since_start=412.2s]
+[gen-pass1 47/128 latency=12.03s]
+[retry-start 47/128 attempt=1]
+[retry-done 47/128 attempt=1 latency=4.62s]
+[gen-done 47/128 sample_latency=16.66s total=428.9s retries=1]
+[gen-start 48/128 since_start=428.9s]
+[gen-pass1 48/128 latency=2.92s]
+[gen-done 48/128 sample_latency=2.92s total=431.8s retries=0]
+[gen-start 49/128 since_start=431.8s]
+[gen-pass1 49/128 latency=0.99s]
+[gen-done 49/128 sample_latency=0.99s total=432.8s retries=0]
+[gen-start 50/128 since_start=432.8s]
+[gen-pass1 50/128 latency=0.27s]
+[gen-done 50/128 sample_latency=0.27s total=433.1s retries=0]
+[gen-start 51/128 since_start=433.1s]
+[gen-pass1 51/128 latency=13.24s]
+[retry-start 51/128 attempt=1]
+[retry-done 51/128 attempt=1 latency=4.35s]
+[gen-done 51/128 sample_latency=17.60s total=450.7s retries=1]
+[gen-start 52/128 since_start=450.7s]
+[gen-pass1 52/128 latency=0.79s]
+[gen-done 52/128 sample_latency=0.79s total=451.4s retries=0]
+[gen-start 53/128 since_start=451.4s]
+[gen-pass1 53/128 latency=10.77s]
+[gen-done 53/128 sample_latency=10.77s total=462.2s retries=0]
+[gen-start 54/128 since_start=462.2s]
+[gen-pass1 54/128 latency=13.23s]
+[gen-done 54/128 sample_latency=13.23s total=475.5s retries=0]
+[gen-start 55/128 since_start=475.5s]
+[gen-pass1 55/128 latency=13.24s]
+[gen-done 55/128 sample_latency=13.24s total=488.7s retries=0]
+[gen-start 56/128 since_start=488.7s]
+[gen-pass1 56/128 latency=1.97s]
+[gen-done 56/128 sample_latency=1.97s total=490.7s retries=0]
+[gen-start 57/128 since_start=490.7s]
+[gen-pass1 57/128 latency=4.69s]
+[retry-start 57/128 attempt=1]
+[retry-done 57/128 attempt=1 latency=13.23s]
+[retry-start 57/128 attempt=2]
+[retry-done 57/128 attempt=2 latency=13.22s]
+[gen-done 57/128 sample_latency=31.15s total=521.8s retries=2]
+[gen-start 58/128 since_start=521.8s]
+[gen-pass1 58/128 latency=13.23s]
+[gen-done 58/128 sample_latency=13.23s total=535.0s retries=0]
+[gen-start 59/128 since_start=535.0s]
+[gen-pass1 59/128 latency=9.72s]
+[gen-done 59/128 sample_latency=9.72s total=544.8s retries=0]
+[gen-start 60/128 since_start=544.8s]
+[gen-pass1 60/128 latency=13.22s]
+[gen-done 60/128 sample_latency=13.22s total=558.0s retries=0]
+[gen-start 61/128 since_start=558.0s]
+[gen-pass1 61/128 latency=3.63s]
+[gen-done 61/128 sample_latency=3.63s total=561.6s retries=0]
+[gen-start 62/128 since_start=561.6s]
+[gen-pass1 62/128 latency=13.22s]
+[gen-done 62/128 sample_latency=13.22s total=574.8s retries=0]
+[gen-start 63/128 since_start=574.8s]
+[gen-pass1 63/128 latency=4.43s]
+[gen-done 63/128 sample_latency=4.43s total=579.3s retries=0]
+[gen-start 64/128 since_start=579.3s]
+[gen-pass1 64/128 latency=1.26s]
+[gen-done 64/128 sample_latency=1.26s total=580.5s retries=0]
+[gen-start 65/128 since_start=580.5s]
+[gen-pass1 65/128 latency=5.21s]
+[retry-start 65/128 attempt=1]
+[retry-done 65/128 attempt=1 latency=2.19s]
+[gen-done 65/128 sample_latency=7.40s total=587.9s retries=1]
+[gen-start 66/128 since_start=587.9s]
+[gen-pass1 66/128 latency=13.21s]
+[retry-start 66/128 attempt=1]
+[retry-done 66/128 attempt=1 latency=2.18s]
+[gen-done 66/128 sample_latency=15.40s total=603.3s retries=1]
+[gen-start 67/128 since_start=603.3s]
+[gen-pass1 67/128 latency=5.80s]
+[gen-done 67/128 sample_latency=5.81s total=609.1s retries=0]
+[gen-start 68/128 since_start=609.1s]
+[gen-pass1 68/128 latency=0.13s]
+[gen-done 68/128 sample_latency=0.13s total=609.3s retries=0]
+[gen-start 69/128 since_start=609.3s]
+[gen-pass1 69/128 latency=12.87s]
+[gen-done 69/128 sample_latency=12.87s total=622.1s retries=0]
+[gen-start 70/128 since_start=622.1s]
+[gen-pass1 70/128 latency=11.05s]
+[gen-done 70/128 sample_latency=11.05s total=633.2s retries=0]
+[gen-start 71/128 since_start=633.2s]
+[gen-pass1 71/128 latency=13.22s]
+[gen-done 71/128 sample_latency=13.22s total=646.4s retries=0]
+[gen-start 72/128 since_start=646.4s]
+[gen-pass1 72/128 latency=12.12s]
+[gen-done 72/128 sample_latency=12.12s total=658.5s retries=0]
+[gen-start 73/128 since_start=658.5s]
+[gen-pass1 73/128 latency=13.24s]
+[gen-done 73/128 sample_latency=13.24s total=671.8s retries=0]
+[gen-start 74/128 since_start=671.8s]
+[gen-pass1 74/128 latency=1.06s]
+[gen-done 74/128 sample_latency=1.06s total=672.8s retries=0]
+[gen-start 75/128 since_start=672.8s]
+[gen-pass1 75/128 latency=13.22s]
+[gen-done 75/128 sample_latency=13.22s total=686.0s retries=0]
+[gen-start 76/128 since_start=686.0s]
+[gen-pass1 76/128 latency=13.23s]
+[gen-done 76/128 sample_latency=13.23s total=699.3s retries=0]
+[gen-start 77/128 since_start=699.3s]
+[gen-pass1 77/128 latency=0.79s]
+[gen-done 77/128 sample_latency=0.80s total=700.1s retries=0]
+[gen-start 78/128 since_start=700.1s]
+[gen-pass1 78/128 latency=11.71s]
+[gen-done 78/128 sample_latency=11.71s total=711.8s retries=0]
+[gen-start 79/128 since_start=711.8s]
+[gen-pass1 79/128 latency=13.23s]
+[gen-done 79/128 sample_latency=13.23s total=725.0s retries=0]
+[gen-start 80/128 since_start=725.0s]
+[gen-pass1 80/128 latency=12.68s]
+[gen-done 80/128 sample_latency=12.68s total=737.7s retries=0]
+[gen-start 81/128 since_start=737.7s]
+[gen-pass1 81/128 latency=1.26s]
+[gen-done 81/128 sample_latency=1.26s total=739.0s retries=0]
+[gen-start 82/128 since_start=739.0s]
+[gen-pass1 82/128 latency=13.23s]
+[gen-done 82/128 sample_latency=13.23s total=752.2s retries=0]
+[gen-start 83/128 since_start=752.2s]
+[gen-pass1 83/128 latency=13.25s]
+[gen-done 83/128 sample_latency=13.25s total=765.4s retries=0]
+[gen-start 84/128 since_start=765.4s]
+[gen-pass1 84/128 latency=13.22s]
+[gen-done 84/128 sample_latency=13.22s total=778.7s retries=0]
+[gen-start 85/128 since_start=778.7s]
+[gen-pass1 85/128 latency=13.22s]
+[retry-start 85/128 attempt=1]
+[retry-done 85/128 attempt=1 latency=5.22s]
+[retry-start 85/128 attempt=2]
+[retry-done 85/128 attempt=2 latency=13.26s]
+[gen-done 85/128 sample_latency=31.70s total=810.4s retries=2]
+[gen-start 86/128 since_start=810.4s]
+[gen-pass1 86/128 latency=0.86s]
+[gen-done 86/128 sample_latency=0.86s total=811.2s retries=0]
+[gen-start 87/128 since_start=811.2s]
+[gen-pass1 87/128 latency=13.21s]
+[gen-done 87/128 sample_latency=13.21s total=824.4s retries=0]
+[gen-start 88/128 since_start=824.4s]
+[gen-pass1 88/128 latency=13.25s]
+[gen-done 88/128 sample_latency=13.25s total=837.7s retries=0]
+[gen-start 89/128 since_start=837.7s]
+[gen-pass1 89/128 latency=13.22s]
+[gen-done 89/128 sample_latency=13.22s total=850.9s retries=0]
+[gen-start 90/128 since_start=850.9s]
+[gen-pass1 90/128 latency=9.33s]
+[gen-done 90/128 sample_latency=9.33s total=860.2s retries=0]
+[gen-start 91/128 since_start=860.3s]
+[gen-pass1 91/128 latency=2.38s]
+[gen-done 91/128 sample_latency=2.38s total=862.6s retries=0]
+[gen-start 92/128 since_start=862.6s]
+[gen-pass1 92/128 latency=5.35s]
+[gen-done 92/128 sample_latency=5.35s total=868.0s retries=0]
+[gen-start 93/128 since_start=868.0s]
+[gen-pass1 93/128 latency=11.97s]
+[gen-done 93/128 sample_latency=11.97s total=880.0s retries=0]
+[gen-start 94/128 since_start=880.0s]
+[gen-pass1 94/128 latency=2.91s]
+[gen-done 94/128 sample_latency=2.91s total=882.9s retries=0]
+[gen-start 95/128 since_start=882.9s]
+[gen-pass1 95/128 latency=4.88s]
+[gen-done 95/128 sample_latency=4.88s total=887.7s retries=0]
+[gen-start 96/128 since_start=887.7s]
+[gen-pass1 96/128 latency=0.80s]
+[gen-done 96/128 sample_latency=0.80s total=888.5s retries=0]
+[gen-start 97/128 since_start=888.5s]
+[gen-pass1 97/128 latency=13.24s]
+[gen-done 97/128 sample_latency=13.24s total=901.8s retries=0]
+[gen-start 98/128 since_start=901.8s]
+[gen-pass1 98/128 latency=9.71s]
+[gen-done 98/128 sample_latency=9.71s total=911.5s retries=0]
+[gen-start 99/128 since_start=911.5s]
+[gen-pass1 99/128 latency=0.33s]
+[gen-done 99/128 sample_latency=0.33s total=911.8s retries=0]
+[gen-start 100/128 since_start=911.8s]
+[gen-pass1 100/128 latency=13.25s]
+[gen-done 100/128 sample_latency=13.25s total=925.1s retries=0]
+[gen-start 101/128 since_start=925.1s]
+[gen-pass1 101/128 latency=9.20s]
+[gen-done 101/128 sample_latency=9.20s total=934.3s retries=0]
+[gen-start 102/128 since_start=934.3s]
+[gen-pass1 102/128 latency=0.33s]
+[gen-done 102/128 sample_latency=0.33s total=934.6s retries=0]
+[gen-start 103/128 since_start=934.6s]
+[gen-pass1 103/128 latency=8.02s]
+[gen-done 103/128 sample_latency=8.02s total=942.6s retries=0]
+[gen-start 104/128 since_start=942.6s]
+[gen-pass1 104/128 latency=1.33s]
+[gen-done 104/128 sample_latency=1.33s total=944.0s retries=0]
+[gen-start 105/128 since_start=944.0s]
+[gen-pass1 105/128 latency=5.89s]
+[gen-done 105/128 sample_latency=5.89s total=949.9s retries=0]
+[gen-start 106/128 since_start=949.9s]
+[gen-pass1 106/128 latency=13.26s]
+[gen-done 106/128 sample_latency=13.26s total=963.1s retries=0]
+[gen-start 107/128 since_start=963.1s]
+[gen-pass1 107/128 latency=9.37s]
+[gen-done 107/128 sample_latency=9.37s total=972.5s retries=0]
+[gen-start 108/128 since_start=972.5s]
+[gen-pass1 108/128 latency=3.71s]
+[gen-done 108/128 sample_latency=3.71s total=976.2s retries=0]
+[gen-start 109/128 since_start=976.2s]
+[gen-pass1 109/128 latency=5.04s]
+[gen-done 109/128 sample_latency=5.04s total=981.3s retries=0]
+[gen-start 110/128 since_start=981.3s]
+[gen-pass1 110/128 latency=10.93s]
+[gen-done 110/128 sample_latency=10.93s total=992.2s retries=0]
+[gen-start 111/128 since_start=992.2s]
+[gen-pass1 111/128 latency=0.80s]
+[gen-done 111/128 sample_latency=0.80s total=993.0s retries=0]
+[gen-start 112/128 since_start=993.0s]
+[gen-pass1 112/128 latency=13.25s]
+[retry-start 112/128 attempt=1]
+[retry-done 112/128 attempt=1 latency=3.18s]
+[gen-done 112/128 sample_latency=16.43s total=1009.4s retries=1]
+[gen-start 113/128 since_start=1009.4s]
+[gen-pass1 113/128 latency=12.98s]
+[retry-start 113/128 attempt=1]
+[retry-done 113/128 attempt=1 latency=13.24s]
+[gen-done 113/128 sample_latency=26.22s total=1035.6s retries=1]
+[gen-start 114/128 since_start=1035.6s]
+[gen-pass1 114/128 latency=8.29s]
+[retry-start 114/128 attempt=1]
+[retry-done 114/128 attempt=1 latency=13.25s]
+[retry-start 114/128 attempt=2]
+[retry-done 114/128 attempt=2 latency=13.24s]
+[gen-done 114/128 sample_latency=34.78s total=1070.4s retries=2]
+[gen-start 115/128 since_start=1070.4s]
+[gen-pass1 115/128 latency=1.06s]
+[gen-done 115/128 sample_latency=1.06s total=1071.5s retries=0]
+[gen-start 116/128 since_start=1071.5s]
+[gen-pass1 116/128 latency=0.86s]
+[gen-done 116/128 sample_latency=0.86s total=1072.3s retries=0]
+[gen-start 117/128 since_start=1072.3s]
+[gen-pass1 117/128 latency=6.02s]
+[gen-done 117/128 sample_latency=6.02s total=1078.4s retries=0]
+[gen-start 118/128 since_start=1078.4s]
+[gen-pass1 118/128 latency=13.23s]
+[gen-done 118/128 sample_latency=13.23s total=1091.6s retries=0]
+[gen-start 119/128 since_start=1091.6s]
+[gen-pass1 119/128 latency=1.52s]
+[gen-done 119/128 sample_latency=1.52s total=1093.1s retries=0]
+[gen-start 120/128 since_start=1093.1s]
+[gen-pass1 120/128 latency=3.98s]
+[gen-done 120/128 sample_latency=3.98s total=1097.1s retries=0]
+[gen-start 121/128 since_start=1097.1s]
+[gen-pass1 121/128 latency=11.80s]
+[gen-done 121/128 sample_latency=11.80s total=1108.9s retries=0]
+[gen-start 122/128 since_start=1108.9s]
+[gen-pass1 122/128 latency=8.33s]
+[gen-done 122/128 sample_latency=8.33s total=1117.2s retries=0]
+[gen-start 123/128 since_start=1117.2s]
+[gen-pass1 123/128 latency=3.70s]
+[gen-done 123/128 sample_latency=3.70s total=1120.9s retries=0]
+[gen-start 124/128 since_start=1120.9s]
+[gen-pass1 124/128 latency=1.65s]
+[gen-done 124/128 sample_latency=1.65s total=1122.6s retries=0]
+[gen-start 125/128 since_start=1122.6s]
+[gen-pass1 125/128 latency=13.23s]
+[gen-done 125/128 sample_latency=13.23s total=1135.8s retries=0]
+[gen-start 126/128 since_start=1135.8s]
+[gen-pass1 126/128 latency=7.06s]
+[retry-start 126/128 attempt=1]
+[retry-done 126/128 attempt=1 latency=13.22s]
+[gen-done 126/128 sample_latency=20.28s total=1156.1s retries=1]
+[gen-start 127/128 since_start=1156.1s]
+[gen-pass1 127/128 latency=13.24s]
+[gen-done 127/128 sample_latency=13.24s total=1169.3s retries=0]
+[gen-start 128/128 since_start=1169.3s]
+[gen-pass1 128/128 latency=1.72s]
+[gen-done 128/128 sample_latency=1.72s total=1171.1s retries=0]
+[2026-05-03 15:14:01 UTC] [3/5] run phase6 metric gate
+[2026-05-03 15:14:01 UTC] [stage:start] phase6:eval-no-mauve timeout=0.05h
+[2026-05-03 15:14:01 UTC] [stage:start] phase6:eval-no-mauve timeout=0.05h
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:00<00:02,  1.69it/s]Loading checkpoint shards:  40%|████      | 2/5 [00:01<00:01,  1.66it/s]Loading checkpoint shards:  60%|██████    | 3/5 [00:01<00:01,  1.70it/s]Loading checkpoint shards:  80%|████████  | 4/5 [00:02<00:00,  1.90it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:02<00:00,  2.48it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:02<00:00,  2.09it/s]
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:00<00:02,  1.43it/s]Loading checkpoint shards:  40%|████      | 2/5 [00:01<00:02,  1.41it/s]Loading checkpoint shards:  60%|██████    | 3/5 [00:02<00:01,  1.36it/s]Loading checkpoint shards:  80%|████████  | 4/5 [00:02<00:00,  1.34it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:03<00:00,  1.80it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:03<00:00,  1.58it/s]
+{
+  "metrics": {
+    "n_ai": 128,
+    "n_raw": 412,
+    "bigram_jsd": 0.46432421532526624,
+    "length_kl": 0.6065960061792123,
+    "digit_density_delta": 0.035089384931559435,
+    "english_density_delta": 0.0008578213877154239,
+    "domain_keyword_alignment": 0.0,
+    "tone_distribution_match": 0.0982251213592233,
+    "korean_retention_ppl": 1.4253738044679192,
+    "mauve_score": null
+  },
+  "details": {
+    "domain_keyword_alignment": {
+      "aligned_terms": 2,
+      "total_terms": 20,
+      "aligned_fraction": 0.1,
+      "minimum_ratio_term": "쩜오",
+      "minimum_ratio": 0.0,
+      "per_term": {
+        "쩜오": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0825242718446602,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "텐카": {
+          "generated_ratio": 0.0078125,
+          "raw_ratio": 0.02912621359223301,
+          "ratio": 0.2682291666666667,
+          "aligned": false,
+          "source_absent": false
+        },
+        "호빠": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.021844660194174758,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "도파민": {
+          "generated_ratio": 0.015625,
+          "raw_ratio": 0.06796116504854369,
+          "ratio": 0.2299107142857143,
+          "aligned": false,
+          "source_absent": false
+        },
+        "하이퍼": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0024271844660194173,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "퍼펙트": {
+          "generated_ratio": 0.0078125,
+          "raw_ratio": 0.024271844660194174,
+          "ratio": 0.321875,
+          "aligned": false,
+          "source_absent": false
+        },
+        "마담": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.021844660194174758,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "TC": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.04611650485436893,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "티씨": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.01699029126213592,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "빠꾸": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0,
+          "ratio": 1.0,
+          "aligned": true,
+          "source_absent": true
+        },
+        "밀빵": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0703883495145631,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "풀묶": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0,
+          "ratio": 1.0,
+          "aligned": true,
+          "source_absent": true
+        },
+        "팁": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.04611650485436893,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "초이스": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.04854368932038835,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "케어": {
+          "generated_ratio": 0.0078125,
+          "raw_ratio": 0.12378640776699029,
+          "ratio": 0.06311274509803921,
+          "aligned": false,
+          "source_absent": false
+        },
+        "갯수": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.050970873786407765,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "강남": {
+          "generated_ratio": 0.015625,
+          "raw_ratio": 0.15776699029126215,
+          "ratio": 0.09903846153846153,
+          "aligned": false,
+          "source_absent": false
+        },
+        "역삼": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0024271844660194173,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "선릉": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.007281553398058253,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "논현": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0024271844660194173,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        }
+      }
+    },
+    "tone_distribution_match": {
+      "generated": {
+        "반말": 0.1953125,
+        "존댓말": 0.4140625,
+        "혼합": 0.390625
+      },
+      "raw": {
+        "반말": 0.0970873786407767,
+        "존댓말": 0.3446601941747573,
+        "혼합": 0.558252427184466
+      },
+      "absolute_deltas": {
+        "반말": 0.0982251213592233,
+        "존댓말": 0.0694023058252427
+      },
+      "within_threshold": true
+    },
+    "korean_retention_ppl": {
+      "status": "ok",
+      "corpus": "v3-data/replay_korean_5k.jsonl",
+      "rows": 100,
+      "base_ppl": 15.403113197374964,
+      "adapted_ppl": 21.955194058792365,
+      "ppl_ratio": 1.4253738044679192,
+      "catastrophic_forgetting": false
+    },
+    "kind_counts": {
+      "generated": {
+        "post": 62,
+        "comment": 66
+      },
+      "raw": {
+        "post": 202,
+        "comment": 210
+      }
+    },
+    "kind_breakdown_mode": "explicit_kind_field",
+    "kind_breakdown": {
+      "post": {
+        "metrics": {
+          "n_ai": 62,
+          "n_raw": 202,
+          "bigram_jsd": 0.5671615221338335,
+          "length_kl": 7.971100867345978,
+          "digit_density_delta": 0.004985768378910677,
+          "english_density_delta": 0.0007351846868990835,
+          "domain_keyword_alignment": 0.0,
+          "tone_distribution_match": 0.1379750878313638,
+          "korean_retention_ppl": null,
+          "mauve_score": null
+        },
+        "details": {
+          "domain_keyword_alignment": {
+            "aligned_terms": 7,
+            "total_terms": 20,
+            "aligned_fraction": 0.35,
+            "minimum_ratio_term": "쩜오",
+            "minimum_ratio": 0.0,
+            "per_term": {
+              "쩜오": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.01485148514851485,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "텐카": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.019801980198019802,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "호빠": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.019801980198019802,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "도파민": {
+                "generated_ratio": 0.016129032258064516,
+                "raw_ratio": 0.019801980198019802,
+                "ratio": 0.814516129032258,
+                "aligned": true,
+                "source_absent": false
+              },
+              "하이퍼": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0049504950495049506,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "퍼펙트": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.009900990099009901,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "마담": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.009900990099009901,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "TC": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "티씨": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "빠꾸": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "밀빵": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0049504950495049506,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "풀묶": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "팁": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "초이스": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "케어": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.01485148514851485,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "갯수": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.009900990099009901,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "강남": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.034653465346534656,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "역삼": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0049504950495049506,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "선릉": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.01485148514851485,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "논현": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0049504950495049506,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              }
+            }
+          },
+          "tone_distribution_match": {
+            "generated": {
+              "반말": 0.2903225806451613,
+              "존댓말": 0.24193548387096775,
+              "혼합": 0.46774193548387094
+            },
+            "raw": {
+              "반말": 0.15841584158415842,
+              "존댓말": 0.10396039603960396,
+              "혼합": 0.7376237623762376
+            },
+            "absolute_deltas": {
+              "반말": 0.1319067390610029,
+              "존댓말": 0.1379750878313638
+            },
+            "within_threshold": true
+          },
+          "korean_retention_ppl": {
+            "status": "skipped",
+            "reason": "disabled"
+          }
+        },
+        "gate": {
+          "verdict": "FAIL",
+          "violations": [
+            "bigram_jsd=0.5672 > 0.08",
+            "length_kl=7.9711 > 0.1",
+            "domain_keyword_alignment=0.0000 < 0.5",
+            "korean_retention_ppl=None (required metric unavailable)"
+          ]
+        }
+      },
+      "comment": {
+        "metrics": {
+          "n_ai": 66,
+          "n_raw": 210,
+          "bigram_jsd": 0.5031346766892352,
+          "length_kl": 0.3674444685646335,
+          "digit_density_delta": 0.06417654762259416,
+          "english_density_delta": 0.0021247185263368364,
+          "domain_keyword_alignment": 0.0,
+          "tone_distribution_match": 0.06796536796536796,
+          "korean_retention_ppl": null,
+          "mauve_score": null
+        },
+        "details": {
+          "domain_keyword_alignment": {
+            "aligned_terms": 6,
+            "total_terms": 20,
+            "aligned_fraction": 0.3,
+            "minimum_ratio_term": "쩜오",
+            "minimum_ratio": 0.0,
+            "per_term": {
+              "쩜오": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.14761904761904762,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "텐카": {
+                "generated_ratio": 0.015151515151515152,
+                "raw_ratio": 0.0380952380952381,
+                "ratio": 0.3977272727272727,
+                "aligned": false,
+                "source_absent": false
+              },
+              "호빠": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.023809523809523808,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "도파민": {
+                "generated_ratio": 0.015151515151515152,
+                "raw_ratio": 0.11428571428571428,
+                "ratio": 0.1325757575757576,
+                "aligned": false,
+                "source_absent": false
+              },
+              "하이퍼": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "퍼펙트": {
+                "generated_ratio": 0.015151515151515152,
+                "raw_ratio": 0.0380952380952381,
+                "ratio": 0.3977272727272727,
+                "aligned": false,
+                "source_absent": false
+              },
+              "마담": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.03333333333333333,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "TC": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.09047619047619047,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "티씨": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.03333333333333333,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "빠꾸": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "밀빵": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.13333333333333333,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "풀묶": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "팁": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.09047619047619047,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "초이스": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.09523809523809523,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "케어": {
+                "generated_ratio": 0.015151515151515152,
+                "raw_ratio": 0.22857142857142856,
+                "ratio": 0.0662878787878788,
+                "aligned": false,
+                "source_absent": false
+              },
+              "갯수": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.09047619047619047,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "강남": {
+                "generated_ratio": 0.030303030303030304,
+                "raw_ratio": 0.2761904761904762,
+                "ratio": 0.10971786833855798,
+                "aligned": false,
+                "source_absent": false
+              },
+              "역삼": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "선릉": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "논현": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              }
+            }
+          },
+          "tone_distribution_match": {
+            "generated": {
+              "반말": 0.10606060606060606,
+              "존댓말": 0.5757575757575758,
+              "혼합": 0.3181818181818182
+            },
+            "raw": {
+              "반말": 0.0380952380952381,
+              "존댓말": 0.5761904761904761,
+              "혼합": 0.38571428571428573
+            },
+            "absolute_deltas": {
+              "반말": 0.06796536796536796,
+              "존댓말": 0.0004329004329003405
+            },
+            "within_threshold": true
+          },
+          "korean_retention_ppl": {
+            "status": "skipped",
+            "reason": "disabled"
+          }
+        },
+        "gate": {
+          "verdict": "FAIL",
+          "violations": [
+            "bigram_jsd=0.5031 > 0.08",
+            "length_kl=0.3674 > 0.1",
+            "digit_density_delta=0.0642 > 0.03",
+            "domain_keyword_alignment=0.0000 < 0.5",
+            "korean_retention_ppl=None (required metric unavailable)"
+          ]
+        }
+      }
+    }
+  },
+  "gate": {
+    "verdict": "FAIL",
+    "violations": [
+      "bigram_jsd=0.4643 > 0.08",
+      "length_kl=0.6066 > 0.1",
+      "digit_density_delta=0.0351 > 0.03",
+      "domain_keyword_alignment=0.0000 < 0.5"
+    ]
+  },
+  "thresholds": {
+    "bigram_jsd": {
+      "op": "le",
+      "value": 0.08
+    },
+    "length_kl": {
+      "op": "le",
+      "value": 0.1
+    },
+    "digit_density_delta": {
+      "op": "le",
+      "value": 0.03
+    },
+    "english_density_delta": {
+      "op": "le",
+      "value": 0.02
+    },
+    "domain_keyword_alignment": {
+      "op": "ge",
+      "value": 0.5
+    },
+    "tone_distribution_match": {
+      "op": "le",
+      "value": 0.15
+    },
+    "korean_retention_ppl": {
+      "op": "le",
+      "value": 1.5
+    },
+    "mauve_score": {
+      "op": "ge",
+      "value": 0.8
+    }
+  }
+}
+[2026-05-03 15:14:33 UTC] [4/5] phase6 gate exit=2
+[2026-05-03 15:14:33 UTC] [ERROR] phase6 gate failed rc=2
+[2026-05-03 15:14:33 UTC] [exit] non-zero rc=2 — persisting failure artifacts
