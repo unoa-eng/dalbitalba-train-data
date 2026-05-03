@@ -225,6 +225,9 @@ def main() -> None:
         "CPT_MERGED_PATH",
         "WANDB_API_KEY",
         "WANDB_PROJECT",
+        "EVAL_INSTALL_TIMEOUT_HOURS",
+        "EVAL_GENERATE_TIMEOUT_HOURS",
+        "EVAL_METRIC_TIMEOUT_HOURS",
     ):
         value = os.environ.get(optional_key, "").strip()
         if value:
