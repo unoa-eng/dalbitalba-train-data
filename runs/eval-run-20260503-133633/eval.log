@@ -1,0 +1,682 @@
+[2026-05-03 13:34:20 UTC] === dalbitalba eval chain start ===
+[2026-05-03 13:34:20 UTC] [1/5] install python dependencies
+[2026-05-03 13:34:20 UTC] [stage:start] pip install timeout=0.05h
+[2026-05-03 13:34:20 UTC] [stage:start] pip install timeout=0.05h
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 24.2 -> 26.1
+[notice] To update, run: python3 -m pip install --upgrade pip
+[2026-05-03 13:34:42 UTC] [1/5] verify python imports
+torch 2.4.1+cu124 cuda True 1
+transformers 4.55.4
+peft 0.13.2
+bitsandbytes 0.49.2
+accelerate 0.34.2
+[2026-05-03 13:34:47 UTC] [2/5] generate ai samples (phase6 deterministic gate)
+[2026-05-03 13:34:47 UTC] [phase6] source=sft_adapter repo=UNOA/dalbitalba-qwen3-sft-20260430-0130
+[2026-05-03 13:34:47 UTC] [stage:start] phase6:generate timeout=0.1h
+[2026-05-03 13:34:47 UTC] [stage:start] phase6:generate timeout=0.1h
+[model] base source: Qwen/Qwen3-8B-Base
+[tokenizer] source: UNOA/dalbitalba-qwen3-sft-20260430-0130
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:00<00:01,  2.13it/s]Loading checkpoint shards:  40%|████      | 2/5 [00:00<00:01,  2.12it/s]Loading checkpoint shards:  60%|██████    | 3/5 [00:01<00:00,  2.12it/s]Loading checkpoint shards:  80%|████████  | 4/5 [00:01<00:00,  2.18it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:02<00:00,  2.80it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:02<00:00,  2.46it/s]
+[model] resize_token_embeddings: 151936 -> 151680
+[gen-start 1/4 since_start=0.0s]
+[gen-pass1 1/4 latency=1.08s]
+[gen-done 1/4 sample_latency=1.08s total=1.1s retries=0]
+[gen-start 2/4 since_start=1.1s]
+[gen-pass1 2/4 latency=7.49s]
+[gen-done 2/4 sample_latency=7.49s total=8.6s retries=0]
+[gen-start 3/4 since_start=8.6s]
+[gen-pass1 3/4 latency=14.16s]
+[gen-done 3/4 sample_latency=14.16s total=22.7s retries=0]
+[gen-start 4/4 since_start=22.7s]
+[gen-pass1 4/4 latency=5.61s]
+[gen-done 4/4 sample_latency=5.61s total=28.3s retries=0]
+[2026-05-03 13:36:04 UTC] [3/5] run phase6 metric gate
+[2026-05-03 13:36:05 UTC] [stage:start] phase6:eval-no-mauve timeout=0.03h
+[2026-05-03 13:36:05 UTC] [stage:start] phase6:eval-no-mauve timeout=0.03h
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:00<00:01,  2.15it/s]Loading checkpoint shards:  40%|████      | 2/5 [00:00<00:01,  2.11it/s]Loading checkpoint shards:  60%|██████    | 3/5 [00:01<00:00,  2.11it/s]Loading checkpoint shards:  80%|████████  | 4/5 [00:01<00:00,  2.13it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:02<00:00,  2.75it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:02<00:00,  2.43it/s]
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:00<00:01,  2.14it/s]Loading checkpoint shards:  40%|████      | 2/5 [00:00<00:01,  2.12it/s]Loading checkpoint shards:  60%|██████    | 3/5 [00:01<00:00,  2.12it/s]Loading checkpoint shards:  80%|████████  | 4/5 [00:01<00:00,  2.11it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:02<00:00,  2.73it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:02<00:00,  2.42it/s]
+{
+  "metrics": {
+    "n_ai": 3,
+    "n_raw": 412,
+    "bigram_jsd": 0.7230414567944167,
+    "length_kl": 1.9014121754138436,
+    "digit_density_delta": 0.013492830176799503,
+    "english_density_delta": 0.004552747918804395,
+    "domain_keyword_alignment": 0.0,
+    "tone_distribution_match": 0.3446601941747573,
+    "korean_retention_ppl": 1.4253738044679192,
+    "mauve_score": null
+  },
+  "details": {
+    "domain_keyword_alignment": {
+      "aligned_terms": 2,
+      "total_terms": 20,
+      "aligned_fraction": 0.1,
+      "minimum_ratio_term": "쩜오",
+      "minimum_ratio": 0.0,
+      "per_term": {
+        "쩜오": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0825242718446602,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "텐카": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.02912621359223301,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "호빠": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.021844660194174758,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "도파민": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.06796116504854369,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "하이퍼": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0024271844660194173,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "퍼펙트": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.024271844660194174,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "마담": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.021844660194174758,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "TC": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.04611650485436893,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "티씨": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.01699029126213592,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "빠꾸": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0,
+          "ratio": 1.0,
+          "aligned": true,
+          "source_absent": true
+        },
+        "밀빵": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0703883495145631,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "풀묶": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0,
+          "ratio": 1.0,
+          "aligned": true,
+          "source_absent": true
+        },
+        "팁": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.04611650485436893,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "초이스": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.04854368932038835,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "케어": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.12378640776699029,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "갯수": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.050970873786407765,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "강남": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.15776699029126215,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "역삼": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0024271844660194173,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "선릉": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.007281553398058253,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        },
+        "논현": {
+          "generated_ratio": 0.0,
+          "raw_ratio": 0.0024271844660194173,
+          "ratio": 0.0,
+          "aligned": false,
+          "source_absent": false
+        }
+      }
+    },
+    "tone_distribution_match": {
+      "generated": {
+        "반말": 0.3333333333333333,
+        "존댓말": 0.0,
+        "혼합": 0.6666666666666666
+      },
+      "raw": {
+        "반말": 0.0970873786407767,
+        "존댓말": 0.3446601941747573,
+        "혼합": 0.558252427184466
+      },
+      "absolute_deltas": {
+        "반말": 0.2362459546925566,
+        "존댓말": 0.3446601941747573
+      },
+      "within_threshold": false
+    },
+    "korean_retention_ppl": {
+      "status": "ok",
+      "corpus": "v3-data/replay_korean_5k.jsonl",
+      "rows": 100,
+      "base_ppl": 15.403113197374964,
+      "adapted_ppl": 21.955194058792365,
+      "ppl_ratio": 1.4253738044679192,
+      "catastrophic_forgetting": false
+    },
+    "kind_counts": {
+      "generated": {
+        "comment": 2,
+        "post": 1
+      },
+      "raw": {
+        "post": 202,
+        "comment": 210
+      }
+    },
+    "kind_breakdown_mode": "explicit_kind_field",
+    "kind_breakdown": {
+      "post": {
+        "metrics": {
+          "n_ai": 1,
+          "n_raw": 202,
+          "bigram_jsd": 0.8947679604305423,
+          "length_kl": 3.850856560674817,
+          "digit_density_delta": 0.019235099220703412,
+          "english_density_delta": 0.007732774499862821,
+          "domain_keyword_alignment": 0.0,
+          "tone_distribution_match": 0.8415841584158416,
+          "korean_retention_ppl": null,
+          "mauve_score": null
+        },
+        "details": {
+          "domain_keyword_alignment": {
+            "aligned_terms": 6,
+            "total_terms": 20,
+            "aligned_fraction": 0.3,
+            "minimum_ratio_term": "쩜오",
+            "minimum_ratio": 0.0,
+            "per_term": {
+              "쩜오": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.01485148514851485,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "텐카": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.019801980198019802,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "호빠": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.019801980198019802,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "도파민": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.019801980198019802,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "하이퍼": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0049504950495049506,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "퍼펙트": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.009900990099009901,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "마담": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.009900990099009901,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "TC": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "티씨": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "빠꾸": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "밀빵": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0049504950495049506,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "풀묶": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "팁": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "초이스": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "케어": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.01485148514851485,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "갯수": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.009900990099009901,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "강남": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.034653465346534656,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "역삼": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0049504950495049506,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "선릉": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.01485148514851485,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "논현": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0049504950495049506,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              }
+            }
+          },
+          "tone_distribution_match": {
+            "generated": {
+              "반말": 1.0,
+              "존댓말": 0.0,
+              "혼합": 0.0
+            },
+            "raw": {
+              "반말": 0.15841584158415842,
+              "존댓말": 0.10396039603960396,
+              "혼합": 0.7376237623762376
+            },
+            "absolute_deltas": {
+              "반말": 0.8415841584158416,
+              "존댓말": 0.10396039603960396
+            },
+            "within_threshold": false
+          },
+          "korean_retention_ppl": {
+            "status": "skipped",
+            "reason": "disabled"
+          }
+        },
+        "gate": {
+          "verdict": "FAIL",
+          "violations": [
+            "bigram_jsd=0.8948 > 0.08",
+            "length_kl=3.8509 > 0.1",
+            "domain_keyword_alignment=0.0000 < 0.5",
+            "tone_distribution_match=0.8416 > 0.15",
+            "korean_retention_ppl=None (required metric unavailable)"
+          ]
+        }
+      },
+      "comment": {
+        "metrics": {
+          "n_ai": 2,
+          "n_raw": 210,
+          "bigram_jsd": 0.7285913244087663,
+          "length_kl": 1.6758377191339142,
+          "digit_density_delta": 0.04643649231264945,
+          "english_density_delta": 0.007673193125958922,
+          "domain_keyword_alignment": 0.0,
+          "tone_distribution_match": 0.5761904761904761,
+          "korean_retention_ppl": null,
+          "mauve_score": null
+        },
+        "details": {
+          "domain_keyword_alignment": {
+            "aligned_terms": 6,
+            "total_terms": 20,
+            "aligned_fraction": 0.3,
+            "minimum_ratio_term": "쩜오",
+            "minimum_ratio": 0.0,
+            "per_term": {
+              "쩜오": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.14761904761904762,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "텐카": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0380952380952381,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "호빠": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.023809523809523808,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "도파민": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.11428571428571428,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "하이퍼": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "퍼펙트": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0380952380952381,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "마담": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.03333333333333333,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "TC": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.09047619047619047,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "티씨": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.03333333333333333,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "빠꾸": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "밀빵": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.13333333333333333,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "풀묶": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "팁": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.09047619047619047,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "초이스": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.09523809523809523,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "케어": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.22857142857142856,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "갯수": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.09047619047619047,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "강남": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.2761904761904762,
+                "ratio": 0.0,
+                "aligned": false,
+                "source_absent": false
+              },
+              "역삼": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "선릉": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              },
+              "논현": {
+                "generated_ratio": 0.0,
+                "raw_ratio": 0.0,
+                "ratio": 1.0,
+                "aligned": true,
+                "source_absent": true
+              }
+            }
+          },
+          "tone_distribution_match": {
+            "generated": {
+              "반말": 0.0,
+              "존댓말": 0.0,
+              "혼합": 1.0
+            },
+            "raw": {
+              "반말": 0.0380952380952381,
+              "존댓말": 0.5761904761904761,
+              "혼합": 0.38571428571428573
+            },
+            "absolute_deltas": {
+              "반말": 0.0380952380952381,
+              "존댓말": 0.5761904761904761
+            },
+            "within_threshold": false
+          },
+          "korean_retention_ppl": {
+            "status": "skipped",
+            "reason": "disabled"
+          }
+        },
+        "gate": {
+          "verdict": "FAIL",
+          "violations": [
+            "bigram_jsd=0.7286 > 0.08",
+            "length_kl=1.6758 > 0.1",
+            "digit_density_delta=0.0464 > 0.03",
+            "domain_keyword_alignment=0.0000 < 0.5",
+            "tone_distribution_match=0.5762 > 0.15",
+            "korean_retention_ppl=None (required metric unavailable)"
+          ]
+        }
+      }
+    }
+  },
+  "gate": {
+    "verdict": "FAIL",
+    "violations": [
+      "bigram_jsd=0.7230 > 0.08",
+      "length_kl=1.9014 > 0.1",
+      "domain_keyword_alignment=0.0000 < 0.5",
+      "tone_distribution_match=0.3447 > 0.15"
+    ]
+  },
+  "thresholds": {
+    "bigram_jsd": {
+      "op": "le",
+      "value": 0.08
+    },
+    "length_kl": {
+      "op": "le",
+      "value": 0.1
+    },
+    "digit_density_delta": {
+      "op": "le",
+      "value": 0.03
+    },
+    "english_density_delta": {
+      "op": "le",
+      "value": 0.02
+    },
+    "domain_keyword_alignment": {
+      "op": "ge",
+      "value": 0.5
+    },
+    "tone_distribution_match": {
+      "op": "le",
+      "value": 0.15
+    },
+    "korean_retention_ppl": {
+      "op": "le",
+      "value": 1.5
+    },
+    "mauve_score": {
+      "op": "ge",
+      "value": 0.8
+    }
+  }
+}
+[2026-05-03 13:36:33 UTC] [4/5] phase6 gate exit=2
+[2026-05-03 13:36:33 UTC] [ERROR] phase6 gate failed rc=2
+[2026-05-03 13:36:33 UTC] [exit] non-zero rc=2 — persisting failure artifacts
