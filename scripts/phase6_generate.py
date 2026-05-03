@@ -54,9 +54,9 @@ def resolve_adapter_subfolders() -> list[str | None]:
     if SFT_ADAPTER_SUBFOLDER:
         subfolders.append(SFT_ADAPTER_SUBFOLDER)
     if has_explicit_merged_source():
-        subfolders.extend(["sft-lora", None])
+        subfolders.extend([None, "sft-lora"])
     else:
-        subfolders.extend(["sft-lora", "cpt-lora", None])
+        subfolders.extend([None, "sft-lora", "cpt-lora"])
     return subfolders
 
 
