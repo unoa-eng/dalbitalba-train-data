@@ -1,0 +1,71 @@
+[2026-05-03 12:07:28 UTC] === dalbitalba eval chain start ===
+[2026-05-03 12:07:28 UTC] [1/5] install python dependencies
+[2026-05-03 12:07:28 UTC] [stage:start] pip install timeout=1h
+[2026-05-03 12:07:28 UTC] [stage:start] pip install timeout=1h
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 24.2 -> 26.1
+[notice] To update, run: python3 -m pip install --upgrade pip
+[2026-05-03 12:07:49 UTC] [1/5] verify python imports
+torch 2.4.1+cu124 cuda True 1
+transformers 4.55.4
+peft 0.13.2
+bitsandbytes 0.49.2
+accelerate 0.34.2
+[2026-05-03 12:07:54 UTC] [2/5] generate ai samples (phase6 deterministic gate)
+[2026-05-03 12:07:54 UTC] [phase6] source=sft_adapter repo=UNOA/dalbitalba-qwen3-sft-20260430-0130
+[2026-05-03 12:07:54 UTC] [stage:start] phase6:generate timeout=2h
+[2026-05-03 12:07:54 UTC] [stage:start] phase6:generate timeout=2h
+[model] base source: Qwen/Qwen3-8B-Base
+[tokenizer-attempt-fail] UNOA/dalbitalba-qwen3-sft-20260430-0130/sft-lora: TypeError: expected str, bytes or os.PathLike object, not NoneType
+[tokenizer-attempt-fail] UNOA/dalbitalba-qwen3-sft-20260430-0130/cpt-lora: TypeError: expected str, bytes or os.PathLike object, not NoneType
+[tokenizer-attempt-fail] UNOA/dalbitalba-qwen3-sft-20260430-0130: ValueError: Fast download using 'hf_transfer' is enabled (HF_HUB_ENABLE_HF_TRANSFER=1) but 'hf_transfer' package is not available in your environment. Try `pip install hf_transfer`.
+[tokenizer-attempt-fail] Qwen/Qwen3-8B-Base: ValueError: Fast download using 'hf_transfer' is enabled (HF_HUB_ENABLE_HF_TRANSFER=1) but 'hf_transfer' package is not available in your environment. Try `pip install hf_transfer`.
+Traceback (most recent call last):
+  File "/workspace/repo/scripts/phase6_generate.py", line 285, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/repo/scripts/phase6_generate.py", line 202, in main
+    tokenizer, tokenizer_source = load_tokenizer(transformers, model_source)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/repo/scripts/phase6_generate.py", line 128, in load_tokenizer
+    raise RuntimeError(
+RuntimeError: failed to load tokenizer from merged/adapter/base candidates: UNOA/dalbitalba-qwen3-sft-20260430-0130/sft-lora, UNOA/dalbitalba-qwen3-sft-20260430-0130/cpt-lora, UNOA/dalbitalba-qwen3-sft-20260430-0130, Qwen/Qwen3-8B-Base
+[2026-05-03 12:08:02 UTC] [exit] non-zero rc=1 — persisting failure artifacts
+[2026-05-03 12:08:03 UTC] [push] remote branch created: eval-run-20260503-120802
+[2026-05-03 12:08:05 UTC] [push] latest pointer updated on budget30-pre-launch
+[2026-05-03 12:08:05 UTC] [stop] reason=failed_rc_1
+[2026-05-03 12:08:17 UTC] === dalbitalba eval chain start ===
+[2026-05-03 12:08:17 UTC] [1/5] install python dependencies
+[2026-05-03 12:08:17 UTC] [stage:start] pip install timeout=1h
+[2026-05-03 12:08:17 UTC] [stage:start] pip install timeout=1h
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 24.2 -> 26.1
+[notice] To update, run: python3 -m pip install --upgrade pip
+[2026-05-03 12:08:20 UTC] [1/5] verify python imports
+torch 2.4.1+cu124 cuda True 1
+transformers 4.55.4
+peft 0.13.2
+bitsandbytes 0.49.2
+accelerate 0.34.2
+[2026-05-03 12:08:25 UTC] [2/5] generate ai samples (phase6 deterministic gate)
+[2026-05-03 12:08:25 UTC] [phase6] source=sft_adapter repo=UNOA/dalbitalba-qwen3-sft-20260430-0130
+[2026-05-03 12:08:25 UTC] [stage:start] phase6:generate timeout=2h
+[2026-05-03 12:08:25 UTC] [stage:start] phase6:generate timeout=2h
+[model] base source: Qwen/Qwen3-8B-Base
+[tokenizer-attempt-fail] UNOA/dalbitalba-qwen3-sft-20260430-0130/sft-lora: TypeError: expected str, bytes or os.PathLike object, not NoneType
+[tokenizer-attempt-fail] UNOA/dalbitalba-qwen3-sft-20260430-0130/cpt-lora: TypeError: expected str, bytes or os.PathLike object, not NoneType
+[tokenizer-attempt-fail] UNOA/dalbitalba-qwen3-sft-20260430-0130: ValueError: Fast download using 'hf_transfer' is enabled (HF_HUB_ENABLE_HF_TRANSFER=1) but 'hf_transfer' package is not available in your environment. Try `pip install hf_transfer`.
+[tokenizer-attempt-fail] Qwen/Qwen3-8B-Base: ValueError: Fast download using 'hf_transfer' is enabled (HF_HUB_ENABLE_HF_TRANSFER=1) but 'hf_transfer' package is not available in your environment. Try `pip install hf_transfer`.
+Traceback (most recent call last):
+  File "/workspace/repo/scripts/phase6_generate.py", line 285, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/repo/scripts/phase6_generate.py", line 202, in main
+    tokenizer, tokenizer_source = load_tokenizer(transformers, model_source)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/repo/scripts/phase6_generate.py", line 128, in load_tokenizer
+    raise RuntimeError(
+RuntimeError: failed to load tokenizer from merged/adapter/base candidates: UNOA/dalbitalba-qwen3-sft-20260430-0130/sft-lora, UNOA/dalbitalba-qwen3-sft-20260430-0130/cpt-lora, UNOA/dalbitalba-qwen3-sft-20260430-0130, Qwen/Qwen3-8B-Base
+[2026-05-03 12:08:33 UTC] [exit] non-zero rc=1 — persisting failure artifacts
