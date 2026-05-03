@@ -377,7 +377,9 @@ def load_peft_adapter(model, peft, adapter_repo: str, adapter_kwargs: dict[str, 
             kwargs["subfolder"] = subfolder
         try:
             return peft.PeftModel.from_pretrained(model, adapter_repo, **kwargs)
-        except Exception:
+        except Exception as exc:
+            label = "(root)" if subfolder is None else subfolder
+            print(f"[adapter-attempt-fail] {adapter_repo} subfolder={label}: {type(exc).__name__}: {exc}", file=sys.stderr)
             continue
 
     attempted_text = ", ".join("(root)" if value is None else value for value in attempted)
