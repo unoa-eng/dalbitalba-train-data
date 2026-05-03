@@ -116,7 +116,9 @@ def load_tokenizer(transformers, model_source: str):
             tokenizer = transformers.AutoTokenizer.from_pretrained(source, **kwargs)
             label = source if not subfolder else f"{source}/{subfolder}"
             return tokenizer, label
-        except Exception:
+        except Exception as exc:
+            label = source if not subfolder else f"{source}/{subfolder}"
+            print(f"[tokenizer-attempt-fail] {label}: {type(exc).__name__}: {exc}", file=sys.stderr)
             continue
 
     attempted_text = ", ".join(
