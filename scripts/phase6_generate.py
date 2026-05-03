@@ -2,6 +2,7 @@
 
 import json
 import os
+import time
 import re
 import sys
 from pathlib import Path
@@ -277,8 +278,12 @@ def main() -> int:
                 + "\n"
             )
 
-            if i % 50 == 0:
-                print(f"[{i}/{MAX_ROWS}] generated", flush=True)
+            now_t = time.time()
+            if not hasattr(main, "_gen_t0"):
+                main._gen_t0 = now_t
+            elapsed = now_t - main._gen_t0
+            if i <= 5 or i % 10 == 0 or i == MAX_ROWS:
+                print(f"[gen {i}/{MAX_ROWS}] elapsed={elapsed:.1f}s avg={elapsed/i:.2f}s/sample", flush=True)
 
     return 0
 
