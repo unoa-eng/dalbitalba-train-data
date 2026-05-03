@@ -44,3 +44,4 @@ source_db_cache/
 runs/**/adapter/
 runs/**/adapter_model.safetensors
 runs/**/adapter_config.json
+.venv-local/
