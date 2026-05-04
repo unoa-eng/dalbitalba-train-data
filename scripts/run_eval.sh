@@ -19,6 +19,7 @@ EVAL_METRIC_TIMEOUT_HOURS="${EVAL_METRIC_TIMEOUT_HOURS:-1}"
 PY="${PY:-python3}"
 PIP="${PIP:-${PY} -m pip}"
 SFT_ADAPTER_REPO="${SFT_ADAPTER_REPO:-}"
+CPT_ADAPTER_REPO="${CPT_ADAPTER_REPO:-}"
 
 EVAL_FAILED=0
 ARTIFACTS_PERSISTED=0
@@ -131,6 +132,7 @@ persist_eval_artifacts() {
   "github_repo": "${GITHUB_REPO}",
   "hf_adapter_repo": "${HF_ADAPTER_REPO}",
   "sft_adapter_repo": "${SFT_ADAPTER_REPO:-}",
+  "cpt_adapter_repo": "${CPT_ADAPTER_REPO:-}",
   "eval_mode": "${EVAL_MODE:-phase6}",
   "base_model": "${BASE_MODEL:-Qwen/Qwen3-8B-Base}",
   "pod_id": "${RUNPOD_POD_ID:-unknown}"
@@ -197,8 +199,8 @@ else
   if [[ -z "${SFT_ADAPTER_REPO:-}" && -n "${HF_ADAPTER_REPO:-}" ]]; then
     export SFT_ADAPTER_REPO="${HF_ADAPTER_REPO}"
   fi
-  if [[ -z "${SFT_ADAPTER_REPO:-}" && -z "${CPT_MERGED_REPO:-}" && -z "${CPT_MERGED_PATH:-}" ]]; then
-    log "[ERROR] need SFT_ADAPTER_REPO or CPT_MERGED_REPO/CPT_MERGED_PATH for phase6 eval"
+  if [[ -z "${SFT_ADAPTER_REPO:-}" && -z "${CPT_ADAPTER_REPO:-}" && -z "${CPT_MERGED_REPO:-}" && -z "${CPT_MERGED_PATH:-}" ]]; then
+    log "[ERROR] need SFT_ADAPTER_REPO, CPT_ADAPTER_REPO, or CPT_MERGED_REPO/CPT_MERGED_PATH for phase6 eval"
     exit 1
   fi
 fi
@@ -290,6 +292,8 @@ else
   cp val_set.v3.jsonl /workspace/data/val_set.v3.jsonl
   if [[ -n "${SFT_ADAPTER_REPO}" ]]; then
     log "[phase6] source=sft_adapter repo=${SFT_ADAPTER_REPO}"
+  elif [[ -n "${CPT_ADAPTER_REPO:-}" ]]; then
+    log "[phase6] source=cpt_adapter repo=${CPT_ADAPTER_REPO}"
   elif [[ -n "${CPT_MERGED_PATH:-}" ]]; then
     log "[phase6] source=cpt_merged_path path=${CPT_MERGED_PATH}"
   elif [[ -n "${CPT_MERGED_REPO:-}" ]]; then
@@ -299,6 +303,7 @@ else
   fi
   BASE_MODEL="${BASE_MODEL:-Qwen/Qwen3-8B-Base}" \
   SFT_ADAPTER_REPO="${SFT_ADAPTER_REPO}" \
+  CPT_ADAPTER_REPO="${CPT_ADAPTER_REPO:-}" \
   CPT_MERGED_REPO="${CPT_MERGED_REPO:-}" \
   CPT_MERGED_PATH="${CPT_MERGED_PATH:-}" \
   HF_TOKEN="${HF_TOKEN:-}" \

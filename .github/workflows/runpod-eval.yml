@@ -5,7 +5,12 @@ on:
     inputs:
       hf_adapter_repo:
         description: Hugging Face SFT adapter repo id for phase6, or legacy combined repo
-        required: true
+        required: false
+        default: ""
+      hf_cpt_repo:
+        description: Optional Hugging Face CPT adapter repo id used before the SFT adapter
+        required: false
+        default: ""
       eval_mode:
         description: phase6 or legacy
         required: false
@@ -33,6 +38,7 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_ADAPTER_REPO: ${{ github.event.inputs.hf_adapter_repo }}
           SFT_ADAPTER_REPO: ${{ github.event.inputs.hf_adapter_repo }}
+          CPT_ADAPTER_REPO: ${{ github.event.inputs.hf_cpt_repo }}
           EVAL_MODE: ${{ github.event.inputs.eval_mode }}
           GITHUB_TOKEN: ${{ secrets.TRAIN_REPO_PUSH_TOKEN }}
           GITHUB_REPO: unoa-eng/dalbitalba-train-data

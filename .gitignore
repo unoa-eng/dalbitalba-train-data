@@ -45,3 +45,10 @@ runs/**/adapter/
 runs/**/adapter_model.safetensors
 runs/**/adapter_config.json
 .venv-local/
+
+# Local Obsidian auxiliary ablation scratch artifacts.
+v3-data/obsidian_style_map.json
+runs/obsidian-ablation/*.jsonl
+runs/obsidian-ablation/style_map.json
+!runs/obsidian-ablation/summary.json
+!runs/obsidian-ablation/REVIEW.md

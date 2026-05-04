@@ -18,7 +18,6 @@ Output (jsonl):
 Usage:
   python3 scripts/round2_build_orpo_pairs.py \\
       --runs-glob 'runs/refinement-2026042*' \\
-      --val-set val_set.v2.jsonl \\
       --out orpo_pairs.jsonl
 
 Acceptance: >= 500 pairs produced.
@@ -72,14 +71,17 @@ def is_short_korean(text: str) -> bool:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--runs-glob", default="runs/refinement-2026042*")
-    ap.add_argument("--val-set", required=True, type=Path,
-                    help="val_set.v2.jsonl — pool of cb2 raw to mine 'chosen' from when refinement runs lack PASS")
+    ap.add_argument("--val-set", type=Path,
+                    help="optional backfill pool; disabled by default to avoid validation leakage")
     ap.add_argument("--samples", type=Path, default=None,
                     help="optional samples_200.jsonl or similar AI sample pool")
     ap.add_argument("--cpt-corpus", type=Path, default=None,
                     help="optional cpt_corpus.v*.jsonl for additional 'chosen' / 'rejected' mining via marker heuristics")
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--max-pairs", type=int, default=2000)
+    ap.add_argument("--min-pairs", type=int, default=50)
+    ap.add_argument("--allow-val-backfill", action="store_true")
+    ap.add_argument("--allow-synthetic-rejected", action="store_true")
     args = ap.parse_args()
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
@@ -129,18 +131,21 @@ def main() -> int:
                 rejected_pool.append({"text": txt, "kind": r.get("kind", "comment"),
                                       "source_run": label, "reason": "formal-AI markers"})
 
-    # Backfill chosen with cb2 raw from val_set up to max_pairs (synth needs strong chosen pool)
-    val_rows = load_jsonl(args.val_set)
-    candidates = [v for v in val_rows if is_short_korean(v.get("text", ""))]
-    target_chosen = args.max_pairs
-    if candidates and len(chosen_pool) < target_chosen:
-        need = target_chosen - len(chosen_pool)
-        for r in random.sample(candidates, min(need, len(candidates))):
-            chosen_pool.append({"text": r.get("text", ""), "kind": r.get("kind", "comment"),
-                                "source_run": "val_set.v2.jsonl"})
+    if args.allow_val_backfill:
+        if not args.val_set or not args.val_set.exists():
+            print("[warn] --allow-val-backfill requested but --val-set missing; skipping", file=sys.stderr)
+        else:
+            val_rows = load_jsonl(args.val_set)
+            candidates = [v for v in val_rows if is_short_korean(v.get("text", ""))]
+            target_chosen = args.max_pairs
+            if candidates and len(chosen_pool) < target_chosen:
+                need = target_chosen - len(chosen_pool)
+                for r in random.sample(candidates, min(need, len(candidates))):
+                    chosen_pool.append({"text": r.get("text", ""), "kind": r.get("kind", "comment"),
+                                        "source_run": args.val_set.name})
 
-    # Synthesize rejected from chosen by injecting formal-AI patterns (always run if rejected_pool < target)
-    if chosen_pool and len(rejected_pool) < args.max_pairs:
+    # Synthesize rejected from chosen only when explicitly allowed.
+    if args.allow_synthetic_rejected and chosen_pool and len(rejected_pool) < args.max_pairs:
         synth_prefixes = [
             "다음과 같은 점들이 있습니다. ", "정확하지는 않을 수 있지만 ",
             "AI로서 답변드립니다. ", "참고만 해주세요. ",
@@ -198,7 +203,18 @@ def main() -> int:
             fh.write(json.dumps(p, ensure_ascii=False) + "\n")
 
     print(f"DONE pairs={n_pairs} chosen_pool={len(chosen_pool)} rejected_pool={len(rejected_pool)}")
-    return 0 if n_pairs >= 50 else 1
+    if n_pairs < args.min_pairs:
+        print(
+            f"[error] insufficient preference pairs: {n_pairs} < {args.min_pairs}; "
+            "refusing to keep a low-signal ORPO dataset",
+            file=sys.stderr,
+        )
+        try:
+            args.out.unlink(missing_ok=True)
+        except Exception:
+            pass
+        return 1
+    return 0
 
 
 if __name__ == "__main__":

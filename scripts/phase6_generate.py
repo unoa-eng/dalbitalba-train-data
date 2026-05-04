@@ -11,11 +11,12 @@ from pathlib import Path
 BASE_MODEL = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base")
 CPT_MERGED_REPO = os.environ.get("CPT_MERGED_REPO", "").strip()
 CPT_MERGED_PATH = os.environ.get("CPT_MERGED_PATH", "").strip()
+CPT_ADAPTER_REPO = os.environ.get("CPT_ADAPTER_REPO", "").strip()
 SFT_ADAPTER_REPO = os.environ.get("SFT_ADAPTER_REPO", "").strip()
 SFT_ADAPTER_SUBFOLDER = os.environ.get("SFT_ADAPTER_SUBFOLDER", "").strip()
 HF_TOKEN = os.environ.get("HF_TOKEN", "").strip() or None
-INPUT_PATH = "/workspace/data/val_set.v3.jsonl"
-OUTPUT_PATH = "/workspace/ai_generated.jsonl"
+INPUT_PATH = os.environ.get("EVAL_INPUT_PATH", "/workspace/data/val_set.v3.jsonl")
+OUTPUT_PATH = os.environ.get("EVAL_OUTPUT_PATH", "/workspace/ai_generated.jsonl")
 MAX_ROWS = int(os.environ.get("EVAL_MAX_ROWS", "500"))
 MAX_NEW_TOKENS = int(os.environ.get("MAX_NEW_TOKENS", "200"))
 TEMPERATURE = float(os.environ.get("TEMPERATURE", "1.1"))
@@ -52,20 +53,35 @@ def resolve_model_source() -> str:
     return BASE_MODEL
 
 
-def resolve_adapter_subfolders() -> list[str | None]:
-    subfolders: list[str | None] = []
-    if SFT_ADAPTER_SUBFOLDER:
-        subfolders.append(SFT_ADAPTER_SUBFOLDER)
-    if has_explicit_merged_source():
-        subfolders.extend([None, "sft-lora"])
+def dedupe_subfolders(values: list[str | None]) -> list[str | None]:
+    deduped: list[str | None] = []
+    for value in values:
+        if value not in deduped:
+            deduped.append(value)
+    return deduped
+
+
+def resolve_adapter_subfolders(adapter_kind: str) -> list[str | None]:
+    subfolders: list[str | None] = [None]
+    if adapter_kind == "sft":
+        if SFT_ADAPTER_SUBFOLDER:
+            subfolders.insert(0, SFT_ADAPTER_SUBFOLDER)
+        subfolders.extend(["sft-lora", "adapter"])
     else:
-        subfolders.extend([None, "sft-lora", "cpt-lora"])
-    return subfolders
+        subfolders.extend(["cpt-lora", "adapter"])
+    return dedupe_subfolders(subfolders)
 
 
-def load_peft_adapter(model, peft, adapter_repo: str, adapter_kwargs: dict[str, object]):
+def load_peft_adapter(
+    model,
+    peft,
+    adapter_repo: str,
+    adapter_kwargs: dict[str, object],
+    *,
+    adapter_kind: str,
+):
     attempted: list[str | None] = []
-    subfolders = resolve_adapter_subfolders()
+    subfolders = resolve_adapter_subfolders(adapter_kind)
 
     for subfolder in subfolders:
         if subfolder in attempted:
@@ -78,19 +94,17 @@ def load_peft_adapter(model, peft, adapter_repo: str, adapter_kwargs: dict[str, 
             return peft.PeftModel.from_pretrained(model, adapter_repo, **kwargs)
         except Exception as exc:
             label = "(root)" if subfolder is None else subfolder
-            print(f"[adapter-attempt-fail] {adapter_repo} subfolder={label}: {type(exc).__name__}: {exc}", file=sys.stderr)
+            print(
+                f"[adapter-attempt-fail] kind={adapter_kind} repo={adapter_repo} "
+                f"subfolder={label}: {type(exc).__name__}: {exc}",
+                file=sys.stderr,
+            )
             continue
 
     attempted_text = ", ".join("(root)" if value is None else value for value in attempted)
-    if has_explicit_merged_source():
-        print(
-            "[warn] adapter load failed; falling back to merged model only "
-            f"(tried: {attempted_text})",
-            file=sys.stderr,
-        )
-        return model
     raise RuntimeError(
-        f"failed to load adapter from {adapter_repo}; tried subfolders: {attempted_text}"
+        f"failed to load {adapter_kind} adapter from {adapter_repo}; "
+        f"tried subfolders: {attempted_text}"
     )
 
 
@@ -100,8 +114,11 @@ def load_tokenizer(transformers, model_source: str):
 
     if has_explicit_merged_source():
         candidates.append((model_source, None))
+    if CPT_ADAPTER_REPO:
+        for subfolder in resolve_adapter_subfolders("cpt"):
+            candidates.append((CPT_ADAPTER_REPO, subfolder))
     if SFT_ADAPTER_REPO:
-        for subfolder in resolve_adapter_subfolders():
+        for subfolder in resolve_adapter_subfolders("sft"):
             candidates.append((SFT_ADAPTER_REPO, subfolder))
     candidates.append((BASE_MODEL, None))
 
@@ -196,9 +213,9 @@ def main() -> int:
     import transformers
 
     model_source = resolve_model_source()
-    if model_source == BASE_MODEL and not SFT_ADAPTER_REPO:
+    if model_source == BASE_MODEL and not SFT_ADAPTER_REPO and not CPT_ADAPTER_REPO:
         print(
-            "[error] need either SFT_ADAPTER_REPO or CPT_MERGED_REPO/CPT_MERGED_PATH",
+            "[error] need SFT_ADAPTER_REPO, CPT_ADAPTER_REPO, or CPT_MERGED_REPO/CPT_MERGED_PATH",
             file=sys.stderr,
         )
         return 1
@@ -225,8 +242,24 @@ def main() -> int:
         )
         model.resize_token_embeddings(len(tokenizer))
     adapter_kwargs = {"token": HF_TOKEN}
+    if CPT_ADAPTER_REPO:
+        cpt_adapter = load_peft_adapter(
+            model,
+            peft,
+            CPT_ADAPTER_REPO,
+            adapter_kwargs,
+            adapter_kind="cpt",
+        )
+        model = cpt_adapter.merge_and_unload()
+        print(f"[model] merged CPT adapter from {CPT_ADAPTER_REPO}", flush=True)
     if SFT_ADAPTER_REPO:
-        model = load_peft_adapter(model, peft, SFT_ADAPTER_REPO, adapter_kwargs)
+        model = load_peft_adapter(
+            model,
+            peft,
+            SFT_ADAPTER_REPO,
+            adapter_kwargs,
+            adapter_kind="sft",
+        )
 
     t_start = time.time()
     with open(INPUT_PATH, "r", encoding="utf-8") as src, open(

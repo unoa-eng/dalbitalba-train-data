@@ -1,0 +1,32 @@
+{
+  "input": "v3-data/sft_5task_v3.jsonl",
+  "obsidian_map": "v3-data/obsidian_style_map.json",
+  "rows": 58476,
+  "matched_rows": 3332,
+  "unseen_rows": 55144,
+  "matched_ratio": 0.056981,
+  "target_ratio": 0.08,
+  "duplicates_added": 1464,
+  "variant_rows": 59940,
+  "variant_matched_rows": 4796,
+  "variant_matched_ratio": 0.080013,
+  "matched_by_task": {
+    "T1_title_to_body": 466,
+    "T2_root_comment": 1684,
+    "T3_reply_comment": 740,
+    "T4_topic_to_post": 136,
+    "T5_continue": 306
+  },
+  "duplicate_by_task": {
+    "T1_title_to_body": 212,
+    "T2_root_comment": 744,
+    "T3_reply_comment": 328,
+    "T4_topic_to_post": 53,
+    "T5_continue": 127
+  },
+  "policy": {
+    "prompt_mutation": false,
+    "target_mutation": false,
+    "membership_signal_only": true
+  }
+}

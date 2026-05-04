@@ -378,6 +378,9 @@ def main() -> None:
         "CPT_LOGGING_STEPS",
         "SFT_LOGGING_STEPS",
         "SKIP_SFT",
+        "SFT_OBSIDIAN_ENABLE",
+        "SFT_OBSIDIAN_TARGET_RATIO",
+        "SFT_OBSIDIAN_VAULT_ROOT",
         "CPT_TIMEOUT_HOURS",
         "MERGE_TIMEOUT_HOURS",
         "SFT_TIMEOUT_HOURS",
@@ -391,6 +394,8 @@ def main() -> None:
                 value = normalize_workspace_repo_path(value)
             elif optional_key == "REPLAY_JSONL":
                 value = normalize_workspace_data_path(value)
+            elif optional_key == "SFT_OBSIDIAN_VAULT_ROOT":
+                value = normalize_workspace_repo_path(value)
             env[optional_key] = value
     if wandb_api_key:
         env["WANDB_API_KEY"] = wandb_api_key

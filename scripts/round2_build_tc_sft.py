@@ -105,8 +105,15 @@ def assign_persona(personas: list[dict[str, Any]], length: int, has_argot: bool)
     }
 
 
-def build_row(post: dict[str, Any], comment_key: str, raw: dict[str, Any],
-              personas: list[dict[str, Any]]) -> dict[str, Any] | None:
+def build_row(
+    post: dict[str, Any],
+    comment_key: str,
+    raw: dict[str, Any],
+    personas: list[dict[str, Any]],
+    *,
+    argot_threshold: int,
+    argot_weight: float,
+) -> dict[str, Any] | None:
     raw_post = raw.get(post.get("source_id") or "")
     if not raw_post:
         return None
@@ -143,8 +150,8 @@ def build_row(post: dict[str, Any], comment_key: str, raw: dict[str, Any],
         f"[PERSONA: {persona['persona_id']} | {persona['tone']} | {persona['mood']}]"
     )
     cells = [instruction, input_str, output_text]
-    has_argot = any(argot_count(c) >= 2 for c in cells)
-    loss_weight = 1.5 if has_argot else 1.0
+    has_argot = any(argot_count(c) >= argot_threshold for c in cells)
+    loss_weight = argot_weight if has_argot else 1.0
 
     return {
         "instruction": instruction,
@@ -166,6 +173,8 @@ def main() -> int:
     ap.add_argument("--persona-list", required=True, type=Path)
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--max-rows", type=int, default=0)
+    ap.add_argument("--argot-threshold", type=int, default=2)
+    ap.add_argument("--argot-weight", type=float, default=1.5)
     args = ap.parse_args()
 
     if not args.context_stream.exists():
@@ -200,7 +209,14 @@ def main() -> int:
             if obj.get("kind") != "context_comment":
                 continue  # only comments fit TC-SFT schema
             comment_key = obj.get("comment_key") or "0"
-            row = build_row(obj, comment_key, raw_by_id, personas)
+            row = build_row(
+                obj,
+                comment_key,
+                raw_by_id,
+                personas,
+                argot_threshold=args.argot_threshold,
+                argot_weight=args.argot_weight,
+            )
             if not row:
                 skipped += 1
                 continue

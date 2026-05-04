@@ -85,7 +85,9 @@ repository secrets and variables instead of a local `.env.local` file.
 ## Research note
 
 `research/obsidian-export/` is preserved for manual analysis and board/community content review.
-It is not production input and should not be fed into training without an explicit curation step.
+It is not raw training input. The only supported training path is an explicit curation
+step that extracts frontmatter metadata only. Vault body/title/comment text must not be
+reused as training text.
 
 ## Source alignment check
 

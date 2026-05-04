@@ -12,7 +12,7 @@ on:
         required: false
         default: "false"
       profile:
-        description: "Optional recipe profile: budget30"
+        description: "Optional recipe profile: budget30, budget30_v2, or budget30_v2_obsidian"
         required: false
         default: "none"
 
@@ -48,6 +48,14 @@ jobs:
           elif [ "${{ github.event.inputs.profile }}" = "budget30" ]; then
             set -a
             . recipes/budget30.env
+            set +a
+          elif [ "${{ github.event.inputs.profile }}" = "budget30_v2" ]; then
+            set -a
+            . recipes/budget30_v2.env
+            set +a
+          elif [ "${{ github.event.inputs.profile }}" = "budget30_v2_obsidian" ]; then
+            set -a
+            . recipes/budget30_v2_obsidian.env
             set +a
           fi
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then

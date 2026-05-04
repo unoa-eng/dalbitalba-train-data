@@ -93,6 +93,8 @@ VAL_LIMIT_ROWS = int(os.environ.get("SFT_VAL_LIMIT_ROWS", "0") or "0")
 
 RAW_RATIO = float(os.environ.get("SFT_RAW_RATIO", "0.8"))
 PAIR_RATIO = 1.0 - RAW_RATIO
+PERSONA_BOOST = float(os.environ.get("SFT_PERSONA_BOOST", "1.0"))
+ARGOT_WEIGHT_FLOOR = float(os.environ.get("SFT_LOSS_WEIGHT_ARGOT", "1.5"))
 
 LORA_R = int(os.environ.get("SFT_LORA_R", "64"))
 LORA_ALPHA = int(os.environ.get("SFT_LORA_ALPHA", "64"))
@@ -210,9 +212,10 @@ def build_mixed_dataset(tokenizer) -> tuple[Dataset, Dataset | None]:
             "input_ids": tok["input_ids"],
             "attention_mask": tok["attention_mask"],
             "labels": tok["input_ids"].copy(),
+            "example_weight": 1.0,
         }
 
-    def build_completion_example(prompt: str, completion: str) -> dict | None:
+    def build_completion_example(prompt: str, completion: str, example_weight: float = 1.0) -> dict | None:
         prompt = prompt.strip()
         completion = completion.strip()
         if not prompt or not completion:
@@ -225,20 +228,25 @@ def build_mixed_dataset(tokenizer) -> tuple[Dataset, Dataset | None]:
         prompt_len = min(len(prefix_ids), len(input_ids))
         labels = [-100] * prompt_len
         labels += input_ids[prompt_len:]
-        return {"input_ids": input_ids, "attention_mask": attn, "labels": labels}
+        return {
+            "input_ids": input_ids,
+            "attention_mask": attn,
+            "labels": labels,
+            "example_weight": float(example_weight),
+        }
 
     def build_instruction_example(row: dict) -> dict | None:
         instruction = row.get("instruction", "").strip()
         input_text = row.get("input", "").strip()
         prompt = instruction if not input_text else f"{instruction}\n\n{input_text}"
         completion = row.get("output", "").strip()
-        return build_completion_example(prompt, completion)
+        return build_completion_example(prompt, completion, compute_example_weight(row))
 
     def build_pair_example(row: dict) -> dict | None:
         post = row.get("post", "").strip()
         comment = row.get("comment", "").strip()
         prompt = post + "\n"
-        return build_completion_example(prompt, comment)
+        return build_completion_example(prompt, comment, compute_example_weight(row))
 
     def build_supervised_example(row: dict) -> dict | None:
         row_format = detect_supervised_row_format(row)
@@ -247,6 +255,14 @@ def build_mixed_dataset(tokenizer) -> tuple[Dataset, Dataset | None]:
         if row_format == "pair":
             return build_pair_example(row)
         return None
+
+    def compute_example_weight(row: dict) -> float:
+        weight = float(row.get("loss_weight", 1.0) or 1.0)
+        if weight > 1.0:
+            weight = max(weight, ARGOT_WEIGHT_FLOOR)
+        if row.get("persona_id"):
+            weight *= max(PERSONA_BOOST, 0.0)
+        return max(weight, 0.0)
 
     merged: list[dict] = []
     for row in raw_rows:
@@ -261,6 +277,15 @@ def build_mixed_dataset(tokenizer) -> tuple[Dataset, Dataset | None]:
         raise RuntimeError("no SFT training examples built from configured inputs")
 
     logger.info(f"merged train size: {len(merged):,}")
+    weighted_examples = [row["example_weight"] for row in merged if row.get("example_weight", 1.0) != 1.0]
+    if weighted_examples:
+        logger.info(
+            "example_weight overrides: %s rows, min=%.2f max=%.2f avg=%.2f",
+            len(weighted_examples),
+            min(weighted_examples),
+            max(weighted_examples),
+            sum(weighted_examples) / len(weighted_examples),
+        )
     train_ds = Dataset.from_list(merged)
 
     eval_ds = None
@@ -279,6 +304,49 @@ def build_mixed_dataset(tokenizer) -> tuple[Dataset, Dataset | None]:
     return train_ds, eval_ds
 
 
+class ExampleWeightCollator:
+    def __init__(self, base_collator):
+        self.base_collator = base_collator
+
+    def __call__(self, features):
+        weights = [float(feature.pop("example_weight", 1.0)) for feature in features]
+        batch = self.base_collator(features)
+        batch["example_weight"] = torch.tensor(weights, dtype=torch.float32)
+        return batch
+
+
+class WeightedLossTrainer(Trainer):
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
+        example_weight = inputs.pop("example_weight", None)
+        labels = inputs.get("labels")
+        outputs = model(**inputs)
+
+        if labels is None or not hasattr(outputs, "logits"):
+            loss = outputs.loss if hasattr(outputs, "loss") else outputs[0]
+            return (loss, outputs) if return_outputs else loss
+
+        shift_logits = outputs.logits[..., :-1, :].contiguous()
+        shift_labels = labels[..., 1:].contiguous()
+        valid_mask = shift_labels.ne(-100)
+
+        loss_fct = torch.nn.CrossEntropyLoss(ignore_index=-100, reduction="none")
+        token_losses = loss_fct(
+            shift_logits.view(-1, shift_logits.size(-1)),
+            shift_labels.view(-1),
+        ).view_as(shift_labels)
+
+        seq_token_counts = valid_mask.sum(dim=1).clamp(min=1)
+        seq_loss = (token_losses * valid_mask).sum(dim=1) / seq_token_counts
+
+        if example_weight is not None:
+            example_weight = example_weight.to(seq_loss.device, dtype=seq_loss.dtype)
+            loss = (seq_loss * example_weight).sum() / example_weight.sum().clamp(min=1e-8)
+        else:
+            loss = seq_loss.mean()
+
+        return (loss, outputs) if return_outputs else loss
+
+
 def main() -> None:
     start = time.time()
     logger.info("=" * 60)
@@ -295,6 +363,9 @@ def main() -> None:
     logger.info(
         f"  seq_len={MAX_SEQ_LEN} eff_batch={BATCH_SIZE*GRAD_ACCUM} "
         f"lr={LR} epochs={NUM_EPOCHS}"
+    )
+    logger.info(
+        f"  example_weight persona_boost={PERSONA_BOOST:.2f} argot_floor={ARGOT_WEIGHT_FLOOR:.2f}"
     )
     logger.info("=" * 60)
 
@@ -364,12 +435,14 @@ def main() -> None:
     warmup_steps = max(1, int(total_steps * WARMUP_RATIO))
     logger.info(f"total_steps={total_steps} warmup={warmup_steps}")
 
-    data_collator = DataCollatorForSeq2Seq(
-        tokenizer=tokenizer,
-        model=model,
-        padding=True,
-        pad_to_multiple_of=8,
-        label_pad_token_id=-100,
+    data_collator = ExampleWeightCollator(
+        DataCollatorForSeq2Seq(
+            tokenizer=tokenizer,
+            model=model,
+            padding=True,
+            pad_to_multiple_of=8,
+            label_pad_token_id=-100,
+        )
     )
 
     kwargs = dict(
@@ -421,7 +494,7 @@ def main() -> None:
         )
     training_args = TrainingArguments(**kwargs)
 
-    trainer = Trainer(
+    trainer = WeightedLossTrainer(
         model=model,
         args=training_args,
         train_dataset=train_ds,

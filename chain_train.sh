@@ -111,6 +111,27 @@ log() {
     echo "${ts} ${msg}" | tee -a "${LOG_FILE}"
 }
 
+resolve_workspace_path() {
+    local raw="$1"
+    local rel="${raw#./}"
+    if [ -z "${raw}" ]; then
+        return 1
+    fi
+    for candidate in \
+        "${raw}" \
+        "${DATA_DIR}/${rel}" \
+        "${REPO_CLONE_DIR}/${rel}" \
+        "${WORKSPACE}/${rel}"
+    do
+        if [ -e "${candidate}" ]; then
+            printf '%s\n' "${candidate}"
+            return 0
+        fi
+    done
+    printf '%s\n' "${raw}"
+    return 0
+}
+
 notify() {
     local msg="$1"
     if [ -n "${NTFY_TOPIC:-}" ]; then
@@ -568,6 +589,46 @@ if [ "${SKIP_SFT}" = "1" ] || [ "${SKIP_SFT}" = "true" ]; then
 else
     notify "dalbit SFT start"
     SFT_START=$(date +%s)
+    ACTIVE_TRAIN_SFT_INPUT_JSONL="${TRAIN_SFT_INPUT_JSONL}"
+    if [ "${SFT_OBSIDIAN_ENABLE:-0}" = "1" ] || [ "${SFT_OBSIDIAN_ENABLE:-false}" = "true" ]; then
+        OBSIDIAN_VAULT_ROOT="$(resolve_workspace_path "${SFT_OBSIDIAN_VAULT_ROOT:-research/obsidian-export}")"
+        OBSIDIAN_ABLATION_DIR="${OUT_DIR}/obsidian-ablation"
+        OBSIDIAN_STYLE_MAP="${OBSIDIAN_ABLATION_DIR}/style_map.json"
+        OBSIDIAN_VARIANT_JSONL="${OBSIDIAN_ABLATION_DIR}/sft_variant.jsonl"
+        OBSIDIAN_MATCHED_JSONL="${OBSIDIAN_ABLATION_DIR}/matched.jsonl"
+        OBSIDIAN_UNSEEN_JSONL="${OBSIDIAN_ABLATION_DIR}/unseen.jsonl"
+        OBSIDIAN_SUMMARY_JSON="${OBSIDIAN_ABLATION_DIR}/summary.json"
+        OBSIDIAN_STYLE_MAP_SCRIPT="$(resolve_workspace_path "scripts/build_obsidian_style_map.py")"
+        OBSIDIAN_VARIANT_SCRIPT="$(resolve_workspace_path "scripts/build_obsidian_sft_variant.py")"
+        mkdir -p "${OBSIDIAN_ABLATION_DIR}"
+        if [ ! -d "${OBSIDIAN_VAULT_ROOT}" ]; then
+            log "[ERROR] Obsidian vault root not found: ${OBSIDIAN_VAULT_ROOT}"
+            fail_with_logs "obsidian_vault_missing" "${LOG_FILE}" 2
+        fi
+        python3 "${OBSIDIAN_STYLE_MAP_SCRIPT}" \
+            --vault-root "${OBSIDIAN_VAULT_ROOT}" \
+            --out "${OBSIDIAN_STYLE_MAP}" >> "${LOG_FILE}" 2>&1
+        STYLE_MAP_EXIT=$?
+        if [ ${STYLE_MAP_EXIT} -ne 0 ]; then
+            log "[ERROR] Obsidian style-map build failed"
+            fail_with_logs "obsidian_style_map_failed" "${LOG_FILE}" "${STYLE_MAP_EXIT}"
+        fi
+        python3 "${OBSIDIAN_VARIANT_SCRIPT}" \
+            --sft-jsonl "${TRAIN_SFT_INPUT_JSONL}" \
+            --obsidian-map "${OBSIDIAN_STYLE_MAP}" \
+            --variant-out "${OBSIDIAN_VARIANT_JSONL}" \
+            --matched-out "${OBSIDIAN_MATCHED_JSONL}" \
+            --unseen-out "${OBSIDIAN_UNSEEN_JSONL}" \
+            --summary-out "${OBSIDIAN_SUMMARY_JSON}" \
+            --target-ratio "${SFT_OBSIDIAN_TARGET_RATIO:-0.08}" >> "${LOG_FILE}" 2>&1
+        OBSIDIAN_VARIANT_EXIT=$?
+        if [ ${OBSIDIAN_VARIANT_EXIT} -ne 0 ]; then
+            log "[ERROR] Obsidian SFT variant build failed"
+            fail_with_logs "obsidian_variant_failed" "${LOG_FILE}" "${OBSIDIAN_VARIANT_EXIT}"
+        fi
+        ACTIVE_TRAIN_SFT_INPUT_JSONL="${OBSIDIAN_VARIANT_JSONL}"
+        log "[4/6] Obsidian opt-in variant ready: ${ACTIVE_TRAIN_SFT_INPUT_JSONL}"
+    fi
     # A-path resume: paged_adamw_32bit -> paged_adamw_8bit optimizer formats
     # are incompatible, so move ONLY optimizer.pt+scheduler.pt to backup.
     # trainer_state.json (step counter, LR pos) and rng_state.pth stay so
@@ -598,8 +659,8 @@ else
     run_timeout "${SFT_TIMEOUT_HOURS}" env \
     BASE_MODEL="${CPT_MERGED}" \
     SFT_RAW_JSONL="${TRAIN_CPT_JSONL}" \
-    SFT_INPUT_JSONL="${TRAIN_SFT_INPUT_JSONL}" \
-    SFT_PAIR_JSONL="${TRAIN_SFT_INPUT_JSONL}" \
+    SFT_INPUT_JSONL="${ACTIVE_TRAIN_SFT_INPUT_JSONL}" \
+    SFT_PAIR_JSONL="${ACTIVE_TRAIN_SFT_INPUT_JSONL}" \
     SFT_VAL_JSONL="${TRAIN_VAL_JSONL}" \
     SFT_NUM_EPOCHS="${SFT_EPOCHS}" \
     SFT_OUTPUT_DIR="${SFT_OUT}" \
