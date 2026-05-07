@@ -2,17 +2,29 @@
 """
 clean_ad_spam.py — Remove recruiter/venue ad spam from training data.
 
-Targets three contamination vectors the original SPAM_RE missed:
+Targets contamination vectors the original SPAM_RE missed:
   1. Expanded kakao/ad patterns (카카오 ha1922, 카톡아이디 w21w, etc.)
-  2. Cross-thread duplicate text (>=3 identical copies after whitespace norm)
-  3. Rows with zero complete Hangul syllables (jamo-only / pure numbers)
+  2. Operator self-promotion / recruitment / template phrases
+  3. Cross-thread duplicate text (>=3 identical copies after whitespace norm)
+  4. Rows with zero complete Hangul syllables (jamo-only / pure numbers)
+  5. Low-entropy templated text (char n-gram entropy below threshold; FineWeb
+     pattern, arXiv:2406.17557): a comment whose 5-gram distribution is
+     compressible to under 2.8 bits/char is overwhelmingly an ad template
+     copy-pasted across many threads.
+
+P0-2 hardening: see docs/PAPER_GRADE_ANALYSIS_*.md §3.3 D2. The 0424-0430
+training cycles' high duplicate rate (≈0.40) is largely operator/ad
+templates that the previous narrow regex set let through (~21.6% of the v2
+CPT corpus still contained an ad keyword token at this script's last run).
 
 Usage:
     python scripts/clean_ad_spam.py [--dry-run]
+        [--min-entropy 2.8]    # bits/char threshold; lower = more aggressive
 """
 
 import argparse
 import json
+import math
 import os
 import re
 import shutil
@@ -55,8 +67,74 @@ AD_PATTERNS = [
     r'[1-3]부\s*\d+인\s*\d+조',          # "1부~3부 2인1조"
     r'G팀\s*\d+방',                       # "G팀 10방이상"
     r'\d+방\s*팀사장',                    # "800-1000방 팀사장"
+    # P0-2 additions ────────────────────────────────────────────────────────
+    # operator self-promotion ("저희 가게는...", "우리 업소는...")
+    r'(?:저희|우리)\s*(?:가게|업소|샵|샾|매장)',
+    # recruitment / contact-back templates
+    r'출근시?\s*연락(?:주|드|바람)',
+    r'언제든\s*편하게\s*(?:연락|문의)',
+    r'편하게\s*톡\s*주세요',
+    r'편하게\s*전화\s*주세요',
+    # VIP / 케어 / 보장 themed promo
+    r'VIP\s*(?:전용|관리|코스)',
+    r'(?:풀|올)\s*케어',
+    r'개수\s*보장',
+    # alternative messenger handles
+    r'(?:라인|line)\s*(?:ID|아이디)?\s*[:：]\s*[a-zA-Z0-9_]{3,}',
+    r'(?:텔레|텔그|텔레그램)\s*(?:ID|아이디)?\s*[:：@]?\s*[a-zA-Z0-9_]{3,}',
+    r'(?:오픈\s*)?오픈톡|오픈\s*카톡',
+    # pay/quote templates
+    r'시간\s*(?:당|시)?\s*\d{2,4}\s*만원',
+    r'일\s*(?:당|급)\s*\d{2,4}\s*만원',
+    r'(?:선|즉)\s*입금',
+    # hour/slot patterns commonly used by recruiters
+    r'\d{1,2}\s*시간\s*기본',
+    r'\d{1,2}\s*[~∼–-]\s*\d{1,2}\s*시\s*출근',
 ]
 AD_RE = re.compile('|'.join(AD_PATTERNS), re.IGNORECASE)
+
+
+# ── 2. Char n-gram entropy filter (FineWeb-style template detector) ─────────
+def char_ngram_entropy(text: str, n: int = 5) -> float:
+    """Shannon entropy (bits) over char n-grams of `text`. Returns bits/char.
+
+    Highly templated ad copy compresses well: a recruiter's "출근시 연락주세요
+    카톡 abc123 시간당 30만원" template duplicated across many threads has a
+    very narrow n-gram distribution and entropy collapses below ~2.8 bits/char.
+    Genuine community speech (initials + emotional markers + variability)
+    typically scores 3.5-4.5 bits/char.
+    """
+    s = re.sub(r"\s+", " ", text.strip())
+    if len(s) < n + 1:
+        return 9.9  # too short to evaluate; do not penalize
+    grams = [s[i : i + n] for i in range(len(s) - n + 1)]
+    total = len(grams)
+    counts: Counter = Counter(grams)
+    h_bits = 0.0
+    for c in counts.values():
+        p = c / total
+        h_bits -= p * math.log2(p)
+    # Normalize to bits per char so threshold is comparable across lengths.
+    return h_bits / max(1.0, math.log2(len(s)))
+
+
+def row_below_entropy(row: dict, kind: str, min_entropy: float) -> bool:
+    """True iff every text field in the row sits below the entropy threshold.
+
+    Mirrors row_has_no_hangul: only drop when *all* fields look templated.
+    """
+    if min_entropy <= 0:
+        return False
+    fields = extract_texts(row, kind)
+    if not fields:
+        return False
+    for t in fields:
+        if not t:
+            continue
+        if char_ngram_entropy(t) >= min_entropy:
+            return False
+    # all non-empty fields below threshold (or all empty); treat as template
+    return any(bool(t) for t in fields)
 
 # Complete Hangul syllable range
 HANGUL_SYLLABLE_RE = re.compile(r'[\uac00-\ud7af]')
@@ -106,7 +184,13 @@ def build_text_key(row: dict, kind: str) -> str:
 
 # ── main pipeline ───────────────────────────────────────────────────────────
 
-def process_file(path: Path, kind: str, dup_counts: Counter, dry_run: bool):
+def process_file(
+    path: Path,
+    kind: str,
+    dup_counts: Counter,
+    dry_run: bool,
+    min_entropy: float = 0.0,
+):
     """Process one JSONL file. Returns (kept, stats_dict)."""
     rows = []
     with open(path, encoding="utf-8") as f:
@@ -121,6 +205,7 @@ def process_file(path: Path, kind: str, dup_counts: Counter, dry_run: bool):
         "drop_ad_pattern": 0,
         "drop_cross_dup": 0,
         "drop_no_hangul": 0,
+        "drop_low_entropy": 0,
         "kept": 0,
         "ad_pattern_details": Counter(),
     }
@@ -146,6 +231,11 @@ def process_file(path: Path, kind: str, dup_counts: Counter, dry_run: bool):
             stats["drop_no_hangul"] += 1
             continue
 
+        # 4. Low-entropy template check (FineWeb-style template detector)
+        if min_entropy > 0 and row_below_entropy(row, kind, min_entropy):
+            stats["drop_low_entropy"] += 1
+            continue
+
         kept.append(row)
 
     stats["kept"] = len(kept)
@@ -162,6 +252,17 @@ def main():
     parser = argparse.ArgumentParser(description="Clean ad spam from training data")
     parser.add_argument("--dry-run", action="store_true",
                         help="Report counts without modifying files")
+    parser.add_argument(
+        "--min-entropy",
+        type=float,
+        default=2.8,
+        help=(
+            "Drop rows whose char 5-gram entropy (bits/char) sits below this "
+            "threshold across every text field. 0 disables the gate. Defaults "
+            "to 2.8 per FineWeb (arXiv:2406.17557) recommendation; 3.5 is "
+            "more aggressive but may drop short slang turns."
+        ),
+    )
     args = parser.parse_args()
 
     # Verify all files exist
@@ -205,7 +306,13 @@ def main():
     for name, path in DATA_FILES.items():
         kind = name
         print(f"Processing {path.name} …")
-        _, stats = process_file(path, kind, global_text_counts, args.dry_run)
+        _, stats = process_file(
+            path,
+            kind,
+            global_text_counts,
+            args.dry_run,
+            min_entropy=args.min_entropy,
+        )
         all_stats[name] = stats
 
     # ── Summary ─────────────────────────────────────────────────────────
@@ -217,6 +324,7 @@ def main():
     total_ad = 0
     total_dup = 0
     total_hangul = 0
+    total_lowent = 0
 
     for name in ("cpt", "sft", "val"):
         s = all_stats[name]
@@ -225,6 +333,7 @@ def main():
         total_ad += s["drop_ad_pattern"]
         total_dup += s["drop_cross_dup"]
         total_hangul += s["drop_no_hangul"]
+        total_lowent += s.get("drop_low_entropy", 0)
 
         removed = s["total"] - s["kept"]
         pct = (removed / s["total"] * 100) if s["total"] else 0
@@ -233,6 +342,7 @@ def main():
         print(f"    Ad pattern:       {s['drop_ad_pattern']:>8,}")
         print(f"    Cross-thread dup: {s['drop_cross_dup']:>8,}")
         print(f"    No Hangul:        {s['drop_no_hangul']:>8,}")
+        print(f"    Low entropy:      {s.get('drop_low_entropy', 0):>8,}")
         print(f"    After:            {s['kept']:>8,}")
         print(f"    Removed:          {removed:>8,}  ({pct:.2f}%)")
 
@@ -243,6 +353,7 @@ def main():
     print(f"    Ad pattern:       {total_ad:>8,}")
     print(f"    Cross-thread dup: {total_dup:>8,}")
     print(f"    No Hangul:        {total_hangul:>8,}")
+    print(f"    Low entropy:      {total_lowent:>8,}")
     print(f"    After:            {total_after:>8,}")
     print(f"    Removed:          {total_removed:>8,}  ({pct_total:.2f}%)")
     print("=" * 65)

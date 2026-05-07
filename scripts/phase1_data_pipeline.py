@@ -9,7 +9,9 @@ digit/english-rich samples) are 2× weighted in the training mix.
 
 Pipeline:
   1. Read raw JSON crawl
-  2. PII scrub
+  2. PII scrub (NFKC normalize + immediate Compatibility Jamo restore so the
+     pipeline emits a single, internally-consistent code-point convention
+     for both phase1 output and downstream tokenization)
       - 주민등록번호 (RRN with checksum)    -> [주민번호]
       - 휴대전화/전화번호 (NFKC)            -> [전화번호]
       - 사업자등록번호                       -> [사업자번호]
@@ -20,14 +22,16 @@ Pipeline:
   4. Spam / ad / empty filter
   5. Thread-level near-duplicate removal (Jaccard >= 0.85 on char 4-grams
      within the same thread)
-  6. Time-based 95/5 split  (by post createdAt if available, else deterministic hash)
-  7. Length-bucket rebalance with 2x oversample of lg/xl/xxl buckets and
+  6. Optional global MinHash near-dedup across all threads (catches
+     cross-thread operator templates that thread-level dedup misses).
+  7. Time-based 95/5 split  (by post createdAt if available, else deterministic hash)
+  8. Length-bucket rebalance with 2x oversample of lg/xl/xxl buckets and
      digit/english-rich samples
-  8. Format:
+  9. Format:
        - cpt_corpus.v2.jsonl         (raw continuation text)
        - sft_pairs.v2.jsonl          (reply-pair {"post","comment"} rows)
        - mix manifest records 80% raw / 20% pair
-  9. Summary written to .planning/calibration/phase1_summary.json
+ 10. Summary written to .planning/calibration/phase1_summary.json
 
 No external deps. Stdlib only.
 """
@@ -72,6 +76,42 @@ EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b")
 URL_RE = re.compile(r"\bhttps?://\S+", flags=re.IGNORECASE)
 
 
+# ---------------------------------------------------------------- #
+#  Compatibility Jamo restoration (paired with NFKC normalize)     #
+# ---------------------------------------------------------------- #
+# NFKC decomposes standalone Compatibility Jamo (U+3131-U+3163, e.g. ㅋ ㅎ ㅠ)
+# into Choseong / Jungseong (U+1100-U+11FF, e.g. ᄏ ᅡ).  Qwen3's BPE has very
+# different merge evidence for those two ranges, so a corpus that mixes them
+# trains rare token IDs inconsistently. We invert the decomposition right
+# after NFKC so every record uses a single consistent convention. Composed
+# Hangul syllables (U+AC00-U+D7AF) are not in this map and are unaffected.
+_CHOSEONG_TO_COMPAT = {
+    "ᄀ": "ㄱ", "ᄁ": "ㄲ", "ᄂ": "ㄴ", "ᄃ": "ㄷ",
+    "ᄄ": "ㄸ", "ᄅ": "ㄹ", "ᄆ": "ㅁ", "ᄇ": "ㅂ",
+    "ᄈ": "ㅃ", "ᄉ": "ㅅ", "ᄊ": "ㅆ", "ᄋ": "ㅇ",
+    "ᄌ": "ㅈ", "ᄍ": "ㅉ", "ᄎ": "ㅊ", "ᄏ": "ㅋ",
+    "ᄐ": "ㅌ", "ᄑ": "ㅍ", "ᄒ": "ㅎ",
+}
+_JUNGSEONG_TO_COMPAT = {
+    "ᅡ": "ㅏ", "ᅢ": "ㅐ", "ᅣ": "ㅑ", "ᅤ": "ㅒ",
+    "ᅥ": "ㅓ", "ᅦ": "ㅔ", "ᅧ": "ㅕ", "ᅨ": "ㅖ",
+    "ᅩ": "ㅗ", "ᅪ": "ㅘ", "ᅫ": "ㅙ", "ᅬ": "ㅚ",
+    "ᅭ": "ㅛ", "ᅮ": "ㅜ", "ᅯ": "ㅝ", "ᅰ": "ㅞ",
+    "ᅱ": "ㅟ", "ᅲ": "ㅠ", "ᅳ": "ㅡ", "ᅴ": "ㅢ",
+    "ᅵ": "ㅣ",
+}
+_JAMO_RESTORE_TRANS = str.maketrans({**_CHOSEONG_TO_COMPAT, **_JUNGSEONG_TO_COMPAT})
+
+
+def restore_compat_jamo(text: str) -> str:
+    """Map U+1100-U+11FF Choseong/Jungseong back to Compatibility Jamo.
+
+    Safe to call on any string: composed Hangul syllables (U+AC00-U+D7AF) are
+    untouched because the map only covers U+1100-U+11FF.
+    """
+    return text.translate(_JAMO_RESTORE_TRANS)
+
+
 def rrn_checksum_ok(rrn: str) -> bool:
     digits = re.sub(r"\D", "", rrn)
     if len(digits) != 13:
@@ -83,9 +123,17 @@ def rrn_checksum_ok(rrn: str) -> bool:
 
 
 def scrub_pii(text: str) -> tuple[str, Counter]:
-    """Returns (scrubbed_text, scrub_counts)."""
+    """Returns (scrubbed_text, scrub_counts).
+
+    Atomic step: NFKC normalize → Compatibility Jamo restore. The two are
+    inseparable for Korean community speech that is heavy in 초성 markers
+    (ㅈㄴ, ㅇㅈ, ㄹㅇ, ㅋㅋ, ㅎㅎ); applying only NFKC silently degrades the
+    corpus into Choseong/Jungseong code-points, which downstream BPE handles
+    differently from the Compatibility Jamo block.
+    """
     counts: Counter = Counter()
     text = unicodedata.normalize("NFKC", text)
+    text = restore_compat_jamo(text)
 
     # RRN with checksum
     def rrn_sub(m: re.Match) -> str:
@@ -286,6 +334,28 @@ def main() -> None:
     parser.add_argument(
         "--val-ratio", type=float, default=0.05, help="Fraction for time-based val split"
     )
+    parser.add_argument(
+        "--minhash-dedup",
+        action="store_true",
+        default=True,
+        help=(
+            "Apply global MinHash near-dedup across threads after thread-level "
+            "Jaccard dedup. Catches operator/ad templates copy-pasted across "
+            "many threads (P0-1 hardening, see docs/PAPER_GRADE_ANALYSIS_*)."
+        ),
+    )
+    parser.add_argument(
+        "--no-minhash-dedup",
+        dest="minhash_dedup",
+        action="store_false",
+        help="Disable the global MinHash dedup pass.",
+    )
+    parser.add_argument(
+        "--minhash-bands",
+        type=int,
+        default=32,
+        help="LSH bands (32 × 4 ≈ Jaccard 0.8 acceptance with 128 perms).",
+    )
     args = parser.parse_args()
 
     rng = random.Random(args.seed)
@@ -410,6 +480,33 @@ def main() -> None:
         f"[phase1] after dedup(Jaccard>={args.dedup_jaccard}): "
         f"{len(deduped):,} (dropped {dedup_dropped:,} near-dup comments)"
     )
+
+    # ----- Global MinHash dedup across threads (P0-1) -----
+    minhash_stats: dict | None = None
+    if args.minhash_dedup:
+        try:
+            from dedup_minhash import dedup_records as _minhash_dedup
+        except ImportError:
+            # phase1 sometimes runs from repo root, sometimes from scripts/.
+            # Add scripts/ to sys.path explicitly to be robust.
+            import sys as _sys
+            _sys.path.insert(0, str(Path(__file__).resolve().parent))
+            from dedup_minhash import dedup_records as _minhash_dedup
+        before = len(deduped)
+        deduped, minhash_stats = _minhash_dedup(
+            deduped,
+            field="text",
+            num_perm=128,
+            bands=args.minhash_bands,
+            shingle_n=5,
+            seed=args.seed,
+        )
+        print(
+            f"[phase1] after MinHash global dedup: {len(deduped):,} "
+            f"(dropped {before - len(deduped):,} cross-thread duplicates; "
+            f"biggest cluster={minhash_stats['biggest_cluster']}, "
+            f"clusters≥5={minhash_stats['clusters_5plus']})"
+        )
 
     # ----- Time-based 95/5 split -----
     dated = [r for r in deduped if r["date"]]
@@ -568,6 +665,7 @@ def main() -> None:
         "dedup": {
             "threshold": args.dedup_jaccard,
             "dropped_near_dup": dedup_dropped,
+            "minhash": minhash_stats,
         },
         "split": {
             "train_records": len(train_records),
