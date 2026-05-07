@@ -192,7 +192,7 @@ cai_pairs.filtered.jsonl 1,743 rows  (constitutional AI triples)
   - 가게명 + 추천 (스팸성 vs 사용자성 모두 동일 형태)
   - 반복 운영진 케어 문구 ("언제든 편하게 연락주세요")
   - 단축 URL / 비-Latin handle
-- arXiv:2411.04257 (LSHBloom) + character n-gram entropy < 2.8 bits/char 임계 적용 권고 (FineWeb 패턴)
+- arXiv:2411.04257 (LSHBloom) + character 5-gram Shannon entropy 임계 적용 권고 (FineWeb 패턴). 본 PR의 P0 calibration 결과 default 3.8 bits/n-gram 채택
 
 **D3. NFKC 이중 정규화 의심 (HIGH, P1)**
 - Phase1 line 88: `text = unicodedata.normalize("NFKC", text)` — Compatibility Jamo (ㅋ U+314B 등) → Conjoining Jamo (ᄏ U+1100 등) 또는 결합형으로 변환
@@ -206,7 +206,7 @@ cai_pairs.filtered.jsonl 1,743 rows  (constitutional AI triples)
 - SFT 페어 30.4%가 `comment < 20 chars`
 - 이런 댓글은 thread coherence 관점에서 학습 신호 빈약 (e.g., "ㅇㅈ", "ㄱㄱ", "ㄹㅇ")
 - arXiv:2411.15124 (Tulu-3) / LIMA: 1K 큐레이션 데이터가 대규모 미정제 SFT를 능가
-- **권고**: SFT를 quality-filter (length ≥ 20, entropy ≥ 3.5 bits/char, slang marker, no contact info) 적용 후 ~15K로 축소
+- **권고**: SFT를 quality-filter (length ≥ 20, char 5-gram Shannon entropy ≥ 4.0 bits/n-gram, slang marker, no contact info) 적용 후 ~15K로 축소
 
 **D5. CAI 비율 미반영 (MEDIUM, P1)**
 - `TRAINING_RECIPE_VALIDATION.md`: CAI_RATIO=0.33 코드, 실효 6.8%
@@ -236,7 +236,7 @@ cpt_corpus.v3.jsonl (target ~80K rows after MinHash dedup):
       char_entropy: float            # 3.5+ for SFT eligibility
     }
   - dedup: MinHash b=20 r=5 Jaccard ≥0.8 GLOBAL (not per-thread)
-  - ad filter: regex + entropy < 2.8 bits/char + classifier (weak supervision)
+  - ad filter: regex + entropy < 3.8 bits/n-gram + classifier (weak supervision)
 
 sft_pairs.v3.jsonl (target ~15K, quality-filtered):
   - schema: {
@@ -602,7 +602,7 @@ GHA:
       r'시간\s*(?:당|시)?\s*\d+\s*만원',     # pay quote
   ]
   ```
-- + character n-gram entropy gate: `< 2.8 bits/char → spam` (FineWeb 패턴)
+- + character 5-gram Shannon entropy gate: `< 3.8 bits/n-gram → spam` (FineWeb 패턴, length ≥ 60 char gating only)
 - + classifier weak-supervision (선택): 100 manual labeled spam → fastText linear classifier
 - 예상 결과: ad keyword 보유 레코드 21.6% → <5%
 - 측정: §3.2 동일 profiling 재실행

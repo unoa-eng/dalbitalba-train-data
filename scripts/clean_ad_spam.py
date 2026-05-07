@@ -7,10 +7,13 @@ Targets contamination vectors the original SPAM_RE missed:
   2. Operator self-promotion / recruitment / template phrases
   3. Cross-thread duplicate text (>=3 identical copies after whitespace norm)
   4. Rows with zero complete Hangul syllables (jamo-only / pure numbers)
-  5. Low-entropy templated text (char n-gram entropy below threshold; FineWeb
-     pattern, arXiv:2406.17557): a comment whose 5-gram distribution is
-     compressible to under 2.8 bits/char is overwhelmingly an ad template
-     copy-pasted across many threads.
+  5. Low-entropy templated text (char 5-gram Shannon entropy below threshold;
+     FineWeb pattern, arXiv:2406.17557): a comment whose 5-gram distribution
+     is compressible to under ~3.8 bits per n-gram (after a 60-char eligibility
+     floor) is most likely a recruiter template copy-pasted across many threads.
+     This is a *backup* gate — AD_RE and the global MinHash dedup catch the
+     bulk of templated content; entropy is for novel low-period templates that
+     escape both.
 
 P0-2 hardening: see docs/PAPER_GRADE_ANALYSIS_*.md §3.3 D2. The 0424-0430
 training cycles' high duplicate rate (≈0.40) is largely operator/ad
