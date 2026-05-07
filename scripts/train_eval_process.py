@@ -39,6 +39,7 @@ REQUIRED_REMOTE_FILES = REQUIRED_DATA + (
     "scripts/merge_sft_to_fp16.py",
     "scripts/round2_build_orpo_pairs.py",
     "scripts/round2_build_tc_sft.py",
+    "scripts/round2_integrity_check.py",
     "scripts/round2_mutator.py",
     "train_cpt.py",
     "train_sft.py",
@@ -222,9 +223,18 @@ def main() -> int:
                 "scripts/launch_train_pod.py",
                 "scripts/train_eval_process.py",
                 "scripts/phase6_eval_v2.py",
+                "scripts/phase6_generate.py",
+                "scripts/round2_integrity_check.py",
+                "train_sft.py",
+                "train_orpo.py",
             ],
             log_dir=run_dir,
             label="py_compile",
+        ),
+        "round2_integrity": run(
+            [sys.executable, "scripts/round2_integrity_check.py"],
+            log_dir=run_dir,
+            label="round2_integrity_check",
         ),
     }
     static_ok = all(item["returncode"] == 0 for item in static_checks.values())
