@@ -1,0 +1,25 @@
+{
+  "input_rows": 44474,
+  "kept_rows": 37311,
+  "dropped_rows": 7163,
+  "drop_rate": 0.16106039483743312,
+  "field": "comment",
+  "num_perm": 128,
+  "bands": 32,
+  "shingle_n": 5,
+  "seed": 42,
+  "biggest_cluster": 625,
+  "clusters_5plus": 216,
+  "top10_cluster_sizes": [
+    625,
+    338,
+    281,
+    264,
+    259,
+    229,
+    189,
+    171,
+    150,
+    133
+  ]
+}
