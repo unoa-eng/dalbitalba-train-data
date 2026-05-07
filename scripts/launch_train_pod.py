@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """
-Launch a RunPod training pod that clones this repo, runs chain_train.sh,
-uploads adapters to Hugging Face, and pushes run metadata back to GitHub.
+Launch a RunPod training pod that clones this repo and runs the selected
+training chain.
+
+TRAIN_CHAIN=classic runs chain_train.sh.
+TRAIN_CHAIN=round2 runs chain_train_round2.sh, which executes the round-2
+5-phase CPT/CPT-DoRA/TC-SFT/ORPO/eval-v2 process.
 """
 
 from __future__ import annotations
@@ -80,6 +84,15 @@ def require_env(key: str) -> str:
     return value
 
 
+def require_or_placeholder(key: str, dry_run: bool) -> str:
+    value = os.environ.get(key, "").strip()
+    if value:
+        return value
+    if dry_run:
+        return f"__DRY_RUN_{key}__"
+    raise SystemExit(f"[ERROR] missing env: {key}")
+
+
 def runpod_request(api_key: str, payload: dict) -> dict:
     req = urllib.request.Request(
         RUNPOD_REST,
@@ -102,6 +115,34 @@ def runpod_request(api_key: str, payload: dict) -> dict:
 def parse_gpu_types(raw_value: str) -> list[str]:
     values = [item.strip() for item in raw_value.split(",") if item.strip()]
     return values or ["NVIDIA A100 80GB PCIe"]
+
+
+def normalize_workspace_data_path(raw_value: str) -> str:
+    value = raw_value.strip()
+    if not value:
+        return value
+    path = Path(value)
+    if path.is_absolute() or value.startswith("/workspace/"):
+        return value
+
+    relative = value[2:] if value.startswith("./") else value
+    if relative.startswith("data/"):
+        relative = relative[len("data/") :]
+    return f"/workspace/data/{relative}"
+
+
+def resolve_workspace_data_path(
+    env_keys: tuple[str, ...],
+    candidate_names: tuple[str, ...],
+) -> str:
+    for key in env_keys:
+        value = os.environ.get(key, "").strip()
+        if value:
+            return normalize_workspace_data_path(value)
+    for name in candidate_names:
+        if (REPO_ROOT / name).exists():
+            return f"/workspace/data/{name}"
+    return f"/workspace/data/{candidate_names[-1]}"
 
 
 def detect_git_ref() -> str:
@@ -200,30 +241,39 @@ def main() -> None:
             "runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04",
         ),
     )
+    parser.add_argument(
+        "--chain",
+        choices=("classic", "round2"),
+        default=os.environ.get("TRAIN_CHAIN", "round2").strip() or "round2",
+        help="Training chain to execute inside RunPod",
+    )
     args = parser.parse_args()
 
     # Mechanical defense — refuse budget30 launch without a fresh PASS verifier
     # report. Bypassable only with FORCE_LAUNCH=1.
     assert_verifier_pass_for_budget30()
 
-    api_key = require_env("RUNPOD_API_KEY")
-    hf_token = require_env("HF_TOKEN")
-    hf_username = require_env("HF_USERNAME")
-    github_token = require_env("GITHUB_TOKEN")
+    api_key = require_or_placeholder("RUNPOD_API_KEY", args.dry_run)
+    hf_token = require_or_placeholder("HF_TOKEN", args.dry_run)
+    hf_username = require_or_placeholder("HF_USERNAME", args.dry_run)
+    github_token = require_or_placeholder("GITHUB_TOKEN", args.dry_run)
     github_repo = os.environ.get("GITHUB_REPO", "unoa-eng/dalbitalba-train-data").strip()
     github_ref = resolve_git_ref()
     ntfy_topic = os.environ.get("NTFY_TOPIC", "").strip()
     cloud_type = os.environ.get("RUNPOD_CLOUD_TYPE", "COMMUNITY").strip().upper() or "COMMUNITY"
     base_model = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base").strip() or "Qwen/Qwen3-8B-Base"
-    train_cpt_jsonl = os.environ.get(
-        "TRAIN_CPT_JSONL", "/workspace/data/cpt_corpus.v2.jsonl"
-    ).strip() or "/workspace/data/cpt_corpus.v2.jsonl"
-    train_sft_pair_jsonl = os.environ.get(
-        "TRAIN_SFT_PAIR_JSONL", "/workspace/data/sft_pairs.v2.jsonl"
-    ).strip() or "/workspace/data/sft_pairs.v2.jsonl"
-    train_val_jsonl = os.environ.get(
-        "TRAIN_VAL_JSONL", "/workspace/data/val_set.v2.jsonl"
-    ).strip() or "/workspace/data/val_set.v2.jsonl"
+    train_cpt_jsonl = resolve_workspace_data_path(
+        ("TRAIN_CPT_JSONL", "INPUT_JSONL"),
+        ("cpt_corpus.v3.jsonl", "cpt_corpus.v2.jsonl"),
+    )
+    train_sft_pair_jsonl = resolve_workspace_data_path(
+        ("TRAIN_SFT_PAIR_JSONL", "SFT_PAIR_JSONL"),
+        ("sft_pairs.v2.jsonl",),
+    )
+    train_val_jsonl = resolve_workspace_data_path(
+        ("TRAIN_VAL_JSONL", "CPT_VAL_JSONL"),
+        ("val_set.v2.jsonl",),
+    )
     cpt_num_epochs = os.environ.get("CPT_NUM_EPOCHS", "1").strip() or "1"
     sft_num_epochs = os.environ.get("SFT_NUM_EPOCHS", "2").strip() or "2"
     cpt_lr = os.environ.get("CPT_LR", "2e-4").strip() or "2e-4"
@@ -233,32 +283,44 @@ def main() -> None:
     sentry_dsn = os.environ.get("SENTRY_DSN", "").strip()
     gpu_types = parse_gpu_types(args.gpu_type)
 
+    chain_script = "chain_train_round2.sh" if args.chain == "round2" else "chain_train.sh"
+
     # SECURITY: never embed the PAT in dockerStartCmd — RunPod stores the pod
     # spec (including this command) and exposes it in pod detail API responses.
     # The token is injected via env.GITHUB_TOKEN below; we reference it only
     # through shell variable expansion, which the RunPod API does not persist.
     #
-    # Also: logs tee'd to /workspace/logs/chain.log so they survive pod EXIT
-    # (network volume at /workspace persists across pod lifecycle).
+    # Also: logs tee'd to /workspace/logs so they survive pod EXIT because
+    # /workspace is backed by the Pod volume disk in this spec. Keep pipefail
+    # here: otherwise a failed chain hidden behind tee can look successful to
+    # RunPod's process supervisor.
     startup_cmd = (
+        "set -o pipefail && "
         "mkdir -p /workspace/logs /workspace/data /workspace/scripts "
-        "/workspace/out /workspace/hf_cache && "
+        "/workspace/out /workspace/hf_cache /workspace/recipes && "
         "export HF_HOME=/workspace/hf_cache && "
         "export TOKENIZERS_PARALLELISM=false && "
         "rm -rf /workspace/repo && "
         f"git clone --branch {github_ref} --single-branch "
         f"\"https://x-access-token:${{GITHUB_TOKEN}}@github.com/{github_repo}.git\" "
         "/workspace/repo && "
-        # copy v2 data + train scripts + merge script
-        "cp /workspace/repo/*.jsonl /workspace/data/ 2>/dev/null || true && "
-        "cp /workspace/repo/train_*.py /workspace/ 2>/dev/null || true && "
+        # copy repo datasets, recipes, train scripts, and helper scripts
+        "(cp /workspace/repo/*.jsonl /workspace/data/ 2>/dev/null || true) && "
+        "(cp /workspace/repo/recipes/*.env /workspace/recipes/ 2>/dev/null || true) && "
+        "mkdir -p /workspace/runs && "
+        "(cp -a /workspace/repo/runs/round2-obsidian-synthesis /workspace/runs/ 2>/dev/null || true) && "
+        "(cp /workspace/repo/train_*.py /workspace/ 2>/dev/null || true) && "
         "mkdir -p /workspace/scripts && "
-        "cp /workspace/repo/scripts/merge_cpt_to_fp16.py /workspace/scripts/ 2>/dev/null || true && "
-        "cp /workspace/repo/chain_train.sh /workspace/chain_train.sh && "
-        "chmod +x /workspace/chain_train.sh && "
+        "(cp /workspace/repo/scripts/*.py /workspace/scripts/ 2>/dev/null || true) && "
+        f"cp /workspace/repo/{chain_script} /workspace/{chain_script} && "
+        f"chmod +x /workspace/{chain_script} && "
         # tee all logs to network volume — survives pod EXIT
-        "exec bash /workspace/chain_train.sh 2>&1 | tee -a "
-        "/workspace/logs/chain_$(date -u '+%Y%m%dT%H%M%SZ').log"
+        f"bash /workspace/{chain_script} 2>&1 | tee -a "
+        "/workspace/logs/chain_$(date -u '+%Y%m%dT%H%M%SZ').log; "
+        "rc=${PIPESTATUS[0]}; "
+        "echo \"$(date -u '+%Y-%m-%dT%H:%M:%SZ') chain exit rc=${rc}\" "
+        ">> /workspace/logs/launcher.log; "
+        "exit ${rc}"
     )
 
     env = {
@@ -268,14 +330,18 @@ def main() -> None:
         "GITHUB_REPO": github_repo,
         "RUNPOD_API_KEY": api_key,
         "BASE_MODEL": base_model,
+        "TRAIN_CPT_JSONL": train_cpt_jsonl,
         "INPUT_JSONL": train_cpt_jsonl,
+        "TRAIN_SFT_PAIR_JSONL": train_sft_pair_jsonl,
         "SFT_PAIR_JSONL": train_sft_pair_jsonl,
+        "TRAIN_VAL_JSONL": train_val_jsonl,
         "CPT_VAL_JSONL": train_val_jsonl,
         "CPT_NUM_EPOCHS": cpt_num_epochs,
         "SFT_NUM_EPOCHS": sft_num_epochs,
         "CPT_LR": cpt_lr,
         "SFT_LR": sft_lr,
         "WANDB_PROJECT": wandb_project,
+        "TRAIN_CHAIN": args.chain,
     }
     for optional_key in (
         "CPT_MAX_STEPS",
@@ -297,8 +363,27 @@ def main() -> None:
         "MERGE_TIMEOUT_HOURS",
         "SFT_TIMEOUT_HOURS",
         "HF_UPLOAD_TIMEOUT_HOURS",
+        "ORPO_TIMEOUT_HOURS",
+        "EVAL_TIMEOUT_HOURS",
+        "ROUND2_RECIPE",
+        "ROUND2_STOP_POD",
+        "ROUND2_SKIP_HF_UPLOAD",
+        "HF_REPO_ROUND2",
+        "CPT_BATCH_SIZE",
+        "CPT_GRAD_ACCUM",
+        "SFT_BATCH_SIZE",
+        "SFT_GRAD_ACCUM",
+        "BUDGET_PROFILE",
+        "BUDGET_CAP_USD",
         "EVAL_MODE",
         "EVAL_MAX_ROWS",
+        "EVAL_GATE",
+        "EVAL_PERSONA_LIST",
+        "GENERATION_TEMP",
+        "GENERATION_TOP_P",
+        "GENERATION_MAX_NEW_TOKENS",
+        "ORPO_NUM_EPOCHS",
+        "ORPO_BETA",
     ):
         value = os.environ.get(optional_key, "").strip()
         if value:
@@ -366,6 +451,7 @@ def main() -> None:
             "gpu_type": chosen_gpu,
             "cloud_type": cloud_type,
             "gpu_type_candidates": gpu_types,
+            "train_chain": args.chain,
             "train_cpt_jsonl": train_cpt_jsonl,
             "train_sft_pair_jsonl": train_sft_pair_jsonl,
             "train_val_jsonl": train_val_jsonl,
