@@ -76,9 +76,9 @@ mechanically without needing an online LLM at each cycle.
   REGEN_REASON=stagnation
   REGEN_ENABLE_MINHASH=1            # global MinHash dedup (scripts/dedup_minhash.py)
   REGEN_ENABLE_ENTROPY_FILTER=1     # FineWeb char-5gram entropy gate
-  REGEN_MIN_ENTROPY=2.8             # bits/char threshold; 0 disables
+  REGEN_MIN_ENTROPY=3.8             # bits per char 5-gram; 0 disables
   ```
-- Supervisor behaviour: `autonomous_loop.sh` should detect `REGEN_DATA=1`, run `phase1_data_pipeline.py` + `clean_ad_spam.py --min-entropy 2.8`, regenerate the corpus, then relaunch training with the same recipe. The next cycle's metrics on the cleaner data tell us whether the stagnation was data-bound (JSD drops) or architecture-bound (R7 fires next).
+- Supervisor behaviour: `autonomous_loop.sh` should detect `REGEN_DATA=1`, run `phase1_data_pipeline.py` + `clean_ad_spam.py --min-entropy 3.8`, regenerate the corpus, then relaunch training with the same recipe. The next cycle's metrics on the cleaner data tell us whether the stagnation was data-bound (JSD drops) or architecture-bound (R7 fires next).
 
 ## Escalation — human check required
 

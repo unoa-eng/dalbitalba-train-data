@@ -148,7 +148,7 @@ def apply_rules(
                 "REGEN_REASON": "stagnation",
                 "REGEN_ENABLE_MINHASH": 1,
                 "REGEN_ENABLE_ENTROPY_FILTER": 1,
-                "REGEN_MIN_ENTROPY": "2.8",
+                "REGEN_MIN_ENTROPY": "3.8",
             },
             "R8",
             (
