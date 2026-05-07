@@ -9,7 +9,8 @@ Key recipe changes vs v1:
         raw:  "{text}<|endoftext|>"     (label = input_ids)
         pair: "{post}\\n{comment}<|endoftext|>"   (label masked on post,
                trained on comment only)
-  - Mix 80% raw continuation / 20% reply-pair at dataset build time
+  - Mix raw continuation with supervised response rows at dataset build time
+  - Pair schema: {post, comment}; TC schema: {instruction, input, output}
   - r=64 rsLoRA, lr=5e-5, 2 epochs, seq_len=1024
   - NEFTune off (style transfer hurts from embedding noise)
   - DoRA reserved for 2nd-pass ablation
@@ -161,7 +162,7 @@ def build_mixed_dataset(tokenizer) -> tuple[Dataset, Dataset | None]:
         f"mix policy: raw={RAW_RATIO:.2f} pair={PAIR_RATIO:.2f}"
     )
 
-    # compute pair target count so that pairs / (raw + pairs) == PAIR_RATIO
+    # compute supervised target count so that pairs / (raw + pairs) == PAIR_RATIO
     if RAW_RATIO >= 1.0 or not pair_rows:
         pairs_take = 0
     elif RAW_RATIO <= 0.0:
@@ -177,6 +178,16 @@ def build_mixed_dataset(tokenizer) -> tuple[Dataset, Dataset | None]:
     )
     rng.shuffle(pair_rows)
     pair_rows = pair_rows[:pairs_take]
+    weighted_extra = [
+        row for row in pair_rows
+        if float(row.get("loss_weight", 1.0) or 1.0) > 1.0
+    ]
+    if weighted_extra:
+        pair_rows.extend(weighted_extra)
+        rng.shuffle(pair_rows)
+        logger.info(
+            f"loss_weight oversampling: +{len(weighted_extra):,} supervised rows"
+        )
 
     eos = tokenizer.eos_token or ""
     if not eos:
@@ -195,13 +206,27 @@ def build_mixed_dataset(tokenizer) -> tuple[Dataset, Dataset | None]:
             "labels": tok["input_ids"].copy(),
         }
 
-    def build_pair_example(row: dict) -> dict:
-        post = row.get("post", "").strip()
-        comment = row.get("comment", "").strip()
-        if not post or not comment:
+    def build_supervised_example(row: dict) -> dict:
+        if row.get("instruction") is not None or row.get("output") is not None:
+            instruction = str(row.get("instruction") or "").strip()
+            input_text = str(row.get("input") or "").strip()
+            response_text = str(row.get("output") or "").strip()
+            if not instruction or not response_text:
+                return None  # type: ignore[return-value]
+            prefix = instruction
+            if input_text:
+                prefix += "\n" + input_text
+            prefix += "\n"
+            response = response_text + eos
+        else:
+            post = str(row.get("post") or "").strip()
+            comment = str(row.get("comment") or "").strip()
+            if not post or not comment:
+                return None  # type: ignore[return-value]
+            prefix = post + "\n"
+            response = comment + eos
+        if not response.strip():
             return None  # type: ignore[return-value]
-        prefix = post + "\n"
-        response = comment + eos
         prefix_ids = tokenizer(prefix, add_special_tokens=True)["input_ids"]
         resp_ids = tokenizer(response, add_special_tokens=False)["input_ids"]
         input_ids = (prefix_ids + resp_ids)[:MAX_SEQ_LEN]
@@ -214,9 +239,15 @@ def build_mixed_dataset(tokenizer) -> tuple[Dataset, Dataset | None]:
     for row in raw_rows:
         merged.append(build_raw_example(row))
     for row in pair_rows:
-        ex = build_pair_example(row)
+        ex = build_supervised_example(row)
         if ex is not None:
             merged.append(ex)
+    if pair_rows and not any(
+        label != -100
+        for ex in merged[len(raw_rows):]
+        for label in ex.get("labels", [])
+    ):
+        raise RuntimeError("SFT supervised rows produced zero trainable response tokens")
     rng.shuffle(merged)
 
     logger.info(f"merged train size: {len(merged):,}")
