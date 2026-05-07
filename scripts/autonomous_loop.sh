@@ -219,6 +219,45 @@ print(d.get('gate', {}).get('verdict', 'UNKNOWN'))
     [ "${LOOP_STOP:-0}" = "1" ] && { notify "loop STOP signal"; break; }
     [ "${LOOP_PASS:-0}" = "1" ] && { bash scripts/create_final_pr.sh; notify "LOOP COMPLETE PASS"; break; }
 
+    # Phase 5b: data regen (R8 — recipe knobs exhausted, regen the corpus
+    # before relaunching). Without this branch the REGEN_DATA env emitted
+    # by recipe_mutator R8 would be a dead signal: launch_train_pod.py just
+    # forwards to the pod which never reads REGEN_*, so the next cycle
+    # would relaunch against the same untouched data and R8 would fire
+    # again until cycle/budget cap. Wire-cutter fix from PR #3 audit.
+    if [ "${REGEN_DATA:-0}" = "1" ]; then
+        log "REGEN_DATA=1 (R8) — rebuilding cpt/sft/val before next pod"
+        notify "R8 fired — regenerating corpus"
+        REGEN_RAW_DIR="${RAW_CRAWL_DIR:-/mnt/c/Users/mapdr/Desktop/queenalba-crawler/crawled-data-v2}"
+        if [ ! -d "${REGEN_RAW_DIR}" ]; then
+            log "raw crawl dir ${REGEN_RAW_DIR} not reachable from this host; skipping regen"
+            notify "ESCALATE: R8 regen requested but raw crawl unreachable"
+        else
+            REGEN_FLAGS=()
+            [ "${REGEN_ENABLE_MINHASH:-0}" = "1" ] && REGEN_FLAGS+=("--minhash-dedup")
+            python3 scripts/phase1_data_pipeline.py \
+                --raw-dir "${REGEN_RAW_DIR}" \
+                "${REGEN_FLAGS[@]}" \
+                >> "${LOG}" 2>&1 || {
+                log "phase1 regen failed"
+                notify "ESCALATE: R8 phase1 failed"
+                break
+            }
+            if [ "${REGEN_ENABLE_ENTROPY_FILTER:-0}" = "1" ]; then
+                python3 scripts/clean_ad_spam.py \
+                    --min-entropy "${REGEN_MIN_ENTROPY:-5.5}" \
+                    >> "${LOG}" 2>&1 || {
+                    log "clean_ad_spam regen failed"
+                    notify "ESCALATE: R8 ad-spam pass failed"
+                    break
+                }
+            fi
+            git add cpt_corpus.v2.jsonl sft_pairs.v2.jsonl val_set.v2.jsonl \
+                .planning/calibration/phase1_summary.json 2>/dev/null
+            git commit -m "data: R8 regen cycle $(date -u +%Y%m%d-%H%M)" >> "${LOG}" 2>&1 || true
+        fi
+    fi
+
     # Phase 6: launch next train pod with mutated recipe
     log "launching next train pod with mutations"
     python3 scripts/launch_train_pod.py >> "${LOG}" 2>&1 || {

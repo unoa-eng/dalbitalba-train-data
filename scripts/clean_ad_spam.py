@@ -101,21 +101,22 @@ AD_RE = re.compile('|'.join(AD_PATTERNS), re.IGNORECASE)
 def char_ngram_entropy(text: str, n: int = 5) -> float:
     """Shannon entropy (bits per n-gram) over char n-grams of ``text``.
 
-    Calibrated on the v2 corpus:
+    Empirical distribution on the v2 corpus (1,722 rows, length >= 60):
+        min=2.38  p1=5.81  p5=5.86  p10=5.95  p50=6.74  p90=8.20  max=9.86
 
-    * Genuine community speech (50+ chars): ~4.6-6.5 bits/n-gram
-    * Heavily-repeated *low-period* templates (e.g. "출근 문의 카톡 abc" × 5):
-      ~3.7 bits/n-gram
-    * Heavily-repeated *high-period* templates (e.g. "VIP 전용 풀 케어 시간당
-      30만원" × 4): ~4.4 bits/n-gram (escapes a single 3.8 threshold)
+    Synthetic-template calibration (5x of "출근 문의 카톡 abc" → 3.7) does
+    NOT reflect real templates: real copy-paste in this corpus still
+    contains author-specific tail variability that pushes entropy above
+    5.5. So a useful threshold is 5.5-6.0, not the 2.8 / 3.8 originally
+    suggested by FineWeb-style references.
 
-    So this metric alone is *not* sufficient to catch every recruiter
-    template. It is a backup signal that complements: (a) the AD_RE regex
-    set which catches templates by lexical pattern regardless of repetition
-    count, and (b) the global MinHash near-dedup which catches cross-thread
-    copies regardless of n-gram entropy. The entropy gate's specific niche
-    is novel low-period templates that the regex misses and that don't
-    cross the MinHash Jaccard threshold (i.e., heavily-edited copy-paste).
+    The metric alone is *not* sufficient to catch every recruiter template
+    in any case. It is a backup signal that complements: (a) the AD_RE
+    regex set which catches templates by lexical pattern regardless of
+    repetition count, and (b) the global MinHash near-dedup which catches
+    cross-thread copies regardless of n-gram entropy. The entropy gate's
+    specific niche is novel low-period templates that the regex misses and
+    that don't cross the MinHash Jaccard threshold.
 
     The metric is "bits per n-gram" rather than the more common "bits per
     character" because for stationary text the two are equal up to a small
@@ -288,19 +289,23 @@ def main():
     parser.add_argument(
         "--min-entropy",
         type=float,
-        default=3.8,
+        default=0.0,
         help=(
             "Drop rows whose char 5-gram Shannon entropy (bits per n-gram) "
             "sits below this threshold across every eligible (>=60 char) "
-            "text field. 0 disables the gate.\n"
-            "Threshold 3.8 was chosen from a calibration pass on the v2 "
-            "corpus: genuine community speech scores ~4.6-5.3 bits/n-gram, "
-            "while heavily templated recruiter copy at 5-7 repetitions "
-            "collapses to 3.7. Setting the gate to 3.8 keeps a conservative "
-            "1-bit margin from the genuine distribution. Loosen to 3.5 to "
-            "catch only the most extreme templates; tighten to 4.0 for "
-            "aggressive pruning (with corresponding false-positive risk on "
-            "long but topical posts)."
+            "text field. 0 disables the gate (recommended default).\n\n"
+            "Empirical calibration on the v2 corpus (1,722 long rows from "
+            "the first 5,000 of cpt_corpus.v2.jsonl):\n"
+            "  min=2.38  p1=5.81  p5=5.86  p10=5.95  p50=6.74  p90=8.20\n"
+            "Real-corpus entropy is dominated by 5.8-7.0; values below 5.5 "
+            "are extreme outliers. Earlier synthetic-template calibration "
+            "(2.8 then 3.8) was way too low and would have dropped nothing. "
+            "If you do enable the gate, useful thresholds are:\n"
+            "  --min-entropy 5.5   drops ~1%, only the most repetitive rows\n"
+            "  --min-entropy 5.85  drops ~5%, includes some genuine repeats\n"
+            "  --min-entropy 6.0   drops ~10%, false positives become real\n"
+            "AD_RE and the global MinHash dedup remain the primary catches; "
+            "this gate is an opt-in backup for novel low-entropy templates."
         ),
     )
     args = parser.parse_args()
