@@ -61,6 +61,25 @@ mechanically without needing an online LLM at each cycle.
 - IF no specific metric dominates failure (spread roughly uniform over thresholds):
   - Bump `LORA_R = 128` (more capacity)
 
+**R7 — Architecture switch (LoRA-CPT cap reached):**
+- Trigger: `bigram_jsd > 0.15` AND `LORA_R >= 128` AND `CPT_USE_DORA == 1` AND `CPT_NUM_EPOCHS >= 2`
+- Rationale: arXiv:2405.09673 ("LoRA Learns Less and Forgets Less", May 2024) shows LoRA-CPT is roughly 16× data-inefficient vs full fine-tune for domain adaptation. The LoRA-only escalation chain (R1 → R1b → R1c) cannot dig past this floor on a 92K Korean community corpus.
+- Mutation: emit `CPT_FULL_FT=1`, `LORA_R=256`, `LORA_ALPHA=256`. Downstream `chain_train.sh` / `launch_train_pod.py` interpret `CPT_FULL_FT=1` as "switch to fp16 full fine-tune" (or, if VRAM-bound on L40S, fall back to r=256 rsLoRA).
+- Stop guard: if `CPT_FULL_FT=1` is already set in recipe and `bigram_jsd > 0.15` for two more cycles, hard-stop with `R7_EXHAUSTED` (the model class itself is the wrong choice; consider Bllossom-8B or Open-Ko-8B as base).
+
+**R8 — Data-bound stagnation (knobs exhausted):**
+- Trigger: last 2 cycles applied no recipe changes AND `|Δ bigram_jsd| < 0.005`. Implementation looks at `history[-2:]` `recipe_changes`. (Distinct from R0's general stagnation: this checks specifically that the recipe was not mutated, so the stagnation is attributable to the corpus, not to a mid-mutation plateau.)
+- Rationale: When the recipe knobs are truly exhausted but JSD does not move, the bottleneck is not in the recipe — it is in the corpus. The most common offenders are: cross-thread duplicate ad templates that thread-internal Jaccard dedup does not catch (FineWeb pattern, arXiv:2406.17557), incomplete NFKC + Compatibility Jamo restoration, and the 21.6% residual ad keyword rate measured directly on `cpt_corpus.v2.jsonl` at 2026-05-07.
+- Mutation: emit data-regen request without changing the recipe.
+  ```
+  REGEN_DATA=1
+  REGEN_REASON=stagnation
+  REGEN_ENABLE_MINHASH=1            # global MinHash dedup (scripts/dedup_minhash.py)
+  REGEN_ENABLE_ENTROPY_FILTER=1     # FineWeb char-5gram entropy gate
+  REGEN_MIN_ENTROPY=2.8             # bits/char threshold; 0 disables
+  ```
+- Supervisor behaviour: `autonomous_loop.sh` should detect `REGEN_DATA=1`, run `phase1_data_pipeline.py` + `clean_ad_spam.py --min-entropy 2.8`, regenerate the corpus, then relaunch training with the same recipe. The next cycle's metrics on the cleaner data tell us whether the stagnation was data-bound (JSD drops) or architecture-bound (R7 fires next).
+
 ## Escalation — human check required
 
 Write `.state/ESCALATE.md` with cycle context + ntfy alert "ESCALATE:" prefix when:
@@ -104,6 +123,15 @@ Write `.state/ESCALATE.md` with cycle context + ntfy alert "ESCALATE:" prefix wh
 - Cycle 1: metrics={jsd: 0.21, kl: 0.09, ...} → R1 fires → mutation "CPT_NUM_EPOCHS 1→2"
 - Cycle 2: metrics={jsd: 0.14, kl: 0.09, ...} → R1 again (still >0.15? no — 0.14 < 0.15, R1 doesn't fire). Next check R2: 0.09 < 0.10, pass. Next R3, R4, R5. If all pass → PR.
 - Cycle 3: only runs if cycle 2 failed.
+
+### Trace including R7 / R8 (post-2026-05-07 hardening)
+
+- Cycle 1: jsd=0.22 → R1 (epochs 1→2)
+- Cycle 2: jsd=0.18 → R1b (LORA_R 64→128)
+- Cycle 3: jsd=0.17 → R1c (CPT_USE_DORA 0→1)
+- Cycle 4: jsd=0.165 → R1_EXHAUSTED soft (no recipe change, history records R1_EXHAUSTED)
+- Cycle 5: jsd=0.163 → recipe unchanged for 2 cycles, |Δjsd|<0.005 → **R8** fires (regen data with MinHash + entropy gate)
+- Cycle 6 (post-regen): if jsd drops to 0.10 → continue with R1/R2/etc. on cleaner data; if jsd still ≥0.15 → **R7** fires (full fine-tune escalation).
 
 ## Non-negotiable invariants
 
