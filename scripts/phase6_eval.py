@@ -137,6 +137,39 @@ def mean_abs_delta(texts_a: list[str], texts_b: list[str], fn) -> float:
     return abs(a_mean - b_mean)
 
 
+# ─── Metric 6: Style Classifier AUC (optional, CPU) ──────────────────
+def maybe_style_classifier_auc(
+    ai_texts: list[str], raw_texts: list[str], model_dir: str | None = None
+) -> float | None:
+    """
+    Returns AUC of a binary Korean style classifier on (ai_texts=community, raw_texts=formal).
+    Lower AUC = AI output is stylistically indistinguishable from community speech.
+    Gate: AUC <= 0.65 (PASS).
+    Mirrors MAUVE skip-on-missing-deps pattern.
+    """
+    if model_dir is None:
+        import os
+        model_dir = os.environ.get("STYLE_CLASSIFIER_DIR")
+    if not model_dir:
+        return None
+    from pathlib import Path as _Path
+    if not _Path(model_dir).exists():
+        sys.stderr.write(f"[style_clf] model_dir not found: {model_dir} — skipping\n")
+        return None
+    try:
+        import sys as _sys
+        _repo = str(_Path(__file__).parent.parent)
+        if _repo not in _sys.path:
+            _sys.path.insert(0, _repo)
+        from scripts.style_classifier_eval import StyleClassifierEval  # type: ignore
+        clf = StyleClassifierEval(model_dir)
+        auc = clf.auc(ai_texts, raw_texts)
+        return auc
+    except Exception as exc:
+        sys.stderr.write(f"[style_clf] skip: {exc}\n")
+        return None
+
+
 # ─── Metric 5: MAUVE (optional, GPU) ──────────────────────────────────
 def maybe_mauve(
     ai_texts: list[str], raw_texts: list[str], encoder: str = "klue/roberta-large"
@@ -168,6 +201,7 @@ GATE = {
     "digit_density_delta": ("le", 0.03),
     "english_density_delta": ("le", 0.02),
     "mauve_score": ("ge", 0.80),
+    "style_classifier_auc": ("le", 0.65),
 }
 
 
@@ -212,6 +246,8 @@ def main() -> int:
     if not args.skip_mauve:
         mauve_score = maybe_mauve(ai, raw)
 
+    style_auc: float | None = maybe_style_classifier_auc(ai, raw)
+
     metrics = {
         "n_ai": len(ai),
         "n_raw": len(raw),
@@ -220,6 +256,7 @@ def main() -> int:
         "digit_density_delta": digit_delta,
         "english_density_delta": english_delta,
         "mauve_score": mauve_score,
+        "style_classifier_auc": style_auc,
     }
     verdict, violations = evaluate_gate(metrics)
     report = {

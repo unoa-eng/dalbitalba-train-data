@@ -1,0 +1,22 @@
+{
+  "status": "PENDING_TRAINING",
+  "note": "Code complete; training to be run on AC power. See docs/HANDOFF_P1B_20260507.md for the resumption recipe.",
+  "training_attempts": [
+    {
+      "config": {"epochs": 3, "max_length": 256, "target_positive": 5000, "target_negative": 5000},
+      "outcome": "killed at 6 min — model loaded, no epoch lines emitted yet",
+      "wall_clock_estimate": "60-130 min on CPU"
+    },
+    {
+      "config": {"epochs": 1, "max_length": 128, "target_positive": 1000, "target_negative": 1000},
+      "outcome": "killed at 7 min — single-thread CPU bottleneck, no checkpoint written"
+    }
+  ],
+  "expected_after_training": {
+    "train_size": 8000,
+    "test_auc": "> 0.95 (community vs formal is a easy separation task)",
+    "base_model": "klue/roberta-base",
+    "hyperparams": {"epochs": 3, "max_length": 256, "batch_size": 16, "lr": 2e-5, "weight_decay": 0.01},
+    "seed": 42
+  }
+}
