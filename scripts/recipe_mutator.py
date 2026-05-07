@@ -148,7 +148,12 @@ def apply_rules(
                 "REGEN_REASON": "stagnation",
                 "REGEN_ENABLE_MINHASH": 1,
                 "REGEN_ENABLE_ENTROPY_FILTER": 1,
-                "REGEN_MIN_ENTROPY": "3.8",
+                # Empirical p1 of v2 corpus 5-gram entropy is 5.81; below
+                # that point real rows are mostly system placeholders or
+                # short repeats that MinHash and AD_RE already catch. 5.5
+                # leaves a small margin for novel templates the other
+                # gates miss. 0 disables the entropy gate entirely.
+                "REGEN_MIN_ENTROPY": "5.5",
             },
             "R8",
             (
@@ -163,7 +168,41 @@ def apply_rules(
     # rsLoRA on capable hardware). LoRA-CPT is documented to be ~16× data
     # inefficient vs full fine-tune (arXiv:2405.09673); persisting at r≤128
     # against a domain corpus is wrong-axis mutation.
-    if (
+    #
+    # Idempotency (PR #3 audit): once CPT_FULL_FT=1 is set we MUST NOT keep
+    # re-firing R7. Otherwise the mutator emits the same exports every cycle,
+    # `recipe_changes` looks non-empty in history, and R8 (data regen) is
+    # permanently blocked. Two consecutive failures *after* the switch means
+    # the model class itself is the wrong choice → R7_EXHAUSTED hard stop.
+    if recipe.get("CPT_FULL_FT", 0) == 1:
+        if m.get("bigram_jsd", 0) > 0.15:
+            r7_followups_failed = sum(
+                1
+                for h in history[-2:]
+                if h.get("rule_id") == "R7_FOLLOWUP"
+                and h.get("metrics_snapshot", {}).get("bigram_jsd", 0) > 0.15
+            )
+            if r7_followups_failed >= 1:
+                # Already 2 cycles after R7 with jsd > 0.15. Full-FT did
+                # not help — escalate to a Korean-pretrained base or vocab
+                # expansion via R7_EXHAUSTED hard stop.
+                return (
+                    {},
+                    {},
+                    "R7_EXHAUSTED",
+                    "Full-FT did not bring bigram_jsd ≤ 0.15 across 2 follow-up "
+                    "cycles; consider a Korean-pretrained base or vocab "
+                    "expansion (escalate to a human reviewer)",
+                )
+            return (
+                {},
+                {},
+                "R7_FOLLOWUP",
+                "post-R7 follow-up cycle, no mutation; collect another data point",
+            )
+        # CPT_FULL_FT already on AND jsd ≤ 0.15: don't re-fire R7. Fall
+        # through so R2/R3/R4 etc. can still mutate non-architecture knobs.
+    elif (
         m.get("bigram_jsd", 0) > 0.15
         and recipe.get("LORA_R", 64) >= 128
         and recipe.get("CPT_USE_DORA", 0) == 1
@@ -171,8 +210,9 @@ def apply_rules(
     ):
         return (
             {
-                # Surfaces an env signal that chain_train.sh / launch_train_pod.py
-                # can read to switch to a full-FT recipe (or r=256 rsLoRA).
+                # chain_train.sh reads CPT_FULL_FT=1 and switches the trainer
+                # to fp16 full fine-tune. The LoRA fields are kept as
+                # advisory rsLoRA-fallback values for VRAM-bound hosts.
                 "CPT_FULL_FT": 1,
                 "LORA_R": 256,
                 "LORA_ALPHA": 256,
@@ -363,7 +403,7 @@ def main() -> int:
         state.get("history", []),
     )
 
-    if rule_id == "NO_RULE":
+    if rule_id in ("NO_RULE", "R7_EXHAUSTED"):
         reason = f"no mutation available ({rule_id}); escalate"
         state["stop_reason"] = reason
         save_state(state)
@@ -371,6 +411,24 @@ def main() -> int:
         sys.stderr.write(f"[stop] {reason}\n")
         print("export LOOP_STOP=1")
         return 2
+
+    if rule_id == "R7_FOLLOWUP":
+        # Record the cycle but emit no exports; the loop should relaunch
+        # with the unchanged R7 recipe so the next eval can decide.
+        state["history"].append(
+            {
+                "cycle": state["cycle"],
+                "applied_at": datetime.now(timezone.utc).isoformat(),
+                "rule_id": rule_id,
+                "rationale": rationale,
+                "recipe_changes": {},
+                "data_regen_changes": {},
+                "metrics_snapshot": metrics,
+            }
+        )
+        save_state(state)
+        sys.stderr.write(f"[mutate] R7_FOLLOWUP cycle: {rationale}\n")
+        return 0
 
     if rule_id == "R1_EXHAUSTED":
         # Soft stop: surface the signal so the supervisor's next cycle can

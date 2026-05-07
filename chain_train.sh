@@ -63,6 +63,25 @@ case "${BASE_MODEL_CPT}" in
         ;;
 esac
 SKIP_SFT="${SKIP_SFT:-0}"
+
+# CPT_FULL_FT consumer (recipe_mutator R7 escalation, PR #3 audit).
+# When recipe_mutator emits CPT_FULL_FT=1 (LoRA-CPT cap reached) we used to
+# silently re-run the same LoRA recipe — wasting one full pod cycle and
+# wedging R7 into a permanent follow-up loop. Until train_cpt.py grows a
+# real fp16 full-FT branch, fail loud with a clear escalation note so the
+# supervisor records it and the next mutator cycle fires R7_EXHAUSTED.
+if [ "${CPT_FULL_FT:-0}" = "1" ]; then
+    if [ "${CPT_FULL_FT_IMPL:-0}" != "1" ]; then
+        log "[FATAL] CPT_FULL_FT=1 requested by recipe_mutator R7."
+        log "[FATAL] Full fp16 fine-tune is not yet implemented in train_cpt.py."
+        log "[FATAL] Set CPT_FULL_FT_IMPL=1 once train_cpt.py grows a full-FT branch,"
+        log "[FATAL] or set CPT_FULL_FT=0 to fall back to the LoRA recipe."
+        log "[FATAL] R7_EXHAUSTED will fire on the next mutator cycle."
+        exit 1
+    fi
+    log "[INFO] CPT_FULL_FT=1 with CPT_FULL_FT_IMPL=1 — using full fp16 fine-tune branch."
+fi
+
 CPT_TIMEOUT_HOURS="${CPT_TIMEOUT_HOURS:-36}"
 MERGE_TIMEOUT_HOURS="${MERGE_TIMEOUT_HOURS:-8}"
 SFT_TIMEOUT_HOURS="${SFT_TIMEOUT_HOURS:-96}"

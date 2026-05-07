@@ -85,22 +85,30 @@ URL_RE = re.compile(r"\bhttps?://\S+", flags=re.IGNORECASE)
 # trains rare token IDs inconsistently. We invert the decomposition right
 # after NFKC so every record uses a single consistent convention. Composed
 # Hangul syllables (U+AC00-U+D7AF) are not in this map and are unaffected.
-_CHOSEONG_TO_COMPAT = {
-    "ᄀ": "ㄱ", "ᄁ": "ㄲ", "ᄂ": "ㄴ", "ᄃ": "ㄷ",
-    "ᄄ": "ㄸ", "ᄅ": "ㄹ", "ᄆ": "ㅁ", "ᄇ": "ㅂ",
-    "ᄈ": "ㅃ", "ᄉ": "ㅅ", "ᄊ": "ㅆ", "ᄋ": "ㅇ",
-    "ᄌ": "ㅈ", "ᄍ": "ㅉ", "ᄎ": "ㅊ", "ᄏ": "ㅋ",
-    "ᄐ": "ㅌ", "ᄑ": "ㅍ", "ᄒ": "ㅎ",
-}
-_JUNGSEONG_TO_COMPAT = {
-    "ᅡ": "ㅏ", "ᅢ": "ㅐ", "ᅣ": "ㅑ", "ᅤ": "ㅒ",
-    "ᅥ": "ㅓ", "ᅦ": "ㅔ", "ᅧ": "ㅕ", "ᅨ": "ㅖ",
-    "ᅩ": "ㅗ", "ᅪ": "ㅘ", "ᅫ": "ㅙ", "ᅬ": "ㅚ",
-    "ᅭ": "ㅛ", "ᅮ": "ㅜ", "ᅯ": "ㅝ", "ᅰ": "ㅞ",
-    "ᅱ": "ㅟ", "ᅲ": "ㅠ", "ᅳ": "ㅡ", "ᅴ": "ㅢ",
-    "ᅵ": "ㅣ",
-}
-_JAMO_RESTORE_TRANS = str.maketrans({**_CHOSEONG_TO_COMPAT, **_JUNGSEONG_TO_COMPAT})
+# Build the restore map programmatically by inverting NFKC over the
+# whole Compatibility Jamo block (U+3131-U+318E). NFKC decomposes ㅋ
+# (U+314B) → ᄏ (U+110F), ㄳ (U+3133) → ᆪ (U+11AA), ㅀ (U+3140) → cluster
+# Choseong, etc. We invert that mapping so phase1's atomic NFKC + restore
+# step lands every Compatibility Jamo back at its original code-point,
+# regardless of whether it was a single Choseong/Jungseong/Jongseong or a
+# cluster (PR #3 audit found the hand-written single-form map missed all
+# 11 cluster forms).
+def _build_jamo_restore_map() -> dict[str, str]:
+    inverse: dict[str, str] = {}
+    for cp in range(0x3131, 0x318F):
+        compat = chr(cp)
+        decomposed = unicodedata.normalize("NFKC", compat)
+        if decomposed != compat and decomposed:
+            # Map every code-point produced by NFKC back to the original
+            # Compatibility Jamo. For the few characters where NFKC emits
+            # 2+ code-points we still register each component → compat.
+            for ch in decomposed:
+                if ch != compat:
+                    inverse[ch] = compat
+    return inverse
+
+
+_JAMO_RESTORE_TRANS = str.maketrans(_build_jamo_restore_map())
 
 
 def restore_compat_jamo(text: str) -> str:

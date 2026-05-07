@@ -19,10 +19,17 @@ extension, or base-model swap) can be detected mechanically.
 Output: .planning/calibration/qwen3_korean_fertility.json
 
 Decision triggers (for recipe_mutator.py R7 / data regeneration):
-- chars_per_token_p50 < 2.0  → Korean fertility too low, consider vocab
+- chars_per_token_p50 < 2.0   → Korean fertility too low, consider vocab
   expansion or a Korean-pretrained base (Bllossom-8B, Open-Ko-8B).
-- slang_token_ratio > 1.5    → 초성/도메인 슬랭이 과도하게 분리되고 있음;
-  검토 후 SFT 프롬프트에서 슬랭 일관성 보강 필요.
+- slang_split_ratio > 0.8     → over 80 percent of curated domain slang
+  terms fragment into multiple tokens; rare-token undertraining is
+  almost guaranteed without vocab extension or longer CPT.
+
+The slang ratio is bounded [0, 1] (it is "fraction of probe terms that
+split"), so an earlier "> 1.5" threshold was a simple bug — it could
+never fire. Calibrated against the v2 val set, every probe term at
+present fragments, so the trigger should fire and recommend vocab
+extension.
 """
 from __future__ import annotations
 
@@ -107,10 +114,18 @@ def measure(samples: list[str], tok, slang_terms: list[str]) -> dict:
             "split_ratio": multi_tok_slang / max(1, len(slang_terms)),
         },
         "decision_triggers": {
+            # chars/token p50 below 2.0 means at least half the corpus is
+            # tokenised at fewer than two Korean characters per BPE token.
+            # That is below Thunder-Tok's "standard BPE on Korean" baseline
+            # (~1.51) and is a strong signal that Korean fertility is poor.
             "low_korean_fertility": _q(chars_per_tok, 0.5) < 2.0,
+            # The slang ratio is "share of probe terms that fragment into
+            # multiple tokens", bounded in [0, 1]. 0.8 == 80% of the curated
+            # 초성/domain probe set splits — the previous threshold of >1.5
+            # was a bug (could never fire).
             "high_slang_fragmentation": (
                 multi_tok_slang / max(1, len(slang_terms))
-            ) > 1.5,
+            ) > 0.8,
         },
     }
 
@@ -177,9 +192,12 @@ def main() -> int:
             file=sys.stderr,
         )
     if report["decision_triggers"]["high_slang_fragmentation"]:
+        ratio = report["slang_summary"]["split_ratio"] * 100
         print(
-            "[fertility] WARN: domain slang fragmenting into multiple tokens; "
-            "downstream rare-token undertraining is likely.",
+            f"[fertility] WARN: {ratio:.1f}% of curated domain slang terms "
+            f"fragment into multiple tokens; downstream rare-token "
+            f"undertraining is likely. Consider vocab extension before CPT "
+            f"or a Korean-pretrained base.",
             file=sys.stderr,
         )
     return 0
