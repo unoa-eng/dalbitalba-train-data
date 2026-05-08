@@ -1,6 +1,6 @@
 {
   "input_rows": 37311,
-  "kept_rows": 47682,
+  "kept_rows": 47207,
   "weighted_rows": 5013,
   "weighted_fraction": 0.1051,
   "loss_weight_config": {
@@ -56,5 +56,12 @@
     "xl": 0.0233,
     "xs": 0.3109,
     "xxl": 0.0016
+  },
+  "train_rows": 44716,
+  "val_rows": 2491,
+  "v3_self_dedup_applied": true,
+  "v3_self_dedup_dropped": {
+    "train": 475,
+    "val_estimate": "~5%"
   }
 }
