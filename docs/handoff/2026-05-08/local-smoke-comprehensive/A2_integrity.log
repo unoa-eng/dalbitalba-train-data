@@ -1,0 +1,4 @@
+[OK] TC-SFT schema rows=10245 eval_rows=1139 weighted=1062 persona=10245
+[OK] ORPO leak audit pairs=1472 chosen_sources={'cpt_corpus.v3.jsonl': 1472}
+[OK] phase6_eval_v2 rejects missing persona tags when persona-list is required
+{"verdict": "PASS", "failures": []}

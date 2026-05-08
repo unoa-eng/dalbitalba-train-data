@@ -1,0 +1,26 @@
+===================================================================
+RUN 1: fresh state (no file, no manifest) -> expect BUILD
+===================================================================
+[a4] DECISION=BUILD reason=missing manifest='weight=1.5_thresh=2_terms=default_dedup=1'
+
+===================================================================
+RUN 2: same env -> expect REUSE
+===================================================================
+[a4] DECISION=REUSE manifest='weight=1.5_thresh=2_terms=default_dedup=1'
+
+===================================================================
+RUN 3: changed env (ARGOT 1.5 -> 2.0) -> expect REBUILD
+===================================================================
+[a4] DECISION=REBUILD reason=manifest_changed stored='weight=1.5_thresh=2_terms=default_dedup=1' current='weight=2.0_thresh=2_terms=default_dedup=1'
+
+===================================================================
+RUN 4: same as run 3 -> expect REUSE
+===================================================================
+[a4] DECISION=REUSE manifest='weight=2.0_thresh=2_terms=default_dedup=1'
+
+===================================================================
+RUN 5: dedup toggled -> expect REBUILD
+===================================================================
+[a4] DECISION=REBUILD reason=manifest_changed stored='weight=2.0_thresh=2_terms=default_dedup=1' current='weight=2.0_thresh=2_terms=default_dedup=0'
+
+[a4] ALL RUNS COMPLETED

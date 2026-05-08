@@ -1,0 +1,11 @@
+[OK] protocol doc exists: MODEL_SELECTION.md
+[OK] protocol doc exists: RESEARCH_PROTOCOL.md
+[OK] BASE_MODEL selected: Qwen/Qwen3-8B-Base
+[OK] recipe W&B key present: WANDB_PROJECT=dalbitalba-round2
+[OK] recipe W&B key present: WANDB_RUN_GROUP=round2-qwen3-8b-paper
+[OK] recipe W&B key present: WANDB_TAGS=round2,qwen3-8b,cpt,dora,tc-sft,orpo,phase6-v2
+[FAIL] cannot import transformers for tokenizer audit: No module named 'transformers'
+[OK] required artifact hashes computed
+[OK] phase6_generate.py no longer appears to use first-40-char seed eval
+[OK] WANDB_API_KEY present in runtime env
+{"verdict": "FAIL", "failures": ["cannot import transformers for tokenizer audit: No module named 'transformers'"]}
