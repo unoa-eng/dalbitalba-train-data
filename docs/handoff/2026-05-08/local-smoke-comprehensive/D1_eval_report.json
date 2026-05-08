@@ -1,0 +1,400 @@
+{
+  "phase6_v2_version": "round2-1",
+  "base": {
+    "metrics": {
+      "n_ai": 8,
+      "n_raw": 8,
+      "bigram_jsd": 0.8017440085040763,
+      "length_kl": 39.0518590141921,
+      "digit_density_delta": 0.026503095873963656,
+      "english_density_delta": 0.03636363636363636,
+      "domain_keyword_alignment": 0.0,
+      "tone_distribution_match": 0.375,
+      "mauve_score": null
+    },
+    "details": {
+      "domain_keyword_alignment": {
+        "aligned_terms": 19,
+        "total_terms": 20,
+        "aligned_fraction": 0.95,
+        "minimum_ratio_term": "도파민",
+        "minimum_ratio": 0.0,
+        "per_term": {
+          "쩜오": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "텐카": {
+            "generated_ratio": 0.125,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "호빠": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "도파민": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.125,
+            "ratio": 0.0,
+            "aligned": false,
+            "source_absent": false
+          },
+          "하이퍼": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "퍼펙트": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "마담": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "TC": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "티씨": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "빠꾸": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "밀빵": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "풀묶": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "팁": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "초이스": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "케어": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "갯수": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "강남": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "역삼": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "선릉": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          },
+          "논현": {
+            "generated_ratio": 0.0,
+            "raw_ratio": 0.0,
+            "ratio": 1.0,
+            "aligned": true,
+            "source_absent": true
+          }
+        }
+      },
+      "tone_distribution_match": {
+        "generated": {
+          "반말": 0.625,
+          "존댓말": 0.125,
+          "혼합": 0.25
+        },
+        "raw": {
+          "반말": 0.25,
+          "존댓말": 0.0,
+          "혼합": 0.75
+        },
+        "absolute_deltas": {
+          "반말": 0.375,
+          "존댓말": 0.125
+        },
+        "within_threshold": false
+      }
+    },
+    "gate": {
+      "verdict": "FAIL",
+      "violations": [
+        "bigram_jsd=0.8017 > 0.08",
+        "length_kl=39.0519 > 0.1",
+        "english_density_delta=0.0364 > 0.02",
+        "domain_keyword_alignment=0.0000 < 0.5",
+        "tone_distribution_match=0.3750 > 0.15"
+      ]
+    }
+  },
+  "v2": {
+    "metrics": {
+      "punct_ratio_match_max": 0.75,
+      "choseong_marker_match_max": 0.625,
+      "reply_depth_kl": 39.86313713864979,
+      "persona_consistency": 0.0,
+      "cross_machine_agreement": null
+    },
+    "details": {
+      "punct_ratio": {
+        "comment": {
+          "generated": {
+            "q": 0.75,
+            "ex": 0.0,
+            "ellipsis": 0.125
+          },
+          "raw": {
+            "q": 0.0,
+            "ex": 0.125,
+            "ellipsis": 0.125
+          },
+          "deltas": {
+            "q": 0.75,
+            "ex": 0.125,
+            "ellipsis": 0.0
+          }
+        },
+        "any": {
+          "generated": {
+            "q": 0.75,
+            "ex": 0.0,
+            "ellipsis": 0.125
+          },
+          "raw": {
+            "q": 0.0,
+            "ex": 0.125,
+            "ellipsis": 0.125
+          },
+          "deltas": {
+            "q": 0.75,
+            "ex": 0.125,
+            "ellipsis": 0.0
+          }
+        }
+      },
+      "choseong_marker": {
+        "comment": {
+          "generated": {
+            "kkk": 0.125,
+            "huhu": 0.0,
+            "tt": 0.75,
+            "rieng": 0.0,
+            "oj": 0.0,
+            "jn": 0.125,
+            "sb": 0.0
+          },
+          "raw": {
+            "kkk": 0.0,
+            "huhu": 0.0,
+            "tt": 0.125,
+            "rieng": 0.0,
+            "oj": 0.0,
+            "jn": 0.0,
+            "sb": 0.0
+          },
+          "deltas": {
+            "kkk": 0.125,
+            "huhu": 0.0,
+            "tt": 0.625,
+            "rieng": 0.0,
+            "oj": 0.0,
+            "jn": 0.125,
+            "sb": 0.0
+          }
+        },
+        "any": {
+          "generated": {
+            "kkk": 0.125,
+            "huhu": 0.0,
+            "tt": 0.75,
+            "rieng": 0.0,
+            "oj": 0.0,
+            "jn": 0.125,
+            "sb": 0.0
+          },
+          "raw": {
+            "kkk": 0.0,
+            "huhu": 0.0,
+            "tt": 0.125,
+            "rieng": 0.0,
+            "oj": 0.0,
+            "jn": 0.0,
+            "sb": 0.0
+          },
+          "deltas": {
+            "kkk": 0.125,
+            "huhu": 0.0,
+            "tt": 0.625,
+            "rieng": 0.0,
+            "oj": 0.0,
+            "jn": 0.125,
+            "sb": 0.0
+          }
+        }
+      },
+      "reply_depth": {
+        "generated": [
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "raw": [
+          0.0,
+          0.75,
+          0.25,
+          0.0,
+          0.0
+        ]
+      },
+      "persona_consistency": {
+        "error": "no persona-tagged rows"
+      },
+      "cross_machine_agreement": {
+        "waived": "no secondary-ai provided"
+      }
+    },
+    "gate": {
+      "verdict": "FAIL",
+      "violations": [
+        "punct_ratio_match_max=0.7500 > 0.15",
+        "choseong_marker_match_max=0.6250 > 0.2",
+        "reply_depth_kl=39.8631 > 0.2",
+        "persona_consistency=0.0000 < 0.85"
+      ]
+    }
+  },
+  "overall": {
+    "verdict": "FAIL",
+    "violations": [
+      "bigram_jsd=0.8017 > 0.08",
+      "length_kl=39.0519 > 0.1",
+      "english_density_delta=0.0364 > 0.02",
+      "domain_keyword_alignment=0.0000 < 0.5",
+      "tone_distribution_match=0.3750 > 0.15",
+      "punct_ratio_match_max=0.7500 > 0.15",
+      "choseong_marker_match_max=0.6250 > 0.2",
+      "reply_depth_kl=39.8631 > 0.2",
+      "persona_consistency=0.0000 < 0.85"
+    ]
+  },
+  "thresholds": {
+    "base": {
+      "bigram_jsd": {
+        "op": "le",
+        "value": 0.08
+      },
+      "length_kl": {
+        "op": "le",
+        "value": 0.1
+      },
+      "digit_density_delta": {
+        "op": "le",
+        "value": 0.03
+      },
+      "english_density_delta": {
+        "op": "le",
+        "value": 0.02
+      },
+      "domain_keyword_alignment": {
+        "op": "ge",
+        "value": 0.5
+      },
+      "tone_distribution_match": {
+        "op": "le",
+        "value": 0.15
+      },
+      "mauve_score": {
+        "op": "ge",
+        "value": 0.8
+      }
+    },
+    "v2": {
+      "punct_ratio_match_max": {
+        "op": "le",
+        "value": 0.15
+      },
+      "choseong_marker_match_max": {
+        "op": "le",
+        "value": 0.2
+      },
+      "reply_depth_kl": {
+        "op": "le",
+        "value": 0.2
+      },
+      "persona_consistency": {
+        "op": "ge",
+        "value": 0.85
+      },
+      "cross_machine_agreement": {
+        "op": "le",
+        "value": 0.1
+      }
+    }
+  }
+}
