@@ -279,6 +279,8 @@ def main() -> None:
     cpt_lr = os.environ.get("CPT_LR", "2e-4").strip() or "2e-4"
     sft_lr = os.environ.get("SFT_LR", "5e-5").strip() or "5e-5"
     wandb_api_key = os.environ.get("WANDB_API_KEY", "").strip()
+    if args.chain == "round2":
+        wandb_api_key = require_or_placeholder("WANDB_API_KEY", args.dry_run)
     wandb_project = os.environ.get("WANDB_PROJECT", "dalbitalba-v2").strip() or "dalbitalba-v2"
     sentry_dsn = os.environ.get("SENTRY_DSN", "").strip()
     gpu_types = parse_gpu_types(args.gpu_type)
@@ -391,6 +393,13 @@ def main() -> None:
     if wandb_api_key:
         env["WANDB_API_KEY"] = wandb_api_key
         env["TRAIN_REPORT_TO"] = "wandb"
+        env["WANDB_PROJECT"] = wandb_project
+        env["WANDB_RUN_GROUP"] = os.environ.get("WANDB_RUN_GROUP", f"{args.chain}-{github_ref}").strip()
+        env["WANDB_TAGS"] = os.environ.get("WANDB_TAGS", f"{args.chain},{base_model}").strip()
+        env["WANDB_NOTES"] = os.environ.get(
+            "WANDB_NOTES",
+            f"dalbitalba {args.chain} run from {github_repo}@{github_ref}",
+        ).strip()
     if sentry_dsn:
         env["SENTRY_DSN"] = sentry_dsn
     if ntfy_topic:

@@ -21,11 +21,12 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 STATE_DIR = REPO_ROOT / ".state" / "train-eval-process"
-REQUIRED_LAUNCH_ENV = ("RUNPOD_API_KEY", "HF_TOKEN", "HF_USERNAME", "GITHUB_TOKEN")
+REQUIRED_LAUNCH_ENV = ("RUNPOD_API_KEY", "HF_TOKEN", "HF_USERNAME", "GITHUB_TOKEN", "WANDB_API_KEY")
 REQUIRED_DATA = (
     "cpt_enriched.jsonl",
     "cpt_corpus.v3.jsonl",
     "sft_thread_conditioned.jsonl",
+    "sft_thread_conditioned.eval.jsonl",
     "orpo_pairs.jsonl",
     "val_set.v2.jsonl",
     "recipes/round2-cycle1.env",
@@ -40,6 +41,7 @@ REQUIRED_REMOTE_FILES = REQUIRED_DATA + (
     "scripts/round2_build_orpo_pairs.py",
     "scripts/round2_build_tc_sft.py",
     "scripts/round2_integrity_check.py",
+    "scripts/prelaunch_research_check.py",
     "scripts/round2_mutator.py",
     "train_cpt.py",
     "train_sft.py",
@@ -225,6 +227,9 @@ def main() -> int:
                 "scripts/phase6_eval_v2.py",
                 "scripts/phase6_generate.py",
                 "scripts/round2_integrity_check.py",
+                "scripts/prelaunch_research_check.py",
+                "scripts/clean_round2_launch_data.py",
+                "scripts/split_round2_sft_eval.py",
                 "train_sft.py",
                 "train_orpo.py",
             ],
@@ -235,6 +240,12 @@ def main() -> int:
             [sys.executable, "scripts/round2_integrity_check.py"],
             log_dir=run_dir,
             label="round2_integrity_check",
+        ),
+        "prelaunch_research": run(
+            [sys.executable, "scripts/prelaunch_research_check.py"],
+            env={"ALLOW_MISSING_RUNTIME_SECRETS": "1"},
+            log_dir=run_dir,
+            label="prelaunch_research_check",
         ),
     }
     static_ok = all(item["returncode"] == 0 for item in static_checks.values())

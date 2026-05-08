@@ -507,6 +507,7 @@ phase1_cpt_broad() {
         CPT_OUTPUT_DIR="${out_dir}" \
         CPT_CKPT_DIR="${OUT_DIR}/round2-phase1-cpt-ckpt" \
         CPT_LOG_FILE="${PHASE1_LOG}" \
+        WANDB_NAME="${WANDB_NAME:-phase1-cpt-broad}" \
         HF_HUB_ENABLE_HF_TRANSFER=1 \
         python3 "${SCRIPTS_DIR}/../train_cpt.py" 2>&1 | tee -a "${PHASE1_LOG}" >> "${ROUND2_LOG}"
     local rc=${PIPESTATUS[0]}
@@ -534,6 +535,7 @@ phase2_cpt_clean() {
         CPT_OUTPUT_DIR="${out_dir}" \
         CPT_CKPT_DIR="${OUT_DIR}/round2-phase2-cpt-ckpt" \
         CPT_LOG_FILE="${PHASE2_LOG}" \
+        WANDB_NAME="${WANDB_NAME:-phase2-cpt-dora}" \
         HF_HUB_ENABLE_HF_TRANSFER=1 \
         python3 "${SCRIPTS_DIR}/../train_cpt.py" 2>&1 | tee -a "${PHASE2_LOG}" >> "${ROUND2_LOG}"
     local rc=${PIPESTATUS[0]}
@@ -599,6 +601,7 @@ phase3_sft_threaded() {
         SFT_OUTPUT_DIR="${out_dir}" \
         SFT_CKPT_DIR="${OUT_DIR}/round2-phase3-sft-ckpt" \
         SFT_LOG_FILE="${PHASE3_LOG}" \
+        WANDB_NAME="${WANDB_NAME:-phase3-tc-sft}" \
         HF_HUB_ENABLE_HF_TRANSFER=1 \
         python3 "${SCRIPTS_DIR}/../train_sft.py" 2>&1 | tee -a "${PHASE3_LOG}" >> "${ROUND2_LOG}"
     local rc=${PIPESTATUS[0]}
@@ -631,6 +634,10 @@ phase3_5_merge_sft() {
 
 phase4_orpo() {
     log "=== Phase 4: ORPO ==="
+    if [ "${ORPO_NUM_EPOCHS:-1}" = "0" ]; then
+        log "[INFO] ORPO_NUM_EPOCHS=0; Phase 4 deferred until real judged preference pairs are available"
+        return 0
+    fi
     local orpo_data="${DATA_DIR}/${ORPO_DATA}"
     if [ ! -f "${orpo_data}" ]; then
         log "[INFO] ${ORPO_DATA} missing; building from runs/refinement-*"
@@ -658,6 +665,7 @@ phase4_orpo() {
         ORPO_BETA="${ORPO_BETA:-0.1}" \
         ORPO_OUTPUT_DIR="${out_dir}" \
         ORPO_MAX_SEQ_LEN="${SEQ_LEN:-2048}" \
+        WANDB_NAME="${WANDB_NAME:-phase4-orpo}" \
         BASE_MODEL="${orpo_base}" \
         python3 "${SCRIPTS_DIR}/../train_orpo.py" 2>&1 | tee -a "${PHASE4_LOG}" >> "${ROUND2_LOG}"
     local rc=${PIPESTATUS[0]}
@@ -685,6 +693,7 @@ phase5_eval_gate() {
         run_timeout "${EVAL_TIMEOUT_HOURS:-12}" env \
             BASE_MODEL="${eval_base}" \
             SFT_ADAPTER_REPO="${eval_adapter}" \
+            EVAL_INPUT_JSONL="${DATA_DIR}/${EVAL_INPUT_DATA:-val_set.v2.jsonl}" \
             EVAL_MAX_ROWS="${EVAL_MAX_ROWS:-500}" \
             MAX_NEW_TOKENS="${GENERATION_MAX_NEW_TOKENS:-400}" \
             TEMPERATURE="${GENERATION_TEMP:-0.6}" \
@@ -699,7 +708,7 @@ phase5_eval_gate() {
     fi
     python3 "${SCRIPTS_DIR}/phase6_eval_v2.py" \
         --ai "${ai}" \
-        --raw "${DATA_DIR}/val_set.v2.jsonl" \
+        --raw "${DATA_DIR}/${EVAL_INPUT_DATA:-val_set.v2.jsonl}" \
         --persona-list "${persona_list}" \
         --out "${OUT_DIR}/phase5-eval-v2.json" \
         --skip-mauve 2>&1 | tee -a "${PHASE5_LOG}" >> "${ROUND2_LOG}"

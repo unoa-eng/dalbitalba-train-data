@@ -1,0 +1,5 @@
+{
+  "source": "sft_thread_conditioned.jsonl",
+  "train_rows": 10245,
+  "eval_rows": 1139
+}

@@ -34,7 +34,9 @@ def ok(msg: str) -> None:
 
 def check_tc_sft(failures: list[str]) -> None:
     path = ROOT / "sft_thread_conditioned.jsonl"
+    eval_path = ROOT / "sft_thread_conditioned.eval.jsonl"
     rows = load_jsonl(path)
+    eval_rows = load_jsonl(eval_path) if eval_path.exists() else []
     bad = [
         i for i, row in enumerate(rows, start=1)
         if not row.get("instruction") or not row.get("input") or not row.get("output")
@@ -43,6 +45,8 @@ def check_tc_sft(failures: list[str]) -> None:
     persona = sum(1 for row in rows if row.get("persona_id"))
     if len(rows) < 8000:
         fail(f"TC-SFT too small: rows={len(rows)} < 8000", failures)
+    elif len(eval_rows) < 500:
+        fail(f"TC-SFT heldout eval too small: rows={len(eval_rows)} < 500", failures)
     elif bad:
         fail(f"TC-SFT malformed instruction/input/output rows: first={bad[:5]}", failures)
     elif weighted == 0:
@@ -50,7 +54,7 @@ def check_tc_sft(failures: list[str]) -> None:
     elif persona / max(1, len(rows)) < 0.95:
         fail(f"TC-SFT persona coverage low: {persona}/{len(rows)}", failures)
     else:
-        ok(f"TC-SFT schema rows={len(rows)} weighted={weighted} persona={persona}")
+        ok(f"TC-SFT schema rows={len(rows)} eval_rows={len(eval_rows)} weighted={weighted} persona={persona}")
 
 
 def check_orpo_leak(failures: list[str]) -> None:
