@@ -128,9 +128,8 @@ def check_phase6_generate_alignment(failures: list[str]) -> None:
 
 
 def check_runtime_wandb(failures: list[str]) -> None:
-    if os.environ.get("ALLOW_MISSING_RUNTIME_SECRETS") == "1":
-        ok("runtime secret check waived by ALLOW_MISSING_RUNTIME_SECRETS=1")
-        return
+    # Paper-grade gate: WANDB_API_KEY is mandatory at launch time.
+    # No env-var bypass is permitted — the gate cannot be silently waived in CI/RunPod.
     if not os.environ.get("WANDB_API_KEY"):
         fail("WANDB_API_KEY missing in runtime env; paper-grade launch requires W&B", failures)
     else:
