@@ -648,7 +648,14 @@ phase4_orpo() {
             --out "${orpo_data}" 2>&1 | tee -a "${PHASE4_LOG}" >> "${ROUND2_LOG}"
         local build_rc=${PIPESTATUS[0]}
         if [ ${build_rc} -ne 0 ] || [ ! -f "${orpo_data}" ]; then
-            log "[WARN] orpo build skipped rc=${build_rc}; proceed without ORPO"
+            # If ORPO is enabled (epochs > 0), build failure is FATAL —
+            # otherwise the "5-phase paper-grade" run silently completes
+            # without Phase 4 supervision. (3-model audit BLOCKER)
+            if [ "${ORPO_NUM_EPOCHS:-0}" -gt 0 ]; then
+                log "[FATAL] ORPO pair build failed rc=${build_rc} and ORPO_NUM_EPOCHS=${ORPO_NUM_EPOCHS}>0"
+                fail_with_logs "phase4_orpo_build_failed" "${PHASE4_LOG}" "${build_rc:-2}"
+            fi
+            log "[INFO] ORPO disabled (ORPO_NUM_EPOCHS=${ORPO_NUM_EPOCHS:-0}); build failure ignored rc=${build_rc}"
             return 0
         fi
     fi
@@ -810,7 +817,19 @@ run_main() {
     phase2_5_merge_cpt || fail_with_logs "phase2_merge_failed" "${MERGE_CPT_LOG}" "$?"
     phase3_sft_threaded || fail_with_logs "phase3_failed" "${PHASE3_LOG}" "$?"
     phase3_5_merge_sft || log "[WARN] phase 3.5 merge non-fatal failure"
-    phase4_orpo || log "[WARN] phase 4 skipped or non-fatal failure"
+    if phase4_orpo; then
+        :
+    else
+        local phase4_rc=$?
+        # When ORPO is enabled, Phase 4 failure is FATAL — the paper-grade
+        # 5-phase pipeline cannot silently skip preference alignment.
+        # (3-model audit BLOCKER)
+        if [ "${ORPO_NUM_EPOCHS:-0}" -gt 0 ]; then
+            log "[FATAL] phase 4 ORPO failed rc=${phase4_rc} and ORPO_NUM_EPOCHS=${ORPO_NUM_EPOCHS}>0"
+            fail_with_logs "phase4_failed" "${PHASE4_LOG}" "${phase4_rc:-2}"
+        fi
+        log "[INFO] ORPO disabled (ORPO_NUM_EPOCHS=${ORPO_NUM_EPOCHS:-0}); phase 4 skipped rc=${phase4_rc}"
+    fi
 
     if phase5_eval_gate; then
         log "[eval] gate completed"
