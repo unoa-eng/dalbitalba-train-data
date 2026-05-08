@@ -688,7 +688,7 @@ phase3_5_merge_sft() {
 
 phase4_orpo() {
     log "=== Phase 4: ORPO ==="
-    if [ "${ORPO_NUM_EPOCHS:-1}" = "0" ]; then
+    if [ "${ORPO_NUM_EPOCHS:-0}" = "0" ]; then
         log "[INFO] ORPO_NUM_EPOCHS=0; Phase 4 deferred until real judged preference pairs are available"
         return 0
     fi
@@ -722,7 +722,7 @@ phase4_orpo() {
     mkdir -p "${out_dir}"
     run_timeout "${ORPO_TIMEOUT_HOURS:-48}" env \
         ORPO_DATA="${orpo_data}" \
-        ORPO_NUM_EPOCHS="${ORPO_NUM_EPOCHS:-1}" \
+        ORPO_NUM_EPOCHS="${ORPO_NUM_EPOCHS:-0}" \
         ORPO_BETA="${ORPO_BETA:-0.1}" \
         ORPO_OUTPUT_DIR="${out_dir}" \
         ORPO_MAX_SEQ_LEN="${SEQ_LEN:-2048}" \
