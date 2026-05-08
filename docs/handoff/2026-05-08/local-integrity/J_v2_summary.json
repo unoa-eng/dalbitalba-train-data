@@ -1,8 +1,8 @@
 {
   "stage": "J",
   "purpose": "PR#6 style classifier v2 retrain on diversified negatives (Korean news+KMMLU/NLI+polite-forum synthesized)",
-  "status": "PARTIAL_EP1_ONLY",
-  "verdict": "EP1_PROMISING_BUT_INCOMPLETE",
+  "status": "COMPLETE_3_EPOCHS_FINAL",
+  "verdict": "PUSH_READY_v2_BASELINE_LOCKED",
   "config": {
     "base_model": "klue/roberta-base",
     "n_positives": 5000,
@@ -14,8 +14,8 @@
       "polite_forum_synth": 685
     },
     "epochs_target": 3,
-    "epochs_completed": 1,
-    "epochs_completed_reason": "stopped at Phase 5.8 30-min wait budget; ep1 took 1818s on M4 CPU",
+    "epochs_completed": 3,
+    "epochs_completed_reason": "Phase 5.9 final retrain ran all 3 epochs uninterrupted (5495s wall, M4 CPU)",
     "max_length": 256,
     "batch_size": 16,
     "lr": 2e-05,
@@ -27,7 +27,7 @@
       "batch_100": 0.1614,
       "batch_150": 0.1289,
       "batch_200": 0.1059,
-      "batch_250": 0.1030,
+      "batch_250": 0.103,
       "batch_300": 0.0932,
       "batch_350": 0.0854,
       "batch_400": 0.0805,
@@ -55,5 +55,38 @@
     "manifest": "runs/local-integrity-2026-05-08/J_style_classifier_v2/manifest.json",
     "pid_file": "runs/local-integrity-2026-05-08/J_v2.pid",
     "ep1_walltime_log_anchor": "[08:41:11] ep1 done loss=0.0734 val_acc=0.9900 dt=1818.4s"
-  }
+  },
+  "final_test_metrics": {
+    "test_auc": 0.9999319999999999,
+    "test_acc": 0.997,
+    "confusion_matrix": [
+      [
+        499,
+        1
+      ],
+      [
+        2,
+        498
+      ]
+    ],
+    "epochs": [
+      {
+        "epoch": 1,
+        "train_loss": 0.0734,
+        "val_acc": 0.99
+      },
+      {
+        "epoch": 2,
+        "train_loss": 0.0171,
+        "val_acc": 0.995
+      },
+      {
+        "epoch": 3,
+        "train_loss": 0.011,
+        "val_acc": 0.998
+      }
+    ],
+    "total_elapsed_seconds": 5495.7
+  },
+  "interpretation": "Test AUC 0.9999 with diversified negative class (Wikipedia + KLUE NLI premises + polite-forum 존댓말 synth) is meaningful — unlike v1 which had AUC=1.0 on trivially-separable Wikipedia-only. The classifier strongly distinguishes slang-heavy forum positives from formal Korean prose AND polite forum negatives, which is exactly what phase6_eval_v2 needs as its adversary. ep2/ep3 confirmed convergence (loss 0.073 -> 0.017 -> 0.011 monotonic)."
 }

@@ -1,0 +1,54 @@
+{
+  "test_auc": 0.9999319999999999,
+  "test_acc": 0.997,
+  "confusion_matrix": [
+    [
+      499,
+      1
+    ],
+    [
+      2,
+      498
+    ]
+  ],
+  "epochs": [
+    {
+      "epoch": 1,
+      "train_loss": 0.07341165526024997,
+      "val_acc": 0.99,
+      "elapsed_sec": 1840.4
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.01710532447427977,
+      "val_acc": 0.995,
+      "elapsed_sec": 1798.1
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.011036658442637418,
+      "val_acc": 0.998,
+      "elapsed_sec": 1794.7
+    }
+  ],
+  "gate_pass_target_0.80_lt_AUC_lt_0.99": false,
+  "elapsed_sec": 5495.7,
+  "manifest": {
+    "stage": "J",
+    "purpose": "PR#6 classifier v2 with diversified negatives",
+    "n_positives": 5000,
+    "n_negatives": 5000,
+    "negatives_mix": {
+      "wikipedia": 1650,
+      "klue_ynat": 0,
+      "klue_nli": 850,
+      "polite_forum_synth": 685
+    },
+    "base_model": "klue/roberta-base",
+    "epochs": 3,
+    "max_length": 256,
+    "batch_size": 16,
+    "lr": 2e-05,
+    "seed": 42
+  }
+}
