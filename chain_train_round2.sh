@@ -602,18 +602,41 @@ phase3_sft_threaded() {
     local sft_data="${DATA_DIR}/${SFT_DATA}"
     local persona_list
     persona_list="$(resolve_existing_path "${SFT_PERSONA_LIST:-runs/round2-obsidian-synthesis/persona-30-extracted.json}")"
-    if [ ! -f "${sft_data}" ]; then
-        log "[INFO] ${SFT_DATA} missing; building from cpt_context_stream"
+
+    # R3 BLOCKER: manifest-hash check. SFT_LOSS_WEIGHT_* env vars and dedup
+    # toggle change which rows get loss_weight escalation, so a stale
+    # ${sft_data} from a previous run with different env must be rebuilt.
+    # We persist the env footprint to ${sft_data}.manifest and rebuild
+    # whenever the file is missing OR the manifest differs.
+    local _SFT_MANIFEST="weight=${SFT_LOSS_WEIGHT_ARGOT:-1.5}_thresh=${SFT_LOSS_WEIGHT_THRESHOLD:-2}_terms=${SFT_LOSSWEIGHT_TERMS_FOOTPRINT:-${SFT_LOSS_WEIGHT_TERMS:-default}}_dedup=${SFT_APPLY_DEDUP:-1}"
+    local _SFT_MANIFEST_FILE="${sft_data}.manifest"
+    local _STORED_MANIFEST=""
+    [ -f "${_SFT_MANIFEST_FILE}" ] && _STORED_MANIFEST="$(cat "${_SFT_MANIFEST_FILE}" 2>/dev/null || true)"
+    if [ ! -f "${sft_data}" ] || [ "${_SFT_MANIFEST}" != "${_STORED_MANIFEST}" ]; then
+        if [ ! -f "${sft_data}" ]; then
+            log "[INFO] ${SFT_DATA} missing; building from cpt_context_stream"
+        else
+            log "[INFO] Rebuilding SFT data (manifest changed: stored='${_STORED_MANIFEST}' vs current='${_SFT_MANIFEST}')"
+        fi
+        local _DEDUP_FLAG="--apply-dedup"
+        if [ "${SFT_APPLY_DEDUP:-1}" = "0" ]; then
+            _DEDUP_FLAG="--no-dedup"
+        fi
         python3 "${SCRIPTS_DIR}/round2_build_tc_sft.py" \
             --context-stream "${DATA_DIR}/cpt_context_stream.jsonl" \
             --raw-source-dir "${DATA_DIR}/source_db_cache" \
             --persona-list "${persona_list}" \
+            ${_DEDUP_FLAG} \
             --out "${sft_data}" 2>&1 | tee -a "${PHASE3_LOG}" >> "${ROUND2_LOG}"
         local build_rc=${PIPESTATUS[0]}
         if [ ${build_rc} -ne 0 ] || [ ! -f "${sft_data}" ]; then
             log "[FATAL] tc-sft build failed rc=${build_rc}"
             return ${build_rc:-2}
         fi
+        echo "${_SFT_MANIFEST}" > "${_SFT_MANIFEST_FILE}"
+        log "[INFO] Wrote SFT manifest: ${_SFT_MANIFEST_FILE}"
+    else
+        log "[INFO] SFT data manifest matches; reusing ${sft_data}"
     fi
     local out_dir="${OUT_DIR}/round2-phase3-sft-lora"
     local sft_base="${SFT_BASE_MODEL:-${BASE_MODEL}}"

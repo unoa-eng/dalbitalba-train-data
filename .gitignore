@@ -31,6 +31,11 @@ eval_key.json
 runs/local-verification-*/
 runs/latest-local-verification.json
 
+# R3 fix: SFT data manifest sidecar files (chain_train_round2.sh writes
+# <SFT_DATA>.manifest next to the dataset to detect SFT_LOSS_WEIGHT_*
+# changes between runs). Local-only, regenerated on every build.
+*.manifest
+
 # Pre-clean backups — large binary snapshots, local-only.
 archive/dataset-backups/
 .omc/
