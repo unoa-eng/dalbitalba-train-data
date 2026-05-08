@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import random
 import re
 import sys
@@ -36,13 +37,58 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+# Reuse the global MinHash dedup helper (R2 follow-up #1 — closes the duality
+# bug where chain_train_round2.sh Phase 3 ran without dedup while
+# build_thread_aware_datasets.py applied it).
+SCRIPTS_DIR = Path(__file__).resolve().parent
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
+from dedup_minhash import dedup_records  # noqa: E402
+
 random.seed(7)
 
-ARGOT_TERMS = [
+# ---------------------------------------------------------------------------
+# Argot heuristic — env-driven so chain_train_round2.sh / round2_mutator.py
+# escalations actually reach the live Phase-3 builder. Mirrors the contract
+# documented in scripts/build_thread_aware_datasets.py:90-150.
+#
+# Env vars (opt-in override of defaults):
+#   SFT_LOSS_WEIGHT_ARGOT      numeric weight applied when threshold met
+#                              (default 1.5; matches chain_train_round2.sh)
+#   SFT_LOSS_WEIGHT_THRESHOLD  minimum distinct argot tokens to trigger
+#                              (default 2; legacy default)
+#   SFT_LOSS_WEIGHT_TERMS      comma-separated override for the 20-term default
+#                              keyword list (optional).
+# ---------------------------------------------------------------------------
+DEFAULT_ARGOT_TERMS = [
     "TC", "티씨", "밀빵", "쩜오", "텐카", "초이스", "케어", "갯수", "마담", "퍼블",
     "보도", "하퍼", "도파민", "셔츠룸", "빠꾸", "시다", "텐", "노도", "골타", "뺑이",
 ]
-ARGOT_RE = re.compile("|".join(re.escape(t) for t in ARGOT_TERMS))
+
+
+def _load_argot_config() -> tuple[re.Pattern, int, float, list[str]]:
+    raw_terms = os.environ.get("SFT_LOSS_WEIGHT_TERMS", "").strip()
+    if raw_terms:
+        terms = [t.strip() for t in raw_terms.split(",") if t.strip()]
+    else:
+        terms = list(DEFAULT_ARGOT_TERMS)
+    try:
+        threshold = int(os.environ.get("SFT_LOSS_WEIGHT_THRESHOLD", "2"))
+    except ValueError:
+        threshold = 2
+    try:
+        weight = float(os.environ.get("SFT_LOSS_WEIGHT_ARGOT", "1.5"))
+    except ValueError:
+        weight = 1.5
+    if threshold < 1:
+        threshold = 1
+    if weight < 1.0:
+        weight = 1.0
+    pattern = re.compile("|".join(re.escape(t) for t in terms))
+    return pattern, threshold, weight, terms
+
+
+ARGOT_RE, ARGOT_THRESHOLD, ARGOT_WEIGHT, ARGOT_TERMS = _load_argot_config()
 REPLY_PREFIX = re.compile(r"^\s*\[(\d+(?:-\d+)*)\]\s*")
 
 
@@ -55,6 +101,16 @@ def reply_depth(text: str) -> int:
 
 def argot_count(text: str) -> int:
     return len(set(ARGOT_RE.findall(text or "")))
+
+
+def compute_loss_weight(*cells: str | None) -> float:
+    """Return ARGOT_WEIGHT iff distinct-argot count across cells >= threshold."""
+    seen: set[str] = set()
+    for cell in cells:
+        if not cell:
+            continue
+        seen.update(ARGOT_RE.findall(cell))
+    return ARGOT_WEIGHT if len(seen) >= ARGOT_THRESHOLD else 1.0
 
 
 def load_personas(path: Path) -> list[dict[str, Any]]:
@@ -142,9 +198,11 @@ def build_row(post: dict[str, Any], comment_key: str, raw: dict[str, Any],
         f"[REPLY-DEPTH={depth}]\n"
         f"[PERSONA: {persona['persona_id']} | {persona['tone']} | {persona['mood']}]"
     )
-    cells = [instruction, input_str, output_text]
-    has_argot = any(argot_count(c) >= 2 for c in cells)
-    loss_weight = 1.5 if has_argot else 1.0
+    # Env-driven argot heuristic (R2 follow-up #1): use distinct argot count
+    # across all four cells (post-title, post-body, parent-context, target reply)
+    # so SFT_LOSS_WEIGHT_ARGOT/THRESHOLD/TERMS escalations from
+    # chain_train_round2.sh actually take effect on the live Phase-3 corpus.
+    loss_weight = compute_loss_weight(title, body, context_block, output_text)
 
     return {
         "instruction": instruction,
@@ -166,6 +224,28 @@ def main() -> int:
     ap.add_argument("--persona-list", required=True, type=Path)
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--max-rows", type=int, default=0)
+    ap.add_argument(
+        "--apply-dedup",
+        dest="apply_dedup",
+        action="store_true",
+        default=True,
+        help="apply MinHash near-dedup on target reply text (default ON)",
+    )
+    ap.add_argument(
+        "--no-apply-dedup",
+        dest="apply_dedup",
+        action="store_false",
+        help="disable MinHash near-dedup (debug / ablation)",
+    )
+    ap.add_argument(
+        "--dedup-field",
+        default="output",
+        help="JSONL key whose text drives MinHash dedup (default: output)",
+    )
+    ap.add_argument("--dedup-num-perm", type=int, default=128)
+    ap.add_argument("--dedup-bands", type=int, default=32)
+    ap.add_argument("--dedup-shingle-n", type=int, default=5)
+    ap.add_argument("--dedup-seed", type=int, default=42)
     args = ap.parse_args()
 
     if not args.context_stream.exists():
@@ -175,6 +255,12 @@ def main() -> int:
         print(f"raw source-dir missing: {args.raw_source_dir}", file=sys.stderr)
         return 2
 
+    print(
+        f"argot config: weight={ARGOT_WEIGHT} threshold={ARGOT_THRESHOLD} "
+        f"terms={len(ARGOT_TERMS)} (env-driven via SFT_LOSS_WEIGHT_*)",
+        flush=True,
+    )
+
     print("indexing raw cb2 JSON...", flush=True)
     raw_by_id = index_raw(args.raw_source_dir)
     print(f"  {len(raw_by_id)} posts indexed", flush=True)
@@ -182,12 +268,10 @@ def main() -> int:
     personas = load_personas(args.persona_list)
     print(f"  {len(personas)} personas loaded", flush=True)
 
-    written = 0
-    weighted = 0
+    # Phase A: build all rows in memory so we can run global MinHash dedup.
+    rows: list[dict[str, Any]] = []
     skipped = 0
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    with args.context_stream.open("r", encoding="utf-8") as src, \
-            args.out.open("w", encoding="utf-8") as dst:
+    with args.context_stream.open("r", encoding="utf-8") as src:
         for line in src:
             line = line.strip()
             if not line:
@@ -204,14 +288,46 @@ def main() -> int:
             if not row:
                 skipped += 1
                 continue
-            dst.write(json.dumps(row, ensure_ascii=False) + "\n")
-            written += 1
-            if row.get("loss_weight", 1.0) > 1.0:
-                weighted += 1
-            if args.max_rows and written >= args.max_rows:
+            rows.append(row)
+            if args.max_rows and len(rows) >= args.max_rows:
                 break
 
-    print(f"DONE written={written} weighted={weighted} skipped={skipped}")
+    pre_dedup = len(rows)
+    dedup_stats: dict[str, Any] = {}
+    if args.apply_dedup and rows:
+        rows, dedup_stats = dedup_records(
+            rows,
+            field=args.dedup_field,
+            num_perm=args.dedup_num_perm,
+            bands=args.dedup_bands,
+            shingle_n=args.dedup_shingle_n,
+            seed=args.dedup_seed,
+        )
+        print(
+            f"[minhash] field={args.dedup_field} input={pre_dedup:,} "
+            f"kept={len(rows):,} dropped={pre_dedup - len(rows):,} "
+            f"({(pre_dedup - len(rows)) / max(1, pre_dedup) * 100:.1f}%) "
+            f"biggest_cluster={dedup_stats.get('biggest_cluster', 0)} "
+            f"clusters_5plus={dedup_stats.get('clusters_5plus', 0)}",
+            flush=True,
+        )
+    elif not args.apply_dedup:
+        print("[minhash] skipped (--no-apply-dedup)", flush=True)
+
+    # Phase B: emit kept rows.
+    weighted = 0
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    with args.out.open("w", encoding="utf-8") as dst:
+        for row in rows:
+            dst.write(json.dumps(row, ensure_ascii=False) + "\n")
+            if float(row.get("loss_weight", 1.0) or 1.0) > 1.0:
+                weighted += 1
+
+    written = len(rows)
+    print(
+        f"DONE written={written} weighted={weighted} skipped={skipped} "
+        f"pre_dedup={pre_dedup}"
+    )
     print(f"weighted_ratio={weighted / max(written, 1):.3f}")
     return 0 if written >= 100 else 1
 
