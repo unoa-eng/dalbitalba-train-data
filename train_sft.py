@@ -343,19 +343,28 @@ def build_mixed_dataset(tokenizer) -> tuple[Dataset, Dataset | None]:
     rng.shuffle(pair_rows)
     pair_rows = pair_rows[:pairs_take]
 
-    # PR #7 loss_weight oversampling — preserved. v3 rows may also carry a
-    # loss_weight field; if present and > 1.0 the row is duplicated. v2 rows
-    # work the same way.
-    weighted_extra = [
-        row for row in pair_rows
-        if float(row.get("loss_weight", 1.0) or 1.0) > 1.0
-    ]
-    if weighted_extra:
-        pair_rows.extend(weighted_extra)
-        rng.shuffle(pair_rows)
+    # R2 follow-up #2: numeric loss_weight oversampling. Previously a single
+    # extra copy was added regardless of weight magnitude (1.5 == 2.0
+    # operationally), making round2_mutator.py escalations inert. Now each
+    # row is replicated `multiplicity = max(1, round(loss_weight))` times so
+    # 1.0->1, 1.5->2, 2.0->2, 2.5->3, etc. Deterministic and weight-monotonic.
+    _orig_pair_count = len(pair_rows)
+    _expanded: list[dict] = []
+    for row in pair_rows:
+        lw = float(row.get("loss_weight", 1.0) or 1.0)
+        multiplicity = max(1, int(round(lw)))
+        if multiplicity == 1:
+            _expanded.append(row)
+        else:
+            _expanded.extend([row] * multiplicity)
+    if len(_expanded) != _orig_pair_count:
+        rng.shuffle(_expanded)
         logger.info(
-            f"loss_weight oversampling: +{len(weighted_extra):,} supervised rows"
+            f"loss_weight oversampling: {_orig_pair_count:,} -> "
+            f"{len(_expanded):,} supervised rows "
+            f"(+{len(_expanded) - _orig_pair_count:,}; multiplicity = round(weight))"
         )
+    pair_rows = _expanded
 
     eos = tokenizer.eos_token or ""
     if not eos:
