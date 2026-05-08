@@ -242,8 +242,10 @@ def main() -> int:
             label="round2_integrity_check",
         ),
         "prelaunch_research": run(
+            # Note: prelaunch_research_check.py removed its
+            # ALLOW_MISSING_RUNTIME_SECRETS bypass in commit 6f66ee7. The env
+            # injection here is dead; kept the call without it for clarity.
             [sys.executable, "scripts/prelaunch_research_check.py"],
-            env={"ALLOW_MISSING_RUNTIME_SECRETS": "1"},
             log_dir=run_dir,
             label="prelaunch_research_check",
         ),
