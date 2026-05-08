@@ -136,9 +136,9 @@ R3.5 empirical validation: weight=1.5 → 25 expanded copies, weight=2.0 → 20 
 ## 잔여 follow-up (RunPod 진행에는 무영향, 다음 사이클에 처리)
 
 1. ~~`train_eval_process.py:246` dead `ALLOW_MISSING_RUNTIME_SECRETS` 주입 (cosmetic)~~ — **5.8.3 완료**
-2. `--skip-mauve` waiver 두 군데 정리 (paper-grade gate 강화)
-3. Phase 3 `if-then-else fail_with_logs` 래핑 (ntfy 알림용)
-4. `git lfs migrate` (sft_pairs.*.jsonl, tokenizer_v4 큰 파일들 — 미래 push 효율)
+2. ~~`--skip-mauve` waiver 두 군데 정리~~ — **5.9.1 완료** (`chain_train_round2.sh` env-gated `MAUVE_DISABLED=1`만 적용)
+3. ~~Phase 3 `if-then-else fail_with_logs` 래핑~~ — **5.9.2 완료**
+4. ~~`git lfs migrate`~~ — **5.9.3 deferred-with-guide** (`docs/handoff/2026-05-08/LFS_MIGRATION.md` 참조)
 5. PR #6 retrain (Korean forum/news negative class) — eval signal 강화 — **5.8.5 부분 진행: ep1 완료 (val_acc=0.99, loss=0.073, 1818s), ep2/ep3 + test_AUC + confusion matrix는 RunPod 사이클로 이월** (M4 CPU 30분 budget 한계)
 6. ~~ORPO_NUM_EPOCHS 기본값 통일 (production launch는 recipe pin으로 마스킹됨)~~ — **5.8.4 완료**
 
