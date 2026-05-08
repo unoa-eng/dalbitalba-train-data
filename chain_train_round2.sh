@@ -881,7 +881,18 @@ run_main() {
     phase1_cpt_broad || fail_with_logs "phase1_failed" "${PHASE1_LOG}" "$?"
     phase2_cpt_clean || fail_with_logs "phase2_failed" "${PHASE2_LOG}" "$?"
     phase2_5_merge_cpt || fail_with_logs "phase2_merge_failed" "${MERGE_CPT_LOG}" "$?"
-    phase3_sft_threaded || fail_with_logs "phase3_failed" "${PHASE3_LOG}" "$?"
+    # Phase 5.9.2: explicit if-then-else wrap for Phase 3 SFT (matches Phase 4
+    # ORPO pattern). Captures rc for ntfy notification + log persistence on
+    # SFT failure (previously relied on `|| fail_with_logs` short-circuit which
+    # is functionally equivalent but less explicit). fail_with_logs calls
+    # notify() → ntfy alert + persist_run_artifacts → stop_pod.
+    if phase3_sft_threaded; then
+        :
+    else
+        local phase3_rc=$?
+        log "[FATAL] phase 3 SFT failed rc=${phase3_rc}"
+        fail_with_logs "phase3_failed" "${PHASE3_LOG}" "${phase3_rc:-2}"
+    fi
     phase3_5_merge_sft || log "[WARN] phase 3.5 merge non-fatal failure"
     if phase4_orpo; then
         :
