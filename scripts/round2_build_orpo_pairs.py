@@ -69,11 +69,37 @@ def is_short_korean(text: str) -> bool:
     return bool(text) and len(text) < 200 and len(text) >= 8 and any("가" <= c <= "힣" for c in text)
 
 
+def _index_val_completions(val_path: Path | None) -> set[str]:
+    """Build a forbidden-completion set from a val_set jsonl.
+
+    Mirrors the auditor (G_validate_orpo.py) by harvesting:
+      - top-level keys: text / completion / answer / target_comment
+      - assistant turns inside messages[]
+    Always returns a set; empty when val_path is None or missing.
+    """
+    if not val_path or not val_path.exists():
+        return set()
+    out: set[str] = set()
+    for row in load_jsonl(val_path):
+        for k in ("text", "completion", "answer", "target_comment"):
+            v = row.get(k)
+            if isinstance(v, str) and v.strip():
+                out.add(v.strip())
+        msgs = row.get("messages")
+        if isinstance(msgs, list):
+            for m in msgs:
+                if isinstance(m, dict) and m.get("role") == "assistant":
+                    c = m.get("content")
+                    if isinstance(c, str) and c.strip():
+                        out.add(c.strip())
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--runs-glob", default="runs/refinement-2026042*")
     ap.add_argument("--val-set", type=Path, default=None,
-                    help="held-out validation set; used only to audit leakage, never as chosen training data")
+                    help="held-out validation set; chosen candidates that exact-match a val completion are dropped pre-pair")
     ap.add_argument("--samples", type=Path, default=None,
                     help="optional samples_200.jsonl or similar AI sample pool")
     ap.add_argument("--cpt-corpus", type=Path, default=None,
@@ -83,6 +109,12 @@ def main() -> int:
     args = ap.parse_args()
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
+
+    # Pre-build forbidden-completion set from val (used to filter ALL chosen candidates,
+    # not just cpt_corpus backfill). Phase 5.7 G audit found 5/100 leaks because the
+    # refinement-runs path was never filtered against val.
+    val_texts = _index_val_completions(args.val_set)
+    val_drop_count = 0
 
     chosen_pool: list[dict[str, Any]] = []
     rejected_pool: list[dict[str, Any]] = []
@@ -111,6 +143,10 @@ def main() -> int:
                     rejected_pool.append({"text": txt, "kind": r.get("kind", "comment"),
                                           "source_run": run_label, "reason": "formal-AI markers"})
                 elif verdict == "PASS" or metrics.get("bigram_jsd", 1.0) <= 0.10:
+                    # Pre-filter chosen against val to prevent leakage.
+                    if val_texts and txt.strip() in val_texts:
+                        val_drop_count += 1
+                        continue
                     chosen_pool.append({"text": txt, "kind": r.get("kind", "comment"),
                                         "source_run": run_label})
 
@@ -132,11 +168,15 @@ def main() -> int:
     # Backfill chosen with train corpus rows only. Validation is held out and
     # must not become ORPO chosen text.
     train_rows = load_jsonl(args.cpt_corpus) if args.cpt_corpus else []
-    val_texts = {str(v.get("text") or "").strip() for v in load_jsonl(args.val_set)} if args.val_set else set()
-    candidates = [
-        v for v in train_rows
-        if is_short_korean(v.get("text", "")) and str(v.get("text") or "").strip() not in val_texts
-    ]
+    candidates = []
+    for v in train_rows:
+        txt = v.get("text", "")
+        if not is_short_korean(txt):
+            continue
+        if val_texts and str(txt).strip() in val_texts:
+            val_drop_count += 1
+            continue
+        candidates.append(v)
     target_chosen = args.max_pairs
     if candidates and len(chosen_pool) < target_chosen:
         need = target_chosen - len(chosen_pool)
@@ -178,6 +218,16 @@ def main() -> int:
             })
             i += 1
 
+    # Final defense-in-depth: drop any chosen entries that exact-match val.
+    # Should be a no-op given pre-filtering above, but guards against any
+    # future code path that bypasses the upstream filter.
+    if val_texts:
+        before = len(chosen_pool)
+        chosen_pool = [c for c in chosen_pool if c.get("text", "").strip() not in val_texts]
+        post_drop = before - len(chosen_pool)
+        if post_drop:
+            val_drop_count += post_drop
+
     # Pair them up
     random.shuffle(chosen_pool)
     random.shuffle(rejected_pool)
@@ -202,7 +252,11 @@ def main() -> int:
         for p in pairs:
             fh.write(json.dumps(p, ensure_ascii=False) + "\n")
 
-    print(f"DONE pairs={n_pairs} chosen_pool={len(chosen_pool)} rejected_pool={len(rejected_pool)}")
+    print(
+        f"DONE pairs={n_pairs} chosen_pool={len(chosen_pool)} "
+        f"rejected_pool={len(rejected_pool)} val_indexed={len(val_texts)} "
+        f"val_filtered_chosen={val_drop_count}"
+    )
     return 0 if n_pairs >= 50 else 1
 
 
