@@ -1,0 +1,48 @@
+[08:10:32] === Stage J: classifier v2 retrain ===
+[08:10:32] [1/5] Loading positives from cpt_corpus.v3.jsonl ...
+[08:10:32]   positives: 5000
+[08:10:32] [2/5] Loading wikipedia ko (target 1650) ...
+[08:10:38]   wikipedia: 1650
+[08:10:38] [3/5] Loading klue ynat (target 1650) ...
+[08:10:43]   ynat: 0
+[08:10:43] [4a/5] Loading klue nli premises (target 850) ...
+[08:10:45]   nli: 850
+[08:10:45] [4b/5] Synthesizing polite-forum 존댓말 from sft_pairs.v3.jsonl (target 850) ...
+[08:10:45]   polite: 685
+[08:10:48]   total negatives: 5000 (mix: wiki=1650 ynat=0 nli=850 polite=685)
+[08:10:48] [5/5] Training klue/roberta-base ...
+[08:10:49]   splits: train=8000 val=1000 test=1000
+[08:10:51]   loading tokenizer + model (klue/roberta-base)
+Loading weights:   0%|          | 0/197 [00:00<?, ?it/s]Loading weights: 100%|██████████| 197/197 [00:00<00:00, 2959.37it/s]
+[transformers] [1mRobertaForSequenceClassification LOAD REPORT[0m from: klue/roberta-base
+Key                        | Status     | 
+---------------------------+------------+-
+lm_head.bias               | UNEXPECTED | 
+lm_head.layer_norm.weight  | UNEXPECTED | 
+lm_head.layer_norm.bias    | UNEXPECTED | 
+lm_head.dense.bias         | UNEXPECTED | 
+lm_head.dense.weight       | UNEXPECTED | 
+classifier.out_proj.weight | MISSING    | 
+classifier.dense.bias      | MISSING    | 
+classifier.out_proj.bias   | MISSING    | 
+classifier.dense.weight    | MISSING    | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+- MISSING:	those params were newly initialized because missing from the checkpoint. Consider training on your downstream task.
+/Users/unoa/dalbitalba-train-data/runs/local-integrity-2026-05-08/J_train_classifier_v2.py:251: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /Users/runner/work/pytorch/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:837.)
+  ep_loss += float(out.loss)
+[08:14:03]     ep1 batch50/500 loss=0.2318
+[08:16:59]     ep1 batch100/500 loss=0.1614
+[08:19:55]     ep1 batch150/500 loss=0.1289
+[08:22:51]     ep1 batch200/500 loss=0.1059
+[08:25:49]     ep1 batch250/500 loss=0.1030
+[08:28:43]     ep1 batch300/500 loss=0.0932
+[08:31:38]     ep1 batch350/500 loss=0.0854
+[08:34:33]     ep1 batch400/500 loss=0.0805
+[08:37:32]     ep1 batch450/500 loss=0.0763
+[08:40:28]     ep1 batch500/500 loss=0.0734
+[08:41:11]   ep1 done loss=0.0734 val_acc=0.9900 dt=1818.4s
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/multiprocessing/resource_tracker.py:279: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

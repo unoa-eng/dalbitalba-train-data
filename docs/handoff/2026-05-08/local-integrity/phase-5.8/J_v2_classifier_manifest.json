@@ -1,0 +1,18 @@
+{
+  "stage": "J",
+  "purpose": "PR#6 classifier v2 with diversified negatives",
+  "n_positives": 5000,
+  "n_negatives": 5000,
+  "negatives_mix": {
+    "wikipedia": 1650,
+    "klue_ynat": 0,
+    "klue_nli": 850,
+    "polite_forum_synth": 685
+  },
+  "base_model": "klue/roberta-base",
+  "epochs": 3,
+  "max_length": 256,
+  "batch_size": 16,
+  "lr": 2e-05,
+  "seed": 42
+}

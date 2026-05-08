@@ -139,7 +139,7 @@ R3.5 empirical validation: weight=1.5 → 25 expanded copies, weight=2.0 → 20 
 2. `--skip-mauve` waiver 두 군데 정리 (paper-grade gate 강화)
 3. Phase 3 `if-then-else fail_with_logs` 래핑 (ntfy 알림용)
 4. `git lfs migrate` (sft_pairs.*.jsonl, tokenizer_v4 큰 파일들 — 미래 push 효율)
-5. ~~PR #6 retrain (Korean forum/news negative class) — eval signal 강화~~ — **5.8.5 진행됨 (J_V2_STATUS_PLACEHOLDER)**
+5. PR #6 retrain (Korean forum/news negative class) — eval signal 강화 — **5.8.5 부분 진행: ep1 완료 (val_acc=0.99, loss=0.073, 1818s), ep2/ep3 + test_AUC + confusion matrix는 RunPod 사이클로 이월** (M4 CPU 30분 budget 한계)
 6. ~~ORPO_NUM_EPOCHS 기본값 통일 (production launch는 recipe pin으로 마스킹됨)~~ — **5.8.4 완료**
 
 ## Phase 5.8 — Final remaining fixes (사용자 오프라인 자동 마무리)
@@ -152,7 +152,7 @@ Phase 5.7 audit 후 잔여 학습품질/위생 fix를 자동 실행. 5건 모두
 | 5.8.2 | CPT recipe — lr 2e-4→1e-4, warmup 0.03→0.08 (cold-start 1.53 nat 스파이크 mitigation) | `02f423d` | recipe `bash -n` PASS |
 | 5.8.3 | `train_eval_process.py:246` dead env injection 제거 | `55b116c` | py_compile PASS |
 | 5.8.4 | `chain_train_round2.sh` ORPO_NUM_EPOCHS 기본값 `:-0` 통일 (5/5 sites) | `cc7e99e` | bash -n PASS |
-| 5.8.5 | PR #6 style classifier v2 재학습 (Korean news+KMMLU+polite negatives) | J_V2_COMMIT_PLACEHOLDER | J_V2_RESULT_PLACEHOLDER |
+| 5.8.5 | PR #6 style classifier v2 재학습 (Korean news+KMMLU+polite negatives) | (커밋 없음 — 부분 진행) | **ep1 PASS**: val_acc=0.99, train_loss 0.232→0.073 (500 batch), 1818s on M4 CPU. ep2/ep3 + test_AUC RunPod 이월 |
 
 ### Fix 5.8.1 임팩트 (확인된 leak 수)
 
@@ -161,6 +161,21 @@ Phase 5.7 audit 후 잔여 학습품질/위생 fix를 자동 실행. 5건 모두
 ### Fix 5.8.2 노트
 
 스펙은 `CPT_WARMUP_STEPS=100`을 요청했으나 `train_cpt.py:75`는 `CPT_WARMUP_RATIO`만 읽음 (절대 step 변수는 dead). `total_steps × ratio` 식으로 계산되므로 ratio를 0.08로 조정 (cycle-1 typical step수에서 ~100 step 효과).
+
+### Fix 5.8.5 노트 (J 부분 진행)
+
+이전 시도는 ep1 batch 250/500에서 종료. 이번 시도는 ep1을 끝까지 완료 (batch 500/500, train_loss 0.0734, val_acc 0.9900, 1818초). 3 epoch 풀 학습은 M4 CPU 기준 ~90분 예상이라 30분 budget 내 완주 불가 — RunPod 사이클로 이월. ep1 결과만으로도 다양화 negatives (Korean news + KMMLU NLI + 존댓말 synth) 분리도가 매우 높음 입증. **별도 commit은 생성하지 않음** (스펙은 "only if completes" 명시). 산출물: `local-integrity/phase-5.8/J_v2_summary.json` + `J_v2_run.log`.
+
+### Phase 5.8 산출물 위치
+
+```
+docs/handoff/2026-05-08/local-integrity/phase-5.8/
+├── G_orpo_pairs_v2.jsonl              ← 100 pairs, val-leak free (PASS verdict)
+├── G_validation_v2.json               ← chosen_leaks=0 / rejected_leaks=0 / verdict=PASS
+├── J_v2_summary.json                  ← Phase 5.8.5 부분 진행 분석
+├── J_v2_run.log                       ← 풀 학습 로그 (ep1 done까지)
+└── J_v2_classifier_manifest.json      ← classifier config snapshot
+```
 
 ## 보존된 사용자 작업
 
