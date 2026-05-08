@@ -2,7 +2,7 @@
 
 ## 핵심 결과 (한 줄)
 
-`unoa-eng/dalbitalba-train-data` 6개 open PR (#2~#7) → 단일 통합 PR (#8) → admin merge to main. 3-모델 적대적 검증 (Claude Opus 4.7 / GPT-5 Codex / Gemini 2.5 Pro) 2 라운드 통과. main HEAD: `d9ac22e`.
+`unoa-eng/dalbitalba-train-data` 6개 open PR (#2~#7) → 단일 통합 PR (#8) → admin merge to main. 3-모델 적대적 검증 (Claude Opus 4.7 / GPT-5 Codex / Gemini 2.5 Pro) **3 라운드** 통과 + 로컬 MLX smoke 검증 + 학습 품질 fix 7건 추가. main HEAD: `5f76f6e`.
 
 ## 위치
 
@@ -41,6 +41,11 @@
 | 4.1c | 6 fix + v3 self-dedup 권장 cleanup 적용 | 6 commit |
 | **4.2 R2** | 3-모델 재검증 | **claude/codex APPROVE_W/FOLLOW_UP, gemini APPROVE_FOR_PUSH** |
 | 4.3 | Push + PR #8 + admin merge + 6 PR close | main `d9ac22e` |
+| **5.1** | **R2 follow-up: 3 학습품질 fix** | live Phase-3 env wiring + 토크나이저 force-include + train_sft 다중 복제 |
+| **5.2** | **로컬 MLX smoke (Qwen3-0.6B 200 iter)** | 88.6% token-fire / val loss 5.114→1.823 / sample (e)에서 single-token `ㅈㄴ` |
+| **5.3 R3** | **3-모델 재검증** | claude APPROVE_W/FOLLOW_UP, codex REJECT, gemini APPROVE → banker's rounding 발견 |
+| **5.4** | **R3 BLOCKER 4건 fix + 검증** | fractional multiplicity (1.5≠2.0 측정 OK), env export, manifest hash |
+| 5.5 | Push to main | main `5f76f6e` |
 
 ## 3-모델 검증 verdict 파일
 
@@ -52,18 +57,29 @@
 | R2 | Claude Opus 4.7 | `/tmp/dalbi-verdict-r2-claude_md` | APPROVE_WITH_FOLLOW_UP_PR |
 | R2 | GPT-5 Codex | `/tmp/dalbi-verdict-r2-codex_md` | APPROVE_WITH_FOLLOW_UP_PR |
 | R2 | Gemini 2.5 Pro | `/tmp/dalbi-verdict-r2-gemini_md` | **APPROVE_FOR_PUSH** |
+| R3 | Claude Opus 4.7 | `/tmp/dalbi-verdict-r3-claude_md` | APPROVE_W_FOLLOW_UP_PR (banker's rounding 발견) |
+| R3 | GPT-5 Codex | `/tmp/dalbi-verdict-r3-codex_md` | REJECT_REQUIRES_MORE_FIXES (Fix 1 wiring 발견) |
+| R3 | Gemini 2.5 Pro | `/tmp/dalbi-verdict-r3-gemini-cli.md` | APPROVE_FOR_PUSH_AND_RUNPOD |
 
 ## 적용된 fix commits (`git log main`)
 
 ```
-d9ac22e Merge pull request #8 from unoa-eng/merge/main-consolidation
-6fd4d9f fix(data): v3 self-dedup pass — sft_pairs.v3 1.1% residual → 0% (recommended cleanup)
-a67016a fix(train): enforce native chat template (remove inconsistent manual fallback)  [HIGH#5]
-2a0273f fix(chain): set -e + remove non-essential || true in chain_train_round2.sh      [HIGH#4]
-2e0caca fix(chain): ORPO Phase 4 failure fatal when ORPO_NUM_EPOCHS > 0                  [BLOCKER#3]
-05dfdbc fix(tokenizer): wire tokenizer_v4 end-to-end via TOKENIZER_PATH env              [BLOCKER#2]
-3c4eca8 fix(data): rebuild sft_pairs.v3 from MinHash-deduped v2 + add loss_weight        [BLOCKER#1]
-de91b24 feat(train): unify train_sft.py — keep #7 loss_weight + opt-in DoRA/chatml/v3
+5f76f6e docs(tokenizer): update README vocab count 151879 → 151908                       [R3 cosmetic]
+be03113 fix(chain): SFT data manifest-hash check forces rebuild on env change            [R3 BLOCKER]
+95da7ea fix(recipe): export SFT_LOSS_WEIGHT_* and training vars                          [R3 BLOCKER]
+f37168e fix(train): fractional stochastic multiplicity + defensive lw parsing             [R3 BLOCKER]
+1b0050b fix(tokenizer): force-include CORE_DOMAIN_TERMS + slang Jamo                     [R2 follow-up]
+db18b03 fix(train): numeric loss_weight oversampling (later corrected by R3)             [R2 follow-up]
+e405510 fix(round2): live Phase-3 builder consumes SFT_LOSS_WEIGHT_* + MinHash dedup     [R2 follow-up]
+568079c docs: handoff package for PR #8                                                  [handoff]
+d9ac22e Merge pull request #8 from unoa-eng/merge/main-consolidation                     [통합 머지]
+6fd4d9f fix(data): v3 self-dedup pass — sft_pairs.v3 1.1% residual → 0%                 [recommended cleanup]
+a67016a fix(train): enforce native chat template                                          [R1 HIGH#5]
+2a0273f fix(chain): set -e + remove non-essential || true                                [R1 HIGH#4]
+2e0caca fix(chain): ORPO Phase 4 failure fatal when ORPO_NUM_EPOCHS > 0                  [R1 BLOCKER#3]
+05dfdbc fix(tokenizer): wire tokenizer_v4 end-to-end via TOKENIZER_PATH env              [R1 BLOCKER#2]
+3c4eca8 fix(data): rebuild sft_pairs.v3 from MinHash-deduped v2 + add loss_weight        [R1 BLOCKER#1]
+de91b24 feat(train): unify train_sft.py
 6f66ee7 fix(prelaunch): remove ALLOW_MISSING_RUNTIME_SECRETS bypass
 ... (PR #3/#4/#7 commits + selective PR #2 imports)
 ```
@@ -76,24 +92,33 @@ de91b24 feat(train): unify train_sft.py — keep #7 loss_weight + opt-in DoRA/ch
 | `loss_weight` 필드 존재율 | 100% |
 | `loss_weight > 1.0` 비율 | 10.41% |
 | 잔존 dedup | 0.0% |
-| `tokenizer_v4` vocab | 151,880 (+210 Kiwi 토큰) |
-| 도메인 단어 single-token | 쩜오/텐카/밀빵/마담/강남역/논현동/가라오케 등 |
+| `tokenizer_v4` vocab | **151,908** (+210 Kiwi + 22 CORE_DOMAIN + 15 SLANG_JAMO) |
+| 도메인 단어 single-token | 쩜오/텐카/밀빵/마담/강남역/논현동/가라오케 + ㅈㄴ/ㅇㅈ/ㅋㅋ/ㅎㅎ/ㅠㅠ etc. |
+| Token-fire rate (val_set, n=2491) | **88.6%** content-bearing / 90.9% FORCE_INCLUDE |
+| MLX smoke val loss | 5.114 → 1.823 (200 iter Qwen3-0.6B) |
+| Multiplicity 검증 (1.5 vs 2.0) | 1.5→25 expanded, 2.0→20 expanded (R3.5 distinguishable) |
 | `ALLOW_MISSING_RUNTIME_SECRETS` 잔존 | 0 (제거됨) |
 | `set -euo pipefail` | enabled (line 17) |
 | ORPO fatal guards | 2 sites |
 
-## 다음 단계 (별도 PR 권장)
+## RunPod 본 학습 진행 가능 여부 — **YES (with caveats)**
 
-1. ORPO_NUM_EPOCHS 기본값 통일 (`chain_train_round2.sh:660` `:-1` vs 677/853 `:-0`)
-2. `train_sft.py:346-357` numeric loss_weight 의미 (1.5와 2.0이 동일 동작)
-3. live Phase-3 builder duality (`round2_build_tc_sft` vs `build_thread_aware_datasets`)
-4. `extend_tokenizer_v4.py` CORE_DOMAIN_TERMS force-include
-5. `train_eval_process.py:246` dead env 주입
-6. `--skip-mauve` waiver 정리
-7. Phase 3 `if-then-else fail_with_logs` 래핑 (ntfy 알림용)
-8. `git lfs migrate` (sft_pairs.*.jsonl, tokenizer_v4 큰 파일들)
-9. PR #6 retrain (Korean forum/news negative class)
-10. Base 모델 4-게이트 (token-fire / slang-Jamo / 1M-token CPT smoke / license PDF)
+학습 품질에 직접 영향을 주던 4건이 R3 라운드에서 발견되어 **모두 fix되었습니다**:
+- ✅ `train_sft.py` banker's rounding (1.5와 2.0 동일 동작) → fractional stochastic multiplicity
+- ✅ `recipes/round2-cycle1.env` env 변수가 subprocess에 전파 안 됨 → `export` 추가
+- ✅ `chain_train_round2.sh` stale SFT data 재빌드 안 함 → manifest-hash check
+- ✅ `tokenizer_v4` 도메인 argot 일부 fragment → CORE_DOMAIN_TERMS + SLANG_JAMO force-include
+
+R3.5 empirical validation: weight=1.5 → 25 expanded copies, weight=2.0 → 20 expanded copies. 두 weight가 distinguishable. mutator escalation effective.
+
+## 잔여 follow-up (RunPod 진행에는 무영향, 다음 사이클에 처리)
+
+1. `train_eval_process.py:246` dead `ALLOW_MISSING_RUNTIME_SECRETS` 주입 (cosmetic)
+2. `--skip-mauve` waiver 두 군데 정리 (paper-grade gate 강화)
+3. Phase 3 `if-then-else fail_with_logs` 래핑 (ntfy 알림용)
+4. `git lfs migrate` (sft_pairs.*.jsonl, tokenizer_v4 큰 파일들 — 미래 push 효율)
+5. PR #6 retrain (Korean forum/news negative class) — eval signal 강화
+6. ORPO_NUM_EPOCHS 기본값 통일 (production launch는 recipe pin으로 마스킹됨)
 
 ## 보존된 사용자 작업
 

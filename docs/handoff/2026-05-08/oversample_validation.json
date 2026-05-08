@@ -1,0 +1,38 @@
+{
+  "weights": {
+    "1.0": {
+      "input": 70,
+      "output": 70,
+      "expected": 70.0,
+      "tolerance": 0,
+      "ok": true
+    },
+    "1.5": {
+      "input": 15,
+      "output": 25,
+      "expected": 22.5,
+      "tolerance": 3,
+      "ok": true
+    },
+    "2.0": {
+      "input": 10,
+      "output": 20,
+      "expected": 20.0,
+      "tolerance": 0,
+      "ok": true
+    },
+    "2.5": {
+      "input": 5,
+      "output": 12,
+      "expected": 12.5,
+      "tolerance": 3,
+      "ok": true
+    }
+  },
+  "deterministic": true,
+  "rng_seed": 13,
+  "ts": "2026-05-08T06:54:58Z",
+  "total_input": 100,
+  "total_output": 127,
+  "all_buckets_ok": true
+}
