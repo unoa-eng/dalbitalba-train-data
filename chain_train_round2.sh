@@ -767,12 +767,21 @@ phase5_eval_gate() {
         fi
         cp "${WORKSPACE}/ai_generated.jsonl" "${ai}"
     fi
+    # Phase 5.9.1: MAUVE eval gate enabled by default in production.
+    # --skip-mauve is now ENV-GATED — only passed when MAUVE_DISABLED=1 is set
+    # explicitly (e.g. for smoke tests / dev envs without mauve-text installed).
+    # Default behavior runs full MAUVE evaluation as required for paper-grade gates.
+    local mauve_flag=()
+    if [ "${MAUVE_DISABLED:-0}" = "1" ]; then
+        log "[eval] MAUVE_DISABLED=1 -> passing --skip-mauve (env-gated, non-default)"
+        mauve_flag+=("--skip-mauve")
+    fi
     python3 "${SCRIPTS_DIR}/phase6_eval_v2.py" \
         --ai "${ai}" \
         --raw "${DATA_DIR}/${EVAL_INPUT_DATA:-val_set.v2.jsonl}" \
         --persona-list "${persona_list}" \
         --out "${OUT_DIR}/phase5-eval-v2.json" \
-        --skip-mauve 2>&1 | tee -a "${PHASE5_LOG}" >> "${ROUND2_LOG}"
+        "${mauve_flag[@]}" 2>&1 | tee -a "${PHASE5_LOG}" >> "${ROUND2_LOG}"
     local rc=${PIPESTATUS[0]}
     log "phase5 exit=${rc}"
     if [ -f "${OUT_DIR}/phase5-eval-v2.json" ]; then
