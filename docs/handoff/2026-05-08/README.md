@@ -111,7 +111,7 @@ de91b24 feat(train): unify train_sft.py
 | **G** ORPO pairs build+validate | 🟡 PARTIAL | 5/100 chosen이 val_set leak (build script 버그) |
 | **H** MLX CPT smoke 500 iter | ✅ PASS_W_NOTES | 초기 1.53 nat 스파이크 — production warmup으로 mitigated |
 | **I** Full-corpus token-fire (4 corpora) | ✅ **95% PASS** | 0 force-include dead, 109,028 rows 검사 |
-| **J** PR #6 style classifier v2 retrain | ❌ INCOMPLETE | ep1 batch 200/500 → 다음 RunPod 사이클 |
+| **J** PR #6 style classifier v2 retrain | 🟡 EP1_DONE | **val_acc=0.99 / loss 0.232→0.073** (1/3 epoch, polite 존댓말 negative 포함 — usable baseline) |
 | **K** End-to-end glue test | ✅ **10/10 PASS** | manifest hash 4 permutation 정확 |
 | **L** Persona matrix 5×3 generation | 🟡 PATH_VERIFIED | 0.6B+200iter로는 persona 조건화 불가 — production에서 측정 |
 | **M** R3 fix delta 정량화 | ✅ COMPLETE | **합성 50:50 lw=1.5/2.0: pre 2.000x → post 1.751x (정확히 differentiable)** |

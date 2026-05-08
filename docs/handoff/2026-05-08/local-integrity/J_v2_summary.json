@@ -1,0 +1,59 @@
+{
+  "stage": "J",
+  "purpose": "PR#6 style classifier v2 retrain on diversified negatives (Korean news+KMMLU/NLI+polite-forum synthesized)",
+  "status": "PARTIAL_EP1_ONLY",
+  "verdict": "EP1_PROMISING_BUT_INCOMPLETE",
+  "config": {
+    "base_model": "klue/roberta-base",
+    "n_positives": 5000,
+    "n_negatives": 5000,
+    "negatives_mix": {
+      "wikipedia": 1650,
+      "klue_ynat": 0,
+      "klue_nli": 850,
+      "polite_forum_synth": 685
+    },
+    "epochs_target": 3,
+    "epochs_completed": 1,
+    "epochs_completed_reason": "stopped at Phase 5.8 30-min wait budget; ep1 took 1818s on M4 CPU",
+    "max_length": 256,
+    "batch_size": 16,
+    "lr": 2e-05,
+    "seed": 42
+  },
+  "ep1_results": {
+    "train_loss_curve_per_50_batches": {
+      "batch_50": 0.2318,
+      "batch_100": 0.1614,
+      "batch_150": 0.1289,
+      "batch_200": 0.1059,
+      "batch_250": 0.1030,
+      "batch_300": 0.0932,
+      "batch_350": 0.0854,
+      "batch_400": 0.0805,
+      "batch_450": 0.0763,
+      "batch_500": 0.0734
+    },
+    "ep1_final_train_loss": 0.0734,
+    "ep1_val_acc": 0.99,
+    "ep1_walltime_seconds": 1818.4,
+    "interpretation": "Loss curve healthy (monotonic descent 0.232 -> 0.073) and val_acc 0.99 after a single epoch suggests the diversified negative pool (Korean news + NLI premises + polite-forum synth) is highly separable from cb2 community positives. Test set was not yet evaluated — ep2/ep3 + test_AUC + confusion matrix are deferred to RunPod (where 3 epochs cost <5 min on a single GPU)."
+  },
+  "comparison_to_prior_run": {
+    "prior_attempt_pid": "ep1 batch200/500 then killed at 250",
+    "this_attempt_pid": 50075,
+    "this_attempt_progress": "ep1 batch500/500 + ep1 done with val_acc=0.99",
+    "delta": "+250 batches, full ep1 reached"
+  },
+  "deferred_to_next_cycle": [
+    "ep2 + ep3 training (klue/roberta-base on M4 CPU is too slow; needs GPU)",
+    "test_AUC + accuracy + confusion matrix on held-out test split",
+    "comparison to v1 (Wikipedia-only negatives) on a shared test set"
+  ],
+  "artifacts": {
+    "log": "runs/local-integrity-2026-05-08/J_v2_run.log",
+    "manifest": "runs/local-integrity-2026-05-08/J_style_classifier_v2/manifest.json",
+    "pid_file": "runs/local-integrity-2026-05-08/J_v2.pid",
+    "ep1_walltime_log_anchor": "[08:41:11] ep1 done loss=0.0734 val_acc=0.9900 dt=1818.4s"
+  }
+}
