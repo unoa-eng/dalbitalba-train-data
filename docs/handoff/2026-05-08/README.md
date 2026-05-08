@@ -135,12 +135,32 @@ R3.5 empirical validation: weight=1.5 → 25 expanded copies, weight=2.0 → 20 
 
 ## 잔여 follow-up (RunPod 진행에는 무영향, 다음 사이클에 처리)
 
-1. `train_eval_process.py:246` dead `ALLOW_MISSING_RUNTIME_SECRETS` 주입 (cosmetic)
+1. ~~`train_eval_process.py:246` dead `ALLOW_MISSING_RUNTIME_SECRETS` 주입 (cosmetic)~~ — **5.8.3 완료**
 2. `--skip-mauve` waiver 두 군데 정리 (paper-grade gate 강화)
 3. Phase 3 `if-then-else fail_with_logs` 래핑 (ntfy 알림용)
 4. `git lfs migrate` (sft_pairs.*.jsonl, tokenizer_v4 큰 파일들 — 미래 push 효율)
-5. PR #6 retrain (Korean forum/news negative class) — eval signal 강화
-6. ORPO_NUM_EPOCHS 기본값 통일 (production launch는 recipe pin으로 마스킹됨)
+5. ~~PR #6 retrain (Korean forum/news negative class) — eval signal 강화~~ — **5.8.5 진행됨 (J_V2_STATUS_PLACEHOLDER)**
+6. ~~ORPO_NUM_EPOCHS 기본값 통일 (production launch는 recipe pin으로 마스킹됨)~~ — **5.8.4 완료**
+
+## Phase 5.8 — Final remaining fixes (사용자 오프라인 자동 마무리)
+
+Phase 5.7 audit 후 잔여 학습품질/위생 fix를 자동 실행. 5건 모두 atomic commit 적용.
+
+| # | Fix | Commit | 결과 |
+|---|---|---|---|
+| 5.8.1 | ORPO build script — chosen 후보 사전 val-set 필터링 | `009d7e5` | G_validation_v2.json: chosen_leaks=0, **verdict=PASS** |
+| 5.8.2 | CPT recipe — lr 2e-4→1e-4, warmup 0.03→0.08 (cold-start 1.53 nat 스파이크 mitigation) | `02f423d` | recipe `bash -n` PASS |
+| 5.8.3 | `train_eval_process.py:246` dead env injection 제거 | `55b116c` | py_compile PASS |
+| 5.8.4 | `chain_train_round2.sh` ORPO_NUM_EPOCHS 기본값 `:-0` 통일 (5/5 sites) | `cc7e99e` | bash -n PASS |
+| 5.8.5 | PR #6 style classifier v2 재학습 (Korean news+KMMLU+polite negatives) | J_V2_COMMIT_PLACEHOLDER | J_V2_RESULT_PLACEHOLDER |
+
+### Fix 5.8.1 임팩트 (확인된 leak 수)
+
+기존 `--val-set` 필터는 cpt_corpus의 top-level `text` 키만 인덱싱했고, refinement-runs 경로와 val.v3의 `messages[]/completion` 항목은 미처리 상태였음. 새 `_index_val_completions()` 헬퍼는 G_validate_orpo.py와 동일한 harvest 로직을 사용 (text/completion/answer/target_comment + assistant messages). 재실행 시 2012건의 val-leak 후보가 chosen_pool에서 사전 제거됨.
+
+### Fix 5.8.2 노트
+
+스펙은 `CPT_WARMUP_STEPS=100`을 요청했으나 `train_cpt.py:75`는 `CPT_WARMUP_RATIO`만 읽음 (절대 step 변수는 dead). `total_steps × ratio` 식으로 계산되므로 ratio를 0.08로 조정 (cycle-1 typical step수에서 ~100 step 효과).
 
 ## 보존된 사용자 작업
 
