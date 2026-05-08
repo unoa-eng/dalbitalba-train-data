@@ -1,0 +1,289 @@
+{
+  "samples_used": 1000,
+  "chars_per_token": {
+    "p50": 1.2432432432432432,
+    "p10": 1.0985915492957747,
+    "p90": 1.4042553191489362,
+    "mean": 1.2514248714793925
+  },
+  "tokens_per_sample": {
+    "p50": 34,
+    "p99": 283,
+    "max": 772
+  },
+  "slang_breakdown": [
+    {
+      "term": "ㅈㄴ",
+      "n_tokens": 2,
+      "decoded": [
+        "ㅈ",
+        "ㄴ"
+      ]
+    },
+    {
+      "term": "ㅇㅈ",
+      "n_tokens": 2,
+      "decoded": [
+        "ㅇ",
+        "ㅈ"
+      ]
+    },
+    {
+      "term": "ㄹㅇ",
+      "n_tokens": 2,
+      "decoded": [
+        "ㄹ",
+        "ㅇ"
+      ]
+    },
+    {
+      "term": "ㅅㅂ",
+      "n_tokens": 2,
+      "decoded": [
+        "ㅅ",
+        "ㅂ"
+      ]
+    },
+    {
+      "term": "ㄱㅊ",
+      "n_tokens": 2,
+      "decoded": [
+        "ㄱ",
+        "ㅊ"
+      ]
+    },
+    {
+      "term": "ㄱㄱ",
+      "n_tokens": 2,
+      "decoded": [
+        "ㄱ",
+        "ㄱ"
+      ]
+    },
+    {
+      "term": "ㄴㄴ",
+      "n_tokens": 2,
+      "decoded": [
+        "ㄴ",
+        "ㄴ"
+      ]
+    },
+    {
+      "term": "ㅂㅅ",
+      "n_tokens": 2,
+      "decoded": [
+        "ㅂ",
+        "ㅅ"
+      ]
+    },
+    {
+      "term": "ㄷㄷ",
+      "n_tokens": 2,
+      "decoded": [
+        "ㄷ",
+        "ㄷ"
+      ]
+    },
+    {
+      "term": "ㄲㅃ",
+      "n_tokens": 2,
+      "decoded": [
+        "ㄲ",
+        "ㅃ"
+      ]
+    },
+    {
+      "term": "ㅊㅇㅅ",
+      "n_tokens": 3,
+      "decoded": [
+        "ㅊ",
+        "ㅇ",
+        "ㅅ"
+      ]
+    },
+    {
+      "term": "ㅋㅋ",
+      "n_tokens": 2,
+      "decoded": [
+        "ㅋ",
+        "ㅋ"
+      ]
+    },
+    {
+      "term": "ㅎㅎ",
+      "n_tokens": 2,
+      "decoded": [
+        "ㅎ",
+        "ㅎ"
+      ]
+    },
+    {
+      "term": "ㅠㅠ",
+      "n_tokens": 2,
+      "decoded": [
+        "ㅠ",
+        "ㅠ"
+      ]
+    },
+    {
+      "term": "ㅜㅜ",
+      "n_tokens": 2,
+      "decoded": [
+        "ㅜ",
+        "ㅜ"
+      ]
+    },
+    {
+      "term": "하퍼",
+      "n_tokens": 2,
+      "decoded": [
+        "하",
+        "퍼"
+      ]
+    },
+    {
+      "term": "초이스",
+      "n_tokens": 3,
+      "decoded": [
+        "초",
+        "이",
+        "스"
+      ]
+    },
+    {
+      "term": "밀빵",
+      "n_tokens": 2,
+      "decoded": [
+        "밀",
+        "빵"
+      ]
+    },
+    {
+      "term": "쩜오",
+      "n_tokens": 2,
+      "decoded": [
+        "쩜",
+        "오"
+      ]
+    },
+    {
+      "term": "수위",
+      "n_tokens": 2,
+      "decoded": [
+        "수",
+        "위"
+      ]
+    },
+    {
+      "term": "업진",
+      "n_tokens": 2,
+      "decoded": [
+        "업",
+        "진"
+      ]
+    },
+    {
+      "term": "텐카",
+      "n_tokens": 2,
+      "decoded": [
+        "텐",
+        "카"
+      ]
+    },
+    {
+      "term": "셔츠",
+      "n_tokens": 2,
+      "decoded": [
+        "셔",
+        "츠"
+      ]
+    },
+    {
+      "term": "상띠",
+      "n_tokens": 2,
+      "decoded": [
+        "상",
+        "띠"
+      ]
+    },
+    {
+      "term": "퍼블",
+      "n_tokens": 2,
+      "decoded": [
+        "퍼",
+        "블"
+      ]
+    },
+    {
+      "term": "손놈",
+      "n_tokens": 2,
+      "decoded": [
+        "손",
+        "놈"
+      ]
+    },
+    {
+      "term": "보도",
+      "n_tokens": 2,
+      "decoded": [
+        "보",
+        "도"
+      ]
+    },
+    {
+      "term": "가라",
+      "n_tokens": 2,
+      "decoded": [
+        "가",
+        "라"
+      ]
+    },
+    {
+      "term": "노도",
+      "n_tokens": 2,
+      "decoded": [
+        "노",
+        "도"
+      ]
+    },
+    {
+      "term": "하띠",
+      "n_tokens": 2,
+      "decoded": [
+        "하",
+        "띠"
+      ]
+    },
+    {
+      "term": "뺑이",
+      "n_tokens": 2,
+      "decoded": [
+        "뺑",
+        "이"
+      ]
+    },
+    {
+      "term": "골타",
+      "n_tokens": 2,
+      "decoded": [
+        "골",
+        "타"
+      ]
+    }
+  ],
+  "slang_summary": {
+    "n_terms": 32,
+    "n_terms_split_into_multiple_tokens": 32,
+    "split_ratio": 1.0
+  },
+  "decision_triggers": {
+    "low_korean_fertility": true,
+    "high_slang_fragmentation": true
+  },
+  "meta": {
+    "model": "Qwen/Qwen3-8B-Base",
+    "samples_jsonl": "/tmp/dalbitalba-train-data/val_set.v2.jsonl",
+    "field": "text",
+    "limit": 1000
+  }
+}

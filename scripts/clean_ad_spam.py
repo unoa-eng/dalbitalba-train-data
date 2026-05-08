@@ -2,17 +2,32 @@
 """
 clean_ad_spam.py — Remove recruiter/venue ad spam from training data.
 
-Targets three contamination vectors the original SPAM_RE missed:
+Targets contamination vectors the original SPAM_RE missed:
   1. Expanded kakao/ad patterns (카카오 ha1922, 카톡아이디 w21w, etc.)
-  2. Cross-thread duplicate text (>=3 identical copies after whitespace norm)
-  3. Rows with zero complete Hangul syllables (jamo-only / pure numbers)
+  2. Operator self-promotion / recruitment / template phrases
+  3. Cross-thread duplicate text (>=3 identical copies after whitespace norm)
+  4. Rows with zero complete Hangul syllables (jamo-only / pure numbers)
+  5. Low-entropy templated text (char 5-gram Shannon entropy below threshold;
+     FineWeb pattern, arXiv:2406.17557): a comment whose 5-gram distribution
+     is compressible to under ~3.8 bits per n-gram (after a 60-char eligibility
+     floor) is most likely a recruiter template copy-pasted across many threads.
+     This is a *backup* gate — AD_RE and the global MinHash dedup catch the
+     bulk of templated content; entropy is for novel low-period templates that
+     escape both.
+
+P0-2 hardening: see docs/PAPER_GRADE_ANALYSIS_*.md §3.3 D2. The 0424-0430
+training cycles' high duplicate rate (≈0.40) is largely operator/ad
+templates that the previous narrow regex set let through (~21.6% of the v2
+CPT corpus still contained an ad keyword token at this script's last run).
 
 Usage:
     python scripts/clean_ad_spam.py [--dry-run]
+        [--min-entropy 2.8]    # bits/char threshold; lower = more aggressive
 """
 
 import argparse
 import json
+import math
 import os
 import re
 import shutil
@@ -55,8 +70,105 @@ AD_PATTERNS = [
     r'[1-3]부\s*\d+인\s*\d+조',          # "1부~3부 2인1조"
     r'G팀\s*\d+방',                       # "G팀 10방이상"
     r'\d+방\s*팀사장',                    # "800-1000방 팀사장"
+    # P0-2 additions ────────────────────────────────────────────────────────
+    # operator self-promotion ("저희 가게는...", "우리 업소는...")
+    r'(?:저희|우리)\s*(?:가게|업소|샵|샾|매장)',
+    # recruitment / contact-back templates
+    r'출근시?\s*연락(?:주|드|바람)',
+    r'언제든\s*편하게\s*(?:연락|문의)',
+    r'편하게\s*톡\s*주세요',
+    r'편하게\s*전화\s*주세요',
+    # VIP / 케어 / 보장 themed promo
+    r'VIP\s*(?:전용|관리|코스)',
+    r'(?:풀|올)\s*케어',
+    r'개수\s*보장',
+    # alternative messenger handles
+    r'(?:라인|line)\s*(?:ID|아이디)?\s*[:：]\s*[a-zA-Z0-9_]{3,}',
+    r'(?:텔레|텔그|텔레그램)\s*(?:ID|아이디)?\s*[:：@]?\s*[a-zA-Z0-9_]{3,}',
+    r'(?:오픈\s*)?오픈톡|오픈\s*카톡',
+    # pay/quote templates
+    r'시간\s*(?:당|시)?\s*\d{2,4}\s*만원',
+    r'일\s*(?:당|급)\s*\d{2,4}\s*만원',
+    r'(?:선|즉)\s*입금',
+    # hour/slot patterns commonly used by recruiters
+    r'\d{1,2}\s*시간\s*기본',
+    r'\d{1,2}\s*[~∼–-]\s*\d{1,2}\s*시\s*출근',
 ]
 AD_RE = re.compile('|'.join(AD_PATTERNS), re.IGNORECASE)
+
+
+# ── 2. Char n-gram entropy filter (FineWeb-style template detector) ─────────
+def char_ngram_entropy(text: str, n: int = 5) -> float:
+    """Shannon entropy (bits per n-gram) over char n-grams of ``text``.
+
+    Empirical distribution on the v2 corpus (1,722 rows, length >= 60):
+        min=2.38  p1=5.81  p5=5.86  p10=5.95  p50=6.74  p90=8.20  max=9.86
+
+    Synthetic-template calibration (5x of "출근 문의 카톡 abc" → 3.7) does
+    NOT reflect real templates: real copy-paste in this corpus still
+    contains author-specific tail variability that pushes entropy above
+    5.5. So a useful threshold is 5.5-6.0, not the 2.8 / 3.8 originally
+    suggested by FineWeb-style references.
+
+    The metric alone is *not* sufficient to catch every recruiter template
+    in any case. It is a backup signal that complements: (a) the AD_RE
+    regex set which catches templates by lexical pattern regardless of
+    repetition count, and (b) the global MinHash near-dedup which catches
+    cross-thread copies regardless of n-gram entropy. The entropy gate's
+    specific niche is novel low-period templates that the regex misses and
+    that don't cross the MinHash Jaccard threshold.
+
+    The metric is "bits per n-gram" rather than the more common "bits per
+    character" because for stationary text the two are equal up to a small
+    boundary correction, and per-n-gram is independent of text length so a
+    single threshold transfers cleanly across xs..xxl length buckets.
+
+    Short inputs (fewer than n + 1 chars) get a sentinel high value so the
+    gate never penalizes a one-line genuine reply purely on length grounds.
+    The caller is responsible for the >=60 char eligibility floor.
+    """
+    s = re.sub(r"\s+", " ", text.strip())
+    if len(s) < n + 1:
+        return 9.9  # too short to evaluate; do not penalize
+    grams = [s[i : i + n] for i in range(len(s) - n + 1)]
+    total = len(grams)
+    counts: Counter = Counter(grams)
+    h_bits = 0.0
+    for c in counts.values():
+        p = c / total
+        h_bits -= p * math.log2(p)
+    return h_bits
+
+
+# Skip the entropy gate on short text. The CPT/SFT median comment is ~30
+# chars and short genuine slang turns ("ㅋㅋㅋㅋ ㅇㅈㅇㅈ", "쩜오 ㄹㅇ") naturally
+# have a narrow 5-gram distribution and would be false-positive dropped.
+# The gate is meant to catch *long* recruiter templates, which are
+# overwhelmingly 60+ chars in this corpus.
+ENTROPY_MIN_LEN = 60
+
+
+def row_below_entropy(row: dict, kind: str, min_entropy: float) -> bool:
+    """True iff every long-enough text field in the row sits below the
+    entropy threshold.
+
+    Mirrors row_has_no_hangul: only drop when *all* eligible fields look
+    templated. Fields shorter than ENTROPY_MIN_LEN are skipped because
+    short slang turns naturally fall under any reasonable threshold.
+    """
+    if min_entropy <= 0:
+        return False
+    fields = extract_texts(row, kind)
+    if not fields:
+        return False
+    eligible = [t for t in fields if t and len(t) >= ENTROPY_MIN_LEN]
+    if not eligible:
+        # Nothing long enough to evaluate; never drop on this rule.
+        return False
+    for t in eligible:
+        if char_ngram_entropy(t) >= min_entropy:
+            return False
+    return True
 
 # Complete Hangul syllable range
 HANGUL_SYLLABLE_RE = re.compile(r'[\uac00-\ud7af]')
@@ -106,7 +218,13 @@ def build_text_key(row: dict, kind: str) -> str:
 
 # ── main pipeline ───────────────────────────────────────────────────────────
 
-def process_file(path: Path, kind: str, dup_counts: Counter, dry_run: bool):
+def process_file(
+    path: Path,
+    kind: str,
+    dup_counts: Counter,
+    dry_run: bool,
+    min_entropy: float = 0.0,
+):
     """Process one JSONL file. Returns (kept, stats_dict)."""
     rows = []
     with open(path, encoding="utf-8") as f:
@@ -121,6 +239,7 @@ def process_file(path: Path, kind: str, dup_counts: Counter, dry_run: bool):
         "drop_ad_pattern": 0,
         "drop_cross_dup": 0,
         "drop_no_hangul": 0,
+        "drop_low_entropy": 0,
         "kept": 0,
         "ad_pattern_details": Counter(),
     }
@@ -146,6 +265,11 @@ def process_file(path: Path, kind: str, dup_counts: Counter, dry_run: bool):
             stats["drop_no_hangul"] += 1
             continue
 
+        # 4. Low-entropy template check (FineWeb-style template detector)
+        if min_entropy > 0 and row_below_entropy(row, kind, min_entropy):
+            stats["drop_low_entropy"] += 1
+            continue
+
         kept.append(row)
 
     stats["kept"] = len(kept)
@@ -162,6 +286,28 @@ def main():
     parser = argparse.ArgumentParser(description="Clean ad spam from training data")
     parser.add_argument("--dry-run", action="store_true",
                         help="Report counts without modifying files")
+    parser.add_argument(
+        "--min-entropy",
+        type=float,
+        default=0.0,
+        help=(
+            "Drop rows whose char 5-gram Shannon entropy (bits per n-gram) "
+            "sits below this threshold across every eligible (>=60 char) "
+            "text field. 0 disables the gate (recommended default).\n\n"
+            "Empirical calibration on the v2 corpus (1,722 long rows from "
+            "the first 5,000 of cpt_corpus.v2.jsonl):\n"
+            "  min=2.38  p1=5.81  p5=5.86  p10=5.95  p50=6.74  p90=8.20\n"
+            "Real-corpus entropy is dominated by 5.8-7.0; values below 5.5 "
+            "are extreme outliers. Earlier synthetic-template calibration "
+            "(2.8 then 3.8) was way too low and would have dropped nothing. "
+            "If you do enable the gate, useful thresholds are:\n"
+            "  --min-entropy 5.5   drops ~1%, only the most repetitive rows\n"
+            "  --min-entropy 5.85  drops ~5%, includes some genuine repeats\n"
+            "  --min-entropy 6.0   drops ~10%, false positives become real\n"
+            "AD_RE and the global MinHash dedup remain the primary catches; "
+            "this gate is an opt-in backup for novel low-entropy templates."
+        ),
+    )
     args = parser.parse_args()
 
     # Verify all files exist
@@ -205,7 +351,13 @@ def main():
     for name, path in DATA_FILES.items():
         kind = name
         print(f"Processing {path.name} …")
-        _, stats = process_file(path, kind, global_text_counts, args.dry_run)
+        _, stats = process_file(
+            path,
+            kind,
+            global_text_counts,
+            args.dry_run,
+            min_entropy=args.min_entropy,
+        )
         all_stats[name] = stats
 
     # ── Summary ─────────────────────────────────────────────────────────
@@ -217,6 +369,7 @@ def main():
     total_ad = 0
     total_dup = 0
     total_hangul = 0
+    total_lowent = 0
 
     for name in ("cpt", "sft", "val"):
         s = all_stats[name]
@@ -225,6 +378,7 @@ def main():
         total_ad += s["drop_ad_pattern"]
         total_dup += s["drop_cross_dup"]
         total_hangul += s["drop_no_hangul"]
+        total_lowent += s.get("drop_low_entropy", 0)
 
         removed = s["total"] - s["kept"]
         pct = (removed / s["total"] * 100) if s["total"] else 0
@@ -233,6 +387,7 @@ def main():
         print(f"    Ad pattern:       {s['drop_ad_pattern']:>8,}")
         print(f"    Cross-thread dup: {s['drop_cross_dup']:>8,}")
         print(f"    No Hangul:        {s['drop_no_hangul']:>8,}")
+        print(f"    Low entropy:      {s.get('drop_low_entropy', 0):>8,}")
         print(f"    After:            {s['kept']:>8,}")
         print(f"    Removed:          {removed:>8,}  ({pct:.2f}%)")
 
@@ -243,6 +398,7 @@ def main():
     print(f"    Ad pattern:       {total_ad:>8,}")
     print(f"    Cross-thread dup: {total_dup:>8,}")
     print(f"    No Hangul:        {total_hangul:>8,}")
+    print(f"    Low entropy:      {total_lowent:>8,}")
     print(f"    After:            {total_after:>8,}")
     print(f"    Removed:          {total_removed:>8,}  ({pct_total:.2f}%)")
     print("=" * 65)

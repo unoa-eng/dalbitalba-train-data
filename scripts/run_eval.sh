@@ -303,6 +303,13 @@ else
   fi
   PHASE6_RC="${PHASE6_RC:-0}"
   log "[4/5] phase6 gate exit=${PHASE6_RC}"
+  if [ "${PHASE6_RC}" != "0" ]; then
+    persist_eval_artifacts "phase6_gate_failed"
+    ARTIFACTS_PERSISTED=1
+    notify "dalbitalba eval phase6 gate failed rc=${PHASE6_RC}"
+    stop_pod "phase6_gate_failed"
+    exit "${PHASE6_RC}"
+  fi
   log "[5/5] phase6 report ready"
 fi
 

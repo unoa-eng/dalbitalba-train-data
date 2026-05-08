@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+"""Round-2 deterministic integrity checks before spending GPU money."""
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+import tempfile
+from collections import Counter
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def load_jsonl(path: Path) -> list[dict]:
+    rows: list[dict] = []
+    with path.open(encoding="utf-8", errors="replace") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            rows.append(json.loads(line))
+    return rows
+
+
+def fail(msg: str, failures: list[str]) -> None:
+    failures.append(msg)
+    print(f"[FAIL] {msg}")
+
+
+def ok(msg: str) -> None:
+    print(f"[OK] {msg}")
+
+
+def check_tc_sft(failures: list[str]) -> None:
+    path = ROOT / "sft_thread_conditioned.jsonl"
+    eval_path = ROOT / "sft_thread_conditioned.eval.jsonl"
+    rows = load_jsonl(path)
+    eval_rows = load_jsonl(eval_path) if eval_path.exists() else []
+    bad = [
+        i for i, row in enumerate(rows, start=1)
+        if not row.get("instruction") or not row.get("input") or not row.get("output")
+    ]
+    weighted = sum(1 for row in rows if float(row.get("loss_weight", 1.0) or 1.0) > 1.0)
+    persona = sum(1 for row in rows if row.get("persona_id"))
+    if len(rows) < 8000:
+        fail(f"TC-SFT too small: rows={len(rows)} < 8000", failures)
+    elif len(eval_rows) < 500:
+        fail(f"TC-SFT heldout eval too small: rows={len(eval_rows)} < 500", failures)
+    elif bad:
+        fail(f"TC-SFT malformed instruction/input/output rows: first={bad[:5]}", failures)
+    elif weighted == 0:
+        fail("TC-SFT has no loss_weight>1.0 rows", failures)
+    elif persona / max(1, len(rows)) < 0.95:
+        fail(f"TC-SFT persona coverage low: {persona}/{len(rows)}", failures)
+    else:
+        ok(f"TC-SFT schema rows={len(rows)} eval_rows={len(eval_rows)} weighted={weighted} persona={persona}")
+
+
+def check_orpo_leak(failures: list[str]) -> None:
+    val = {str(row.get("text") or "").strip() for row in load_jsonl(ROOT / "val_set.v2.jsonl")}
+    rows = load_jsonl(ROOT / "orpo_pairs.jsonl")
+    exact_hits = [
+        i for i, row in enumerate(rows, start=1)
+        if str(row.get("chosen") or "").strip() in val
+    ]
+    chosen_sources = Counter(str(row.get("source_run_chosen") or "") for row in rows)
+    if len(rows) < 500:
+        fail(f"ORPO pairs too small: rows={len(rows)} < 500", failures)
+    elif exact_hits:
+        fail(f"ORPO chosen leaks exact val rows: count={len(exact_hits)} first={exact_hits[:5]}", failures)
+    elif any("val_set" in source for source in chosen_sources):
+        fail(f"ORPO chosen source references validation set: {dict(chosen_sources)}", failures)
+    else:
+        ok(f"ORPO leak audit pairs={len(rows)} chosen_sources={dict(chosen_sources)}")
+
+
+def check_persona_gate_fixture(failures: list[str]) -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        td = Path(tmp)
+        ai = td / "ai.jsonl"
+        raw = td / "raw.jsonl"
+        persona = td / "persona.json"
+        out = td / "out.json"
+        rows = [{"text": "안녕ㅋㅋ", "kind": "comment"} for _ in range(3)]
+        payload = "\n".join(json.dumps(row, ensure_ascii=False) for row in rows) + "\n"
+        ai.write_text(payload, encoding="utf-8")
+        raw.write_text(payload, encoding="utf-8")
+        persona.write_text(
+            json.dumps({"personas": [{"id": 1, "name": "p1"}]}, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        proc = subprocess.run(
+            [
+                sys.executable,
+                "scripts/phase6_eval_v2.py",
+                "--ai",
+                str(ai),
+                "--raw",
+                str(raw),
+                "--persona-list",
+                str(persona),
+                "--out",
+                str(out),
+                "--skip-mauve",
+            ],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+        )
+        if proc.returncode == 0:
+            fail("phase6_eval_v2 persona-missing fixture unexpectedly passed", failures)
+            return
+        report = json.loads(out.read_text(encoding="utf-8"))
+        violations = report.get("overall", {}).get("violations", [])
+        if not any("persona_consistency" in item for item in violations):
+            fail(f"persona fixture failed for wrong reason: {violations}", failures)
+        else:
+            ok("phase6_eval_v2 rejects missing persona tags when persona-list is required")
+
+
+def main() -> int:
+    failures: list[str] = []
+    check_tc_sft(failures)
+    check_orpo_leak(failures)
+    check_persona_gate_fixture(failures)
+    print(json.dumps({"verdict": "PASS" if not failures else "FAIL", "failures": failures}, ensure_ascii=False))
+    return 0 if not failures else 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

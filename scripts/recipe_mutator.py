@@ -36,6 +36,10 @@ CYCLE_CAP = 5
 BUDGET_CAP_USD = 25.0
 CONVERGENCE_BIGRAM_JSD = 0.04
 STAGNATION_DELTA = 0.01
+# R8 — if the previous cycle's recipe is identical and bigram_jsd barely
+# moved despite the recipe-mutator emitting *something*, the bottleneck is
+# not in the recipe knobs — it is in the data. Trigger a regen cycle.
+DATA_REGEN_DELTA = 0.005
 
 DEFAULT_RECIPE = {
     "BASE_MODEL": "Qwen/Qwen3-8B-Base",
@@ -102,11 +106,126 @@ def check_stagnation(history: list[dict]) -> bool:
     return abs(jsds[-1] - jsds[0]) < STAGNATION_DELTA
 
 
+def _data_regen_stagnant(history: list[dict]) -> bool:
+    """R8 trigger: identical recipe across last 2 cycles AND bigram_jsd moved
+    by less than DATA_REGEN_DELTA. Recipe-knob mutation is exhausted; the
+    actual bottleneck is the corpus (dedup, ad spam, jamo consistency).
+    """
+    if len(history) < 2:
+        return False
+    a, b = history[-2], history[-1]
+    a_recipe = a.get("recipe_changes", {})
+    b_recipe = b.get("recipe_changes", {})
+    if a_recipe or b_recipe:
+        # recipe still being mutated; not a data-bound stagnation
+        return False
+    a_jsd = a.get("metrics_snapshot", {}).get("bigram_jsd")
+    b_jsd = b.get("metrics_snapshot", {}).get("bigram_jsd")
+    if a_jsd is None or b_jsd is None:
+        return False
+    return abs(b_jsd - a_jsd) < DATA_REGEN_DELTA
+
+
 def apply_rules(
-    metrics: dict, recipe: dict, data_regen: dict
+    metrics: dict, recipe: dict, data_regen: dict, history: list[dict] | None = None
 ) -> tuple[dict, dict, str, str]:
     """Return (recipe_changes, data_regen_changes, rule_id, rationale)."""
     m = metrics
+    history = history or []
+
+    # R8 — data-bound stagnation: recipe knobs are exhausted but bigram_jsd
+    # still won't move. Emit a data-regen request and pause training so the
+    # autonomous loop can rebuild cpt_corpus.v3 / sft_pairs.v3 with global
+    # MinHash dedup + extended ad regex + entropy gate before relaunching.
+    # Checked before R7 because data fixes are cheaper than architecture
+    # switches, and a re-run on cleaner data may resolve the stagnation
+    # without an architecture change.
+    if _data_regen_stagnant(history):
+        return (
+            {},
+            {
+                "REGEN_DATA": 1,
+                "REGEN_REASON": "stagnation",
+                "REGEN_ENABLE_MINHASH": 1,
+                "REGEN_ENABLE_ENTROPY_FILTER": 1,
+                # Empirical p1 of v2 corpus 5-gram entropy is 5.81; below
+                # that point real rows are mostly system placeholders or
+                # short repeats that MinHash and AD_RE already catch. 5.5
+                # leaves a small margin for novel templates the other
+                # gates miss. 0 disables the entropy gate entirely.
+                "REGEN_MIN_ENTROPY": "5.5",
+            },
+            "R8",
+            (
+                "bigram_jsd stagnant across two cycles with no recipe changes; "
+                "regenerate data with MinHash dedup + entropy gate before "
+                "next training launch"
+            ),
+        )
+
+    # R7 — architecture switch: when LoRA-CPT keeps underfitting at r=128 +
+    # DoRA already enabled, escalate to a full fp16 fine-tune (or r=256
+    # rsLoRA on capable hardware). LoRA-CPT is documented to be ~16× data
+    # inefficient vs full fine-tune (arXiv:2405.09673); persisting at r≤128
+    # against a domain corpus is wrong-axis mutation.
+    #
+    # Idempotency (PR #3 audit): once CPT_FULL_FT=1 is set we MUST NOT keep
+    # re-firing R7. Otherwise the mutator emits the same exports every cycle,
+    # `recipe_changes` looks non-empty in history, and R8 (data regen) is
+    # permanently blocked. Two consecutive failures *after* the switch means
+    # the model class itself is the wrong choice → R7_EXHAUSTED hard stop.
+    if recipe.get("CPT_FULL_FT", 0) == 1:
+        if m.get("bigram_jsd", 0) > 0.15:
+            r7_followups_failed = sum(
+                1
+                for h in history[-2:]
+                if h.get("rule_id") == "R7_FOLLOWUP"
+                and h.get("metrics_snapshot", {}).get("bigram_jsd", 0) > 0.15
+            )
+            if r7_followups_failed >= 1:
+                # Already 2 cycles after R7 with jsd > 0.15. Full-FT did
+                # not help — escalate to a Korean-pretrained base or vocab
+                # expansion via R7_EXHAUSTED hard stop.
+                return (
+                    {},
+                    {},
+                    "R7_EXHAUSTED",
+                    "Full-FT did not bring bigram_jsd ≤ 0.15 across 2 follow-up "
+                    "cycles; consider a Korean-pretrained base or vocab "
+                    "expansion (escalate to a human reviewer)",
+                )
+            return (
+                {},
+                {},
+                "R7_FOLLOWUP",
+                "post-R7 follow-up cycle, no mutation; collect another data point",
+            )
+        # CPT_FULL_FT already on AND jsd ≤ 0.15: don't re-fire R7. Fall
+        # through so R2/R3/R4 etc. can still mutate non-architecture knobs.
+    elif (
+        m.get("bigram_jsd", 0) > 0.15
+        and recipe.get("LORA_R", 64) >= 128
+        and recipe.get("CPT_USE_DORA", 0) == 1
+        and recipe.get("CPT_NUM_EPOCHS", 1) >= 2
+    ):
+        return (
+            {
+                # chain_train.sh reads CPT_FULL_FT=1 and switches the trainer
+                # to fp16 full fine-tune. The LoRA fields are kept as
+                # advisory rsLoRA-fallback values for VRAM-bound hosts.
+                "CPT_FULL_FT": 1,
+                "LORA_R": 256,
+                "LORA_ALPHA": 256,
+            },
+            {},
+            "R7",
+            (
+                "LoRA-CPT cap reached (r=128 + DoRA + 2 epochs) with "
+                "bigram_jsd > 0.15; escalate to fp16 full fine-tune or "
+                "r=256 rsLoRA per arXiv:2405.09673"
+            ),
+        )
+
     # R1 — high bigram JSD
     if m.get("bigram_jsd", 0) > 0.15:
         if recipe.get("CPT_NUM_EPOCHS", 1) == 1:
@@ -130,12 +249,14 @@ def apply_rules(
                 "R1c",
                 "bigram_jsd persistent, enable DoRA",
             )
-        # All cheap levers exhausted — escalate stop
+        # R1 levers exhausted — fall through to R7 on next cycle (above) by
+        # returning a sentinel that autonomous_loop can interpret. We no
+        # longer emit R1_EXHAUSTED as a hard stop because R7 supersedes it.
         return (
             {},
             {},
             "R1_EXHAUSTED",
-            "bigram_jsd not responsive to any cheap lever; escalate",
+            "bigram_jsd not responsive to LoRA-only mutations; R7 next cycle",
         )
     # R2 — length distribution mismatch
     if m.get("length_kl", 0) > 0.10:
@@ -276,10 +397,13 @@ def main() -> int:
 
     # FAIL — apply rules
     recipe_changes, data_changes, rule_id, rationale = apply_rules(
-        metrics, state["recipe"], state.get("data_regen", {})
+        metrics,
+        state["recipe"],
+        state.get("data_regen", {}),
+        state.get("history", []),
     )
 
-    if rule_id in ("R1_EXHAUSTED", "NO_RULE"):
+    if rule_id in ("NO_RULE", "R7_EXHAUSTED"):
         reason = f"no mutation available ({rule_id}); escalate"
         state["stop_reason"] = reason
         save_state(state)
@@ -287,6 +411,49 @@ def main() -> int:
         sys.stderr.write(f"[stop] {reason}\n")
         print("export LOOP_STOP=1")
         return 2
+
+    if rule_id == "R7_FOLLOWUP":
+        # Record the cycle but emit no exports; the loop should relaunch
+        # with the unchanged R7 recipe so the next eval can decide.
+        state["history"].append(
+            {
+                "cycle": state["cycle"],
+                "applied_at": datetime.now(timezone.utc).isoformat(),
+                "rule_id": rule_id,
+                "rationale": rationale,
+                "recipe_changes": {},
+                "data_regen_changes": {},
+                "metrics_snapshot": metrics,
+            }
+        )
+        save_state(state)
+        sys.stderr.write(f"[mutate] R7_FOLLOWUP cycle: {rationale}\n")
+        return 0
+
+    if rule_id == "R1_EXHAUSTED":
+        # Soft stop: surface the signal so the supervisor's next cycle can
+        # see R7 fire, but do not write a hard STOP file. The next cycle's
+        # apply_rules() will return R7 because LORA_R≥128 + DoRA on +
+        # epochs≥2 is now true.
+        state["history"].append(
+            {
+                "cycle": state["cycle"],
+                "applied_at": datetime.now(timezone.utc).isoformat(),
+                "rule_id": rule_id,
+                "rationale": rationale,
+                "recipe_changes": {},
+                "data_regen_changes": {},
+                "metrics_snapshot": metrics,
+            }
+        )
+        save_state(state)
+        sys.stderr.write(
+            "[mutate] R1_EXHAUSTED: LoRA levers exhausted; next cycle will "
+            "evaluate R7 architecture switch.\n"
+        )
+        # Emit no exports; supervisor relaunches with current recipe so R7
+        # can be cleanly triggered after the stable measurement.
+        return 0
 
     # Apply changes
     state["recipe"].update(recipe_changes)

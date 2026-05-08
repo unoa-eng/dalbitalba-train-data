@@ -1,0 +1,338 @@
+#!/usr/bin/env python3
+"""Round-2 training/evaluation process runner.
+
+This is a local control-plane script. It does not contain secrets and it does
+not reimplement training. It verifies the repo, records launch readiness, runs
+a deterministic evaluation smoke test, and launches the existing RunPod trainer
+only when the required credentials are present.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+STATE_DIR = REPO_ROOT / ".state" / "train-eval-process"
+REQUIRED_LAUNCH_ENV = ("RUNPOD_API_KEY", "HF_TOKEN", "HF_USERNAME", "GITHUB_TOKEN", "WANDB_API_KEY")
+REQUIRED_DATA = (
+    "cpt_enriched.jsonl",
+    "cpt_corpus.v3.jsonl",
+    "sft_thread_conditioned.jsonl",
+    "sft_thread_conditioned.eval.jsonl",
+    "orpo_pairs.jsonl",
+    "val_set.v2.jsonl",
+    "recipes/round2-cycle1.env",
+    "runs/round2-obsidian-synthesis/persona-30-extracted.json",
+    "chain_train_round2.sh",
+)
+REQUIRED_REMOTE_FILES = REQUIRED_DATA + (
+    "scripts/phase6_eval_v2.py",
+    "scripts/phase6_generate.py",
+    "scripts/merge_cpt_to_fp16.py",
+    "scripts/merge_sft_to_fp16.py",
+    "scripts/round2_build_orpo_pairs.py",
+    "scripts/round2_build_tc_sft.py",
+    "scripts/round2_integrity_check.py",
+    "scripts/prelaunch_research_check.py",
+    "scripts/round2_mutator.py",
+    "train_cpt.py",
+    "train_sft.py",
+    "train_orpo.py",
+)
+
+
+def utc_stamp() -> str:
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+
+def run(
+    cmd: list[str],
+    *,
+    check: bool = False,
+    env: dict[str, str] | None = None,
+    log_dir: Path | None = None,
+    label: str | None = None,
+) -> dict[str, Any]:
+    proc = subprocess.run(
+        cmd,
+        cwd=REPO_ROOT,
+        env={**os.environ, **(env or {})},
+        text=True,
+        capture_output=True,
+    )
+    result = {
+        "cmd": cmd,
+        "returncode": proc.returncode,
+        "stdout": proc.stdout,
+        "stderr": proc.stderr,
+    }
+    if log_dir and label:
+        stdout_path = log_dir / f"{label}.stdout.log"
+        stderr_path = log_dir / f"{label}.stderr.log"
+        stdout_path.write_text(proc.stdout, encoding="utf-8", errors="replace")
+        stderr_path.write_text(proc.stderr, encoding="utf-8", errors="replace")
+        result["stdout_log"] = str(stdout_path.relative_to(REPO_ROOT))
+        result["stderr_log"] = str(stderr_path.relative_to(REPO_ROOT))
+    if check and proc.returncode != 0:
+        raise SystemExit(json.dumps(result, indent=2, ensure_ascii=False))
+    return result
+
+
+def line_count(path: Path) -> int | None:
+    if not path.exists() or not path.is_file():
+        return None
+    with path.open("rb") as handle:
+        return sum(1 for _ in handle)
+
+
+def inspect_inputs() -> dict[str, Any]:
+    files: dict[str, Any] = {}
+    missing: list[str] = []
+    for rel in REQUIRED_DATA:
+        path = REPO_ROOT / rel
+        exists = path.exists()
+        if not exists:
+            missing.append(rel)
+        files[rel] = {
+            "exists": exists,
+            "bytes": path.stat().st_size if exists and path.is_file() else None,
+            "lines": line_count(path) if exists and path.suffix == ".jsonl" else None,
+        }
+    return {"files": files, "missing": missing}
+
+
+def launch_env_status() -> dict[str, Any]:
+    keys = {key: bool(os.environ.get(key)) for key in REQUIRED_LAUNCH_ENV}
+    return {
+        "required": keys,
+        "ready": all(keys.values()),
+        "github_repo": os.environ.get("GITHUB_REPO", "unoa-eng/dalbitalba-train-data"),
+        "train_github_ref": os.environ.get("TRAIN_GITHUB_REF") or os.environ.get("GITHUB_REF_NAME") or "current branch",
+    }
+
+
+def resolve_launch_ref() -> str:
+    return (
+        os.environ.get("TRAIN_GITHUB_REF")
+        or os.environ.get("GITHUB_REF_NAME")
+        or run(["git", "branch", "--show-current"])["stdout"].strip()
+        or "main"
+    )
+
+
+def inspect_remote_ref_files(ref: str) -> dict[str, Any]:
+    """Verify the exact Git ref RunPod will clone contains all round2 assets."""
+    fetch = run(["git", "fetch", "--quiet", "origin", ref])
+    remote_ref = f"origin/{ref}"
+    if fetch["returncode"] != 0:
+        # TRAIN_GITHUB_REF may be a commit SHA or already fully qualified.
+        remote_ref = ref
+    existing: set[str] = set()
+    for rel in REQUIRED_REMOTE_FILES:
+        result = run(["git", "cat-file", "-e", f"{remote_ref}:{rel}"])
+        if result["returncode"] == 0:
+            existing.add(rel)
+    missing = [rel for rel in REQUIRED_REMOTE_FILES if rel not in existing]
+    status = run(["git", "status", "--short"])
+    return {
+        "ref": ref,
+        "resolved_ref": remote_ref,
+        "ready": not missing,
+        "missing": missing,
+        "fetch_returncode": fetch["returncode"],
+        "fetch_stderr_tail": fetch["stderr"][-1000:],
+        "dirty_worktree": bool(status["stdout"].strip()),
+    }
+
+
+def write_jsonl_sample(src: Path, dst: Path, limit: int) -> None:
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    written = 0
+    with src.open("r", encoding="utf-8", errors="replace") as handle, dst.open(
+        "w", encoding="utf-8"
+    ) as out:
+        for line in handle:
+            if not line.strip():
+                continue
+            out.write(line)
+            written += 1
+            if written >= limit:
+                break
+    if written == 0:
+        raise RuntimeError(f"no sample rows written from {src}")
+
+
+def run_eval_smoke(run_dir: Path, sample_rows: int) -> dict[str, Any]:
+    sample = run_dir / "phase6_smoke_same.jsonl"
+    report = run_dir / "phase6_v2_smoke.json"
+    write_jsonl_sample(REPO_ROOT / "val_set.v2.jsonl", sample, sample_rows)
+    result = run(
+        [
+            sys.executable,
+            "scripts/phase6_eval_v2.py",
+            "--ai",
+            str(sample),
+            "--raw",
+            str(sample),
+            "--out",
+            str(report),
+            "--skip-mauve",
+        ],
+        log_dir=run_dir,
+        label="phase6_eval_v2_smoke",
+    )
+    payload = None
+    if report.exists():
+        payload = json.loads(report.read_text(encoding="utf-8"))
+    return {
+        "returncode": result["returncode"],
+        "report": str(report.relative_to(REPO_ROOT)),
+        "purpose": "metric_identity_smoke_only_not_quality_gate",
+        "overall": (payload or {}).get("overall"),
+        "stderr_tail": result["stderr"][-2000:],
+    }
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--launch", action="store_true", help="Launch RunPod if required env is present")
+    parser.add_argument("--dry-run", action="store_true", help="Render launch payload without creating a pod")
+    parser.add_argument("--sample-rows", type=int, default=80)
+    args = parser.parse_args()
+
+    run_dir = STATE_DIR / utc_stamp()
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    static_checks = {
+        "round2_shell_syntax": run(
+            ["bash", "-n", "chain_train_round2.sh"],
+            log_dir=run_dir,
+            label="bash_n_chain_train_round2",
+        ),
+        "python_compile": run(
+            [
+                sys.executable,
+                "-m",
+                "py_compile",
+                "scripts/launch_train_pod.py",
+                "scripts/train_eval_process.py",
+                "scripts/phase6_eval_v2.py",
+                "scripts/phase6_generate.py",
+                "scripts/round2_integrity_check.py",
+                "scripts/prelaunch_research_check.py",
+                "scripts/clean_round2_launch_data.py",
+                "scripts/split_round2_sft_eval.py",
+                "train_sft.py",
+                "train_orpo.py",
+            ],
+            log_dir=run_dir,
+            label="py_compile",
+        ),
+        "round2_integrity": run(
+            [sys.executable, "scripts/round2_integrity_check.py"],
+            log_dir=run_dir,
+            label="round2_integrity_check",
+        ),
+        "prelaunch_research": run(
+            [sys.executable, "scripts/prelaunch_research_check.py"],
+            env={"ALLOW_MISSING_RUNTIME_SECRETS": "1"},
+            log_dir=run_dir,
+            label="prelaunch_research_check",
+        ),
+    }
+    static_ok = all(item["returncode"] == 0 for item in static_checks.values())
+    preflight = run(
+        [sys.executable, "scripts/local_verification_loop.py", "--strict", "--profile", "budget30"],
+        log_dir=run_dir,
+        label="local_verification_loop",
+    )
+    inputs = inspect_inputs()
+    env_status = launch_env_status()
+    remote_files = inspect_remote_ref_files(resolve_launch_ref())
+    eval_smoke = run_eval_smoke(run_dir, args.sample_rows) if static_ok and not inputs["missing"] else None
+
+    launch_result: dict[str, Any] | None = None
+    if args.launch or args.dry_run:
+        if not static_ok:
+            launch_result = {
+                "returncode": 2,
+                "blocked": "static checks failed",
+                "failed": [k for k, v in static_checks.items() if v["returncode"] != 0],
+            }
+        elif not remote_files["ready"]:
+            launch_result = {
+                "returncode": 4,
+                "blocked": "selected Git ref is missing files RunPod must clone",
+                "ref": remote_files["ref"],
+                "missing": remote_files["missing"],
+            }
+        elif env_status["ready"] or args.dry_run:
+            cmd = [sys.executable, "scripts/launch_train_pod.py", "--chain", "round2"]
+            if args.dry_run:
+                cmd.append("--dry-run")
+            launch_result = run(cmd, log_dir=run_dir, label="launch_train_pod")
+        else:
+            launch_result = {
+                "returncode": 2,
+                "blocked": "missing required launch env",
+                "missing": [k for k, ok in env_status["required"].items() if not ok],
+            }
+
+    payload = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "static_checks": {
+            key: {
+                "returncode": value["returncode"],
+                "stdout_log": value.get("stdout_log"),
+                "stderr_log": value.get("stderr_log"),
+                "stderr_tail": value["stderr"][-2000:],
+            }
+            for key, value in static_checks.items()
+        },
+        "preflight": {
+            "returncode": preflight["returncode"],
+            "stdout": preflight["stdout"].strip(),
+            "stderr_tail": preflight["stderr"][-2000:],
+            "stdout_log": preflight.get("stdout_log"),
+            "stderr_log": preflight.get("stderr_log"),
+        },
+        "inputs": inputs,
+        "remote_files": remote_files,
+        "launch_env": env_status,
+        "eval_smoke": eval_smoke,
+        "launch": launch_result,
+    }
+    (run_dir / "state.json").write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    (STATE_DIR / "latest.json").write_text(
+        json.dumps({"run_dir": str(run_dir.relative_to(REPO_ROOT)), **payload}, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    if not static_ok:
+        return 2
+    if preflight["returncode"] != 0:
+        return preflight["returncode"]
+    if inputs["missing"]:
+        return 3
+    if not remote_files["ready"]:
+        return 4
+    if eval_smoke and eval_smoke["returncode"] != 0:
+        return eval_smoke["returncode"]
+    if launch_result and launch_result.get("returncode", 0) != 0:
+        return int(launch_result["returncode"])
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
