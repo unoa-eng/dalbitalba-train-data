@@ -7,6 +7,11 @@ import sys
 
 
 BASE_MODEL = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base")
+# Tokenizer path: explicit override > local tokenizer_v4 dir > BASE_MODEL.
+# tokenizer_v4 contains the +210 domain tokens used end-to-end.
+TOKENIZER_PATH = os.environ.get("TOKENIZER_PATH") or (
+    "tokenizer_v4" if os.path.isdir("tokenizer_v4") else BASE_MODEL
+)
 SFT_ADAPTER_REPO = os.environ.get("SFT_ADAPTER_REPO", "").strip()
 SFT_ADAPTER_SUBFOLDER = os.environ.get("SFT_ADAPTER_SUBFOLDER", "").strip()
 HF_TOKEN = os.environ.get("HF_TOKEN", "").strip() or None
@@ -129,8 +134,9 @@ def main() -> int:
             subfolder="sft-lora",
             token=HF_TOKEN,
         )
+    print(f"[phase6] loading tokenizer from: {TOKENIZER_PATH}")
     tokenizer = transformers.AutoTokenizer.from_pretrained(
-        BASE_MODEL,
+        TOKENIZER_PATH,
         token=HF_TOKEN,
         trust_remote_code=True,
         use_fast=True,

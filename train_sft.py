@@ -71,6 +71,11 @@ except ImportError as e:
 
 # ── Env ──────────────────────────────────────────────────────────────
 BASE_MODEL = os.environ.get("BASE_MODEL", "/workspace/out/cpt-merged-fp16")
+# Tokenizer path: explicit override > local tokenizer_v4 dir > BASE_MODEL.
+# tokenizer_v4 contains the +210 domain tokens used end-to-end.
+TOKENIZER_PATH = os.environ.get("TOKENIZER_PATH") or (
+    "tokenizer_v4" if os.path.isdir("tokenizer_v4") else BASE_MODEL
+)
 SFT_RAW_JSONL = os.environ.get("SFT_RAW_JSONL", "/workspace/data/cpt_corpus.v2.jsonl")
 SFT_PAIR_JSONL = os.environ.get("SFT_PAIR_JSONL", "/workspace/data/sft_pairs.v2.jsonl")
 # from PR #5 — v3 loader opt-in (empty string disables)
@@ -477,7 +482,8 @@ def main() -> None:
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     os.makedirs(CKPT_DIR, exist_ok=True)
 
-    tok_path = BASE_MODEL
+    tok_path = TOKENIZER_PATH
+    logger.info(f"loading tokenizer from: {tok_path}")
     tokenizer = AutoTokenizer.from_pretrained(
         tok_path, trust_remote_code=True, use_fast=True
     )

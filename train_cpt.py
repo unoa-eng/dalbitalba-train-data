@@ -55,6 +55,11 @@ except ImportError as e:
 
 # ── 환경변수 ──────────────────────────────────────────────────────────
 BASE_MODEL = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base")
+# Tokenizer path: explicit override > local tokenizer_v4 dir > BASE_MODEL.
+# tokenizer_v4 contains the +210 domain tokens used end-to-end.
+TOKENIZER_PATH = os.environ.get("TOKENIZER_PATH") or (
+    "tokenizer_v4" if os.path.isdir("tokenizer_v4") else BASE_MODEL
+)
 INPUT_JSONL = os.environ.get("INPUT_JSONL", "/workspace/data/cpt_corpus.v2.jsonl")
 VAL_JSONL = os.environ.get("CPT_VAL_JSONL", "/workspace/data/val_set.v2.jsonl")
 OUTPUT_DIR = os.environ.get("CPT_OUTPUT_DIR", "/workspace/out/cpt-lora")
@@ -175,8 +180,9 @@ def main() -> None:
     os.makedirs(CKPT_DIR, exist_ok=True)
 
     # ── Tokenizer ────────────────────────────────────────────────────
+    logger.info(f"loading tokenizer from: {TOKENIZER_PATH}")
     tokenizer = AutoTokenizer.from_pretrained(
-        BASE_MODEL, trust_remote_code=True, use_fast=True
+        TOKENIZER_PATH, trust_remote_code=True, use_fast=True
     )
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token

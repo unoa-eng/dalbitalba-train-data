@@ -32,14 +32,21 @@ def main() -> None:
     base_model = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base")
     adapter_dir = os.environ.get("CPT_LORA_DIR", "/workspace/out/cpt-lora")
     merged_dir = os.environ.get("CPT_MERGED_DIR", "/workspace/out/cpt-merged-fp16")
+    # Tokenizer path: explicit override > local tokenizer_v4 dir > base_model.
+    # The merged dir MUST contain the extended tokenizer (not stock) so that
+    # downstream SFT/eval reads the +210-token vocab consistently.
+    tokenizer_path = os.environ.get("TOKENIZER_PATH") or (
+        "tokenizer_v4" if os.path.isdir("tokenizer_v4") else base_model
+    )
 
     if not Path(adapter_dir).exists():
         print(f"[error] adapter dir not found: {adapter_dir}", file=sys.stderr)
         sys.exit(2)
 
-    print(f"[merge] base  : {base_model}")
-    print(f"[merge] lora  : {adapter_dir}")
-    print(f"[merge] out   : {merged_dir}")
+    print(f"[merge] base       : {base_model}")
+    print(f"[merge] lora       : {adapter_dir}")
+    print(f"[merge] tokenizer  : {tokenizer_path}")
+    print(f"[merge] out        : {merged_dir}")
 
     # Load base in fp16/bf16 (NOT 4-bit) so the merge is lossless.
     dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
@@ -58,8 +65,10 @@ def main() -> None:
     Path(merged_dir).mkdir(parents=True, exist_ok=True)
     model.save_pretrained(merged_dir, safe_serialization=True)
 
+    # Save EXTENDED tokenizer (not stock) so the merged checkpoint matches
+    # what train_cpt.py / train_sft.py / phase6_generate.py read at TOKENIZER_PATH.
     tokenizer = AutoTokenizer.from_pretrained(
-        base_model, trust_remote_code=True, use_fast=True
+        tokenizer_path, trust_remote_code=True, use_fast=True
     )
     tokenizer.save_pretrained(merged_dir)
 
