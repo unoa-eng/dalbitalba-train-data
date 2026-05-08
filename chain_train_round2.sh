@@ -13,7 +13,10 @@
 # explicit dependency install, preflight telemetry, durable logs/DONE.txt,
 # failure persistence, and best-effort pod stop.
 
-set -uo pipefail
+# Strict mode: -e (exit on error) added per 3-model audit HIGH #4 — paper-grade
+# pipeline cannot silently swallow non-essential failures. Each remaining
+# `|| true` below carries a comment explaining why best-effort is correct.
+set -euo pipefail
 
 WORKSPACE="${WORKSPACE:-/workspace}"
 DATA_DIR="${DATA_DIR:-${WORKSPACE}/data}"
@@ -58,6 +61,8 @@ log() {
 notify() {
     local msg="$1"
     if [ -n "${NTFY_TOPIC:-}" ]; then
+        # KEEP || true: outbound notification is best-effort; ntfy outage
+        # must not break training.
         curl -fsS -m 10 \
             -H "Content-Type: text/plain; charset=utf-8" \
             --data-binary "${msg}" \
@@ -74,11 +79,12 @@ blob_head_tail() {
         echo "(no ${file})"
         return
     fi
+    # File existence guarded above; head/tail must not silently swallow.
     {
         echo "====HEAD===="
-        head -n "${nhead}" "${file}" 2>/dev/null || true
+        head -n "${nhead}" "${file}" 2>/dev/null
         echo "====TAIL===="
-        tail -n "${ntail}" "${file}" 2>/dev/null || true
+        tail -n "${ntail}" "${file}" 2>/dev/null
     } | tr '\n' '|' | cut -c1-3500
 }
 
@@ -105,6 +111,8 @@ resolve_pod_id() {
         printf '%s' "${RUNPOD_POD_ID}"
         return 0
     fi
+    # KEEP || true: pod-id resolution is best-effort; absence is handled by
+    # callers (printf empty string -> caller logs "unknown").
     curl -fsS -m 5 http://169.254.169.254/latest/meta-data/instance-id 2>/dev/null || \
         curl -fsS -m 5 http://metadata.runpod.io/pod-id 2>/dev/null || true
 }
@@ -127,6 +135,8 @@ stop_pod() {
         runpodctl stop pod "${RUNPOD_POD_ID}" >> "${ROUND2_LOG}" 2>&1 && return 0
     fi
     if [ -n "${RUNPOD_POD_ID:-}" ] && [ -n "${RUNPOD_API_KEY:-}" ]; then
+        # KEEP || true: pod-stop is best-effort cleanup; failure must not
+        # mask the underlying training rc that triggered stop_pod.
         curl -fsS -X POST \
             -H "Authorization: Bearer ${RUNPOD_API_KEY}" \
             "https://rest.runpod.io/v1/pods/${RUNPOD_POD_ID}/stop" \
@@ -159,6 +169,8 @@ write_done() {
 copy_if_file() {
     local src="$1"
     local dst="$2"
+    # KEEP || true: artifact-persistence helper; copy failure must not
+    # crash a run that's already in fail_with_logs cleanup.
     if [ -f "${src}" ]; then
         cp "${src}" "${dst}" 2>/dev/null || true
     fi
@@ -175,6 +187,8 @@ persist_run_artifacts() {
         return 0
     fi
 
+    # KEEP || true: idempotent identity config inside an artifact-push
+    # helper; pre-existing identical config is a normal no-op.
     git -C "${REPO_CLONE_DIR}" config user.email "runpod-bot@dalbitalba.local" 2>/dev/null || true
     git -C "${REPO_CLONE_DIR}" config user.name "dalbitalba-runpod" 2>/dev/null || true
 
@@ -225,6 +239,9 @@ EOF
     cp "${latest_tmp}" "${REPO_CLONE_DIR}/runs/latest-round2-train.json"
 
     repo_url="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git"
+    # KEEP || true on checkout/add: branch may already exist (re-runs);
+    # `git add` may be a no-op if files unchanged. Outer (...) result
+    # gates the push log message.
     (
         cd "${REPO_CLONE_DIR}" || exit 0
         git checkout -b "${branch}" >/dev/null 2>&1 || true
@@ -252,6 +269,7 @@ on_exit() {
     local rc=$?
     if [ "${rc}" -ne 0 ] && [ ! -f "${DONE_FILE}" ]; then
         write_done "unexpected_exit" "rc=${rc}"
+        # KEEP || true: trap handler — cleanup helpers must not re-throw.
         persist_run_artifacts "unexpected_exit" 2>/dev/null || true
         stop_pod "unexpected_exit" 2>/dev/null || true
     fi
@@ -319,6 +337,9 @@ source_round2_recipe() {
 }
 
 system_snapshot() {
+    # KEEP || true on diagnostics below: snapshot must tolerate missing
+    # tooling on heterogeneous runtimes (e.g. `free` absent on macOS dev
+    # workstations); diagnostics are informational, not load-bearing.
     {
         echo "--- system snapshot ---"
         date -u
@@ -375,6 +396,8 @@ install_deps() {
         "flash-attn==2.6.3" >> "${INSTALL_LOG}" 2>&1 || \
         log "[WARN] flash-attn install failed; training scripts should fall back if configured"
 
+    # KEEP || true on grep below: empty match (no rows after filter) is
+    # exit 1 and not a real failure; diagnostic only.
     {
         echo "--- pip list (training deps) ---"
         python3 -m pip list 2>/dev/null | grep -iE '^(torch|transformers|peft|trl|accelerate|bitsandbytes|datasets|tokenizers|huggingface|safetensors|sentencepiece|tiktoken|wandb|flash|numpy|protobuf|pyyaml) ' || true
@@ -722,6 +745,8 @@ phase5_eval_gate() {
     local rc=${PIPESTATUS[0]}
     log "phase5 exit=${rc}"
     if [ -f "${OUT_DIR}/phase5-eval-v2.json" ]; then
+        # KEEP || true: mutator suggests the next recipe; failure must
+        # not mask the underlying eval rc that we're about to return.
         python3 "${SCRIPTS_DIR}/round2_mutator.py" \
             --metrics "${OUT_DIR}/phase5-eval-v2.json" \
             >> "${PHASE5_LOG}" 2>&1 || true
@@ -786,6 +811,7 @@ for path_in_repo, file_path in files.items():
 print("[hf] upload complete")
 PY
     local rc=$?
+    # KEEP || true: log-append is best-effort; cat may race with rotation.
     cat "${HF_UPLOAD_LOG}" >> "${ROUND2_LOG}" 2>/dev/null || true
     if [ ${rc} -ne 0 ]; then
         log "[WARN] HF artifact upload failed rc=${rc}"
