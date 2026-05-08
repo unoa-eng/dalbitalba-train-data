@@ -1,0 +1,52 @@
+{
+  "cpt_enriched.jsonl": {
+    "input": 51899,
+    "kept": 48247,
+    "removed": {
+      "contact_or_url": 1451,
+      "blocked_deleted": 1847,
+      "promo_template": 304
+    },
+    "deduped": 50
+  },
+  "cpt_corpus.v3.jsonl": {
+    "input": 42473,
+    "kept": 41576,
+    "removed": {
+      "promo_template": 157,
+      "contact_or_url": 560,
+      "blocked_deleted": 65
+    },
+    "deduped": 115
+  },
+  "sft_thread_conditioned.jsonl": {
+    "input": 11617,
+    "kept": 11384,
+    "removed": {
+      "blocked_deleted": 156,
+      "contact_or_url": 32,
+      "promo_template": 45
+    },
+    "deduped": 0
+  },
+  "val_set.v2.jsonl": {
+    "input": 2451,
+    "kept": 2315,
+    "removed": {
+      "contact_or_url": 121,
+      "promo_template": 12,
+      "blocked_deleted": 3
+    },
+    "deduped": 0
+  },
+  "orpo_pairs.jsonl": {
+    "input": 1500,
+    "kept": 1472,
+    "removed": {
+      "blocked_deleted": 8,
+      "contact_or_url": 16,
+      "promo_template": 4
+    },
+    "deduped": 0
+  }
+}

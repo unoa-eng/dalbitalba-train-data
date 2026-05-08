@@ -10,8 +10,8 @@ BASE_MODEL = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base")
 SFT_ADAPTER_REPO = os.environ.get("SFT_ADAPTER_REPO", "").strip()
 SFT_ADAPTER_SUBFOLDER = os.environ.get("SFT_ADAPTER_SUBFOLDER", "").strip()
 HF_TOKEN = os.environ.get("HF_TOKEN", "").strip() or None
-INPUT_PATH = "/workspace/data/val_set.v2.jsonl"
-OUTPUT_PATH = "/workspace/ai_generated.jsonl"
+INPUT_PATH = os.environ.get("EVAL_INPUT_JSONL", "/workspace/data/val_set.v2.jsonl")
+OUTPUT_PATH = os.environ.get("EVAL_OUTPUT_JSONL", "/workspace/ai_generated.jsonl")
 MAX_ROWS = int(os.environ.get("EVAL_MAX_ROWS", "500"))
 MAX_NEW_TOKENS = int(os.environ.get("MAX_NEW_TOKENS", "200"))
 TEMPERATURE = float(os.environ.get("TEMPERATURE", "1.1"))
@@ -72,15 +72,30 @@ def derive_kind(row: dict[str, object]) -> str:
     return "post"
 
 
-def build_prompt_seed(row: dict[str, object]) -> str:
-    direct_text = str(row.get("text") or "").strip()
-    if direct_text:
-        return direct_text[:40]
+def build_prompt(row: dict[str, object]) -> str:
+    instruction = str(row.get("instruction") or "").strip()
+    input_text = str(row.get("input") or "").strip()
+    if instruction:
+        prompt = instruction
+        if input_text:
+            prompt += "\n" + input_text
+        prompt += "\n[OUTPUT]\n"
+        return prompt
 
-    for key in ("prompt", "instruction", "input"):
-        value = str(row.get(key) or "").strip()
-        if value:
-            return value[:40]
+    prompt = str(row.get("prompt") or "").strip()
+    if prompt:
+        return prompt.rstrip() + "\n[OUTPUT]\n"
+
+    text = str(row.get("text") or "").strip()
+    if text:
+        kind = derive_kind(row)
+        return (
+            "[REFERENCE]\n"
+            f"{text}\n"
+            "[TASK]\n"
+            f"위 원문과 같은 커뮤니티 말투, 길이감, 문장 밀도로 {kind} 하나를 새로 써.\n"
+            "[OUTPUT]\n"
+        )
     return ""
 
 
@@ -132,9 +147,9 @@ def main() -> int:
                 break
 
             row = json.loads(line)
-            prompt = build_prompt_seed(row)
+            prompt = build_prompt(row)
             if not prompt:
-                print(f"[warn] row {i} missing usable prompt seed; skipping", file=sys.stderr)
+                print(f"[warn] row {i} missing usable prompt; skipping", file=sys.stderr)
                 continue
             kind = derive_kind(row)
 
@@ -168,13 +183,15 @@ def main() -> int:
                 decoded = tokenizer.decode(outputs[0], skip_special_tokens=True)
                 continuation = decoded[len(prompt) :] if decoded.startswith(prompt) else decoded
 
-            dst.write(
-                json.dumps(
-                    {"text": continuation, "seed": prompt, "kind": kind},
-                    ensure_ascii=False,
-                )
-                + "\n"
-            )
+            out_row = {
+                "text": continuation,
+                "prompt": prompt,
+                "kind": kind,
+            }
+            for key in ("persona_id", "persona", "depth", "root_id", "parent_id"):
+                if key in row:
+                    out_row[key] = row.get(key)
+            dst.write(json.dumps(out_row, ensure_ascii=False) + "\n")
 
             if i % 50 == 0:
                 print(f"[{i}/{MAX_ROWS}] generated", flush=True)
