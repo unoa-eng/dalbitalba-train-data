@@ -90,6 +90,67 @@ AD_PATTERNS = [
 AD_RE = re.compile('|'.join(AD_PATTERNS), re.IGNORECASE)
 
 # ---------------------------------------------------------------------------
+# Argot heuristic (mirrors scripts/round2_build_tc_sft.py:41-57)
+# A row whose (post_title + post_body_excerpt + parent_comment + target_comment)
+# contains >= SFT_LOSS_WEIGHT_THRESHOLD distinct argot tokens gets
+# loss_weight = SFT_LOSS_WEIGHT_ARGOT (numeric weight, default 1.5);
+# otherwise loss_weight = 1.0.
+#
+# Env vars (opt-in override of defaults):
+#   SFT_LOSS_WEIGHT_ARGOT      numeric weight applied when threshold met
+#                              (default 1.5; matches chain_train_round2.sh)
+#   SFT_LOSS_WEIGHT_THRESHOLD  minimum distinct argot tokens to trigger
+#                              (default 2; matches round2_build_tc_sft.py)
+#   SFT_LOSS_WEIGHT_TERMS      comma-separated override for the 20-term default
+#                              keyword list (optional).
+# ---------------------------------------------------------------------------
+DEFAULT_ARGOT_TERMS = [
+    "TC", "티씨", "밀빵", "쩜오", "텐카", "초이스", "케어", "갯수", "마담", "퍼블",
+    "보도", "하퍼", "도파민", "셔츠룸", "빠꾸", "시다", "텐", "노도", "골타", "뺑이",
+]
+
+
+def _load_argot_config() -> tuple[re.Pattern, int, float]:
+    raw_terms = os.environ.get("SFT_LOSS_WEIGHT_TERMS", "").strip()
+    if raw_terms:
+        terms = [t.strip() for t in raw_terms.split(",") if t.strip()]
+    else:
+        terms = list(DEFAULT_ARGOT_TERMS)
+    try:
+        threshold = int(os.environ.get("SFT_LOSS_WEIGHT_THRESHOLD", "2"))
+    except ValueError:
+        threshold = 2
+    try:
+        weight = float(os.environ.get("SFT_LOSS_WEIGHT_ARGOT", "1.5"))
+    except ValueError:
+        weight = 1.5
+    if threshold < 1:
+        threshold = 1
+    if weight < 1.0:
+        weight = 1.0
+    pattern = re.compile("|".join(re.escape(t) for t in terms))
+    return pattern, threshold, weight
+
+
+ARGOT_RE, ARGOT_THRESHOLD, ARGOT_WEIGHT = _load_argot_config()
+
+
+def argot_count(text: str) -> int:
+    if not text:
+        return 0
+    return len(set(ARGOT_RE.findall(text)))
+
+
+def compute_loss_weight(*cells: str | None) -> float:
+    seen: set[str] = set()
+    for cell in cells:
+        if not cell:
+            continue
+        seen.update(ARGOT_RE.findall(cell))
+    return ARGOT_WEIGHT if len(seen) >= ARGOT_THRESHOLD else 1.0
+
+
+# ---------------------------------------------------------------------------
 # Placeholder patterns (from dedup_minhash_sft_v2.json top clusters)
 # Matches the full comment text including the [N] / [N-M] prefix.
 # ---------------------------------------------------------------------------
@@ -263,6 +324,7 @@ def process_threads(
     task_type_counts: Counter = Counter()
     depth_hist: Counter = Counter()
     bucket_dist: Counter = Counter()
+    weighted_rows = 0
     kept_rows = 0
 
     out_dir = Path(out_path).parent
@@ -341,6 +403,12 @@ def process_threads(
                     actual_depth = 1
 
                 bucket = length_bucket(len(cleaned))
+                loss_weight = compute_loss_weight(
+                    "",  # post_title (always empty)
+                    excerpt,
+                    parent_comment,
+                    cleaned,
+                )
 
                 v3_row = {
                     "post_title": "",
@@ -352,6 +420,7 @@ def process_threads(
                     "task_type": task_type,
                     "length_bucket": bucket,
                     "source_id": source_id,
+                    "loss_weight": loss_weight,
                 }
 
                 line_out = json.dumps(v3_row, ensure_ascii=False) + "\n"
@@ -361,6 +430,8 @@ def process_threads(
                     out_f.write(line_out)
 
                 kept_rows += 1
+                if loss_weight > 1.0:
+                    weighted_rows += 1
                 task_type_counts[task_type] += 1
                 depth_hist[actual_depth] += 1
                 bucket_dist[bucket] += 1
@@ -380,18 +451,21 @@ def process_threads(
                 continue
 
             excerpt = post_body_excerpt(post_text)
-            bucket = length_bucket(len(post_text.strip()))
+            target = post_text.strip()
+            bucket = length_bucket(len(target))
+            loss_weight = compute_loss_weight("", excerpt, None, target)
 
             v3_row = {
                 "post_title": "",
                 "post_body_excerpt": excerpt,
                 "parent_comment": None,
-                "target_comment": post_text.strip(),
+                "target_comment": target,
                 "thread_key": source_id,
                 "depth": 0,
                 "task_type": "post_continuation",
                 "length_bucket": bucket,
                 "source_id": source_id,
+                "loss_weight": loss_weight,
             }
 
             line_out = json.dumps(v3_row, ensure_ascii=False) + "\n"
@@ -402,6 +476,8 @@ def process_threads(
 
             post_continuation_count += 1
             kept_rows += 1
+            if loss_weight > 1.0:
+                weighted_rows += 1
             task_type_counts["post_continuation"] += 1
             depth_hist[0] += 1
             bucket_dist[bucket] += 1
@@ -412,6 +488,13 @@ def process_threads(
     summary = {
         "input_rows": input_rows,
         "kept_rows": kept_rows,
+        "weighted_rows": weighted_rows,
+        "weighted_fraction": round(weighted_rows / max(kept_rows, 1), 4),
+        "loss_weight_config": {
+            "weight": ARGOT_WEIGHT,
+            "threshold": ARGOT_THRESHOLD,
+            "term_count": len(ARGOT_RE.pattern.split("|")),
+        },
         "dropped": {
             "placeholder": dropped_placeholder,
             "ad_pattern": dropped_ad,
