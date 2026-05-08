@@ -206,10 +206,14 @@ def build_chatml_example(row: dict, tokenizer, is_v3: bool = True) -> dict | Non
     Loss mask: everything before the assistant turn is set to -100. Only the
     assistant content + closing <|im_end|> is trained.
 
-    Tries tokenizer.apply_chat_template first (Qwen3 native).
-    Falls back to manual string construction + tokenize.
+    Uses tokenizer.apply_chat_template (Qwen3 native) exclusively. The Qwen3
+    chat template emits a `<think></think>` block for assistant turns; the
+    previously-present manual string fallback did NOT, producing inconsistent
+    label structure across rows. Per 3-model audit HIGH: any tokenizer with
+    chat capability has apply_chat_template — if it doesn't, the run must
+    fail loudly rather than silently fall back.
 
-    Source: PR #5.
+    Source: PR #5 (fallback removed).
     """
     if is_v3:
         target = row.get("target_comment", "").strip()
@@ -233,63 +237,54 @@ def build_chatml_example(row: dict, tokenizer, is_v3: bool = True) -> dict | Non
         {"role": "assistant", "content": target},
     ]
 
+    if not hasattr(tokenizer, "apply_chat_template"):
+        raise RuntimeError(
+            "tokenizer lacks apply_chat_template — refusing to fall back to "
+            "manual ChatML which is inconsistent with the Qwen3 native template "
+            "(missing <think></think> block). Use tokenizer_v4 or any tokenizer "
+            "exposing apply_chat_template."
+        )
+
     try:
         full_text = tokenizer.apply_chat_template(
             messages,
             tokenize=False,
             add_generation_prompt=False,
         )
-        use_native = True
-    except Exception:
-        use_native = False
-        full_text = None
+    except Exception as exc:
+        raise RuntimeError(
+            f"tokenizer.apply_chat_template failed: {exc!r}. The manual "
+            "fallback was removed (3-model audit HIGH) because it omitted the "
+            "<think></think> block emitted by the native template, causing "
+            "label-structure drift across rows."
+        ) from exc
 
-    if use_native and full_text is not None:
-        full_ids = tokenizer(
-            full_text,
+    if full_text is None:
+        raise RuntimeError(
+            "tokenizer.apply_chat_template returned None; cannot build example."
+        )
+
+    full_ids = tokenizer(
+        full_text,
+        truncation=True,
+        max_length=MAX_SEQ_LEN,
+        padding=False,
+        add_special_tokens=False,
+    )["input_ids"]
+
+    assistant_marker = "<|im_start|>assistant\n"
+    prompt_end_idx = full_text.rfind(assistant_marker)
+    if prompt_end_idx == -1:
+        labels = full_ids.copy()
+    else:
+        prompt_text = full_text[: prompt_end_idx + len(assistant_marker)]
+        prompt_ids = tokenizer(
+            prompt_text,
             truncation=True,
             max_length=MAX_SEQ_LEN,
             padding=False,
             add_special_tokens=False,
         )["input_ids"]
-
-        assistant_marker = "<|im_start|>assistant\n"
-        prompt_end_idx = full_text.rfind(assistant_marker)
-        if prompt_end_idx == -1:
-            labels = full_ids.copy()
-        else:
-            prompt_text = full_text[: prompt_end_idx + len(assistant_marker)]
-            prompt_ids = tokenizer(
-                prompt_text,
-                truncation=True,
-                max_length=MAX_SEQ_LEN,
-                padding=False,
-                add_special_tokens=False,
-            )["input_ids"]
-            prefix_len = min(len(prompt_ids), len(full_ids))
-            labels = [-100] * prefix_len + full_ids[prefix_len:]
-    else:
-        prompt_text = (
-            f"<|im_start|>system\n{_CHATML_SYSTEM}<|im_end|>\n"
-            f"<|im_start|>user\n{user_content}<|im_end|>\n"
-            f"<|im_start|>assistant\n"
-        )
-        response_text = f"{target}<|im_end|>"
-
-        prompt_ids = tokenizer(
-            prompt_text,
-            truncation=False,
-            padding=False,
-            add_special_tokens=False,
-        )["input_ids"]
-        resp_ids = tokenizer(
-            response_text,
-            truncation=False,
-            padding=False,
-            add_special_tokens=False,
-        )["input_ids"]
-
-        full_ids = (prompt_ids + resp_ids)[:MAX_SEQ_LEN]
         prefix_len = min(len(prompt_ids), len(full_ids))
         labels = [-100] * prefix_len + full_ids[prefix_len:]
 
