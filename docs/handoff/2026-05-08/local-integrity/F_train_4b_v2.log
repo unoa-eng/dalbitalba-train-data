@@ -1,0 +1,61 @@
+=== Stage F.v2 (4B reduced) started at Fri May  8 16:29:45 KST 2026 ===
+Loading pretrained model
+Fetching 10 files:   0%|          | 0/10 [00:00<?, ?it/s]Fetching 10 files: 100%|██████████| 10/10 [00:00<00:00, 14624.49it/s]
+Loading datasets
+Training
+Trainable parameters: 0.091% (3.670M/4022.468M)
+Starting training..., iters: 1000
+Calculating loss...:   0%|          | 0/10 [00:00<?, ?it/s]Calculating loss...:  10%|█         | 1/10 [00:06<01:02,  6.92s/it]Calculating loss...:  20%|██        | 2/10 [00:07<00:27,  3.41s/it]Calculating loss...:  30%|███       | 3/10 [00:08<00:14,  2.06s/it]Calculating loss...:  40%|████      | 4/10 [00:08<00:08,  1.37s/it]Calculating loss...:  50%|█████     | 5/10 [00:09<00:05,  1.04s/it]Calculating loss...:  60%|██████    | 6/10 [00:09<00:03,  1.11it/s]Calculating loss...:  70%|███████   | 7/10 [00:10<00:02,  1.32it/s]Calculating loss...:  80%|████████  | 8/10 [00:10<00:01,  1.51it/s]Calculating loss...:  90%|█████████ | 9/10 [00:11<00:00,  1.66it/s]Calculating loss...: 100%|██████████| 10/10 [00:11<00:00,  1.94it/s]Calculating loss...: 100%|██████████| 10/10 [00:11<00:00,  1.14s/it]
+Iter 1: Val loss 4.585, Val took 11.454s
+Iter 50: Train loss 2.974, Learning Rate 5.000e-05, It/sec 1.207, Tokens/sec 216.019, Trained Tokens 8945, Peak mem 8.908 GB
+[WARNING] Some sequences are longer than 768 tokens. The longest sentence 1121 will be truncated to 768. Consider pre-splitting your data to save memory.
+Iter 100: Train loss 2.782, Learning Rate 5.000e-05, It/sec 1.171, Tokens/sec 218.823, Trained Tokens 18290, Peak mem 9.302 GB
+Iter 100: Saved adapter weights to runs/local-integrity-2026-05-08/F_adapters_4b_v2/adapters.safetensors and runs/local-integrity-2026-05-08/F_adapters_4b_v2/0000100_adapters.safetensors.
+[WARNING] Some sequences are longer than 768 tokens. The longest sentence 1005 will be truncated to 768. Consider pre-splitting your data to save memory.
+Iter 150: Train loss 2.626, Learning Rate 5.000e-05, It/sec 1.073, Tokens/sec 216.148, Trained Tokens 28363, Peak mem 9.302 GB
+[WARNING] Some sequences are longer than 768 tokens. The longest sentence 1081 will be truncated to 768. Consider pre-splitting your data to save memory.
+Calculating loss...:   0%|          | 0/10 [00:00<?, ?it/s]Calculating loss...:  10%|█         | 1/10 [00:01<00:09,  1.01s/it]Calculating loss...:  20%|██        | 2/10 [00:01<00:05,  1.42it/s]Calculating loss...:  30%|███       | 3/10 [00:02<00:04,  1.46it/s]Calculating loss...:  40%|████      | 4/10 [00:03<00:05,  1.07it/s]Calculating loss...:  50%|█████     | 5/10 [00:04<00:04,  1.20it/s]Calculating loss...:  60%|██████    | 6/10 [00:04<00:02,  1.37it/s]Calculating loss...:  70%|███████   | 7/10 [00:05<00:02,  1.32it/s]Calculating loss...:  80%|████████  | 8/10 [00:05<00:01,  1.60it/s]Calculating loss...:  90%|█████████ | 9/10 [00:06<00:00,  1.56it/s]Calculating loss...: 100%|██████████| 10/10 [00:06<00:00,  1.83it/s]Calculating loss...: 100%|██████████| 10/10 [00:06<00:00,  1.46it/s]
+Iter 200: Val loss 2.809, Val took 6.872s
+Iter 200: Train loss 2.571, Learning Rate 5.000e-05, It/sec 1.109, Tokens/sec 215.783, Trained Tokens 38090, Peak mem 9.317 GB
+Iter 200: Saved adapter weights to runs/local-integrity-2026-05-08/F_adapters_4b_v2/adapters.safetensors and runs/local-integrity-2026-05-08/F_adapters_4b_v2/0000200_adapters.safetensors.
+[WARNING] Some sequences are longer than 768 tokens. The longest sentence 1131 will be truncated to 768. Consider pre-splitting your data to save memory.
+[WARNING] Some sequences are longer than 768 tokens. The longest sentence 1228 will be truncated to 768. Consider pre-splitting your data to save memory.
+Iter 250: Train loss 2.596, Learning Rate 5.000e-05, It/sec 1.000, Tokens/sec 204.878, Trained Tokens 48332, Peak mem 9.317 GB
+[WARNING] Some sequences are longer than 768 tokens. The longest sentence 797 will be truncated to 768. Consider pre-splitting your data to save memory.
+Iter 300: Train loss 2.550, Learning Rate 5.000e-05, It/sec 1.104, Tokens/sec 207.148, Trained Tokens 57710, Peak mem 9.317 GB
+Iter 300: Saved adapter weights to runs/local-integrity-2026-05-08/F_adapters_4b_v2/adapters.safetensors and runs/local-integrity-2026-05-08/F_adapters_4b_v2/0000300_adapters.safetensors.
+[WARNING] Some sequences are longer than 768 tokens. The longest sentence 1014 will be truncated to 768. Consider pre-splitting your data to save memory.
+Iter 350: Train loss 2.587, Learning Rate 5.000e-05, It/sec 1.087, Tokens/sec 216.280, Trained Tokens 67657, Peak mem 9.317 GB
+[WARNING] Some sequences are longer than 768 tokens. The longest sentence 1173 will be truncated to 768. Consider pre-splitting your data to save memory.
+Calculating loss...:   0%|          | 0/10 [00:00<?, ?it/s]Calculating loss...:  10%|█         | 1/10 [00:00<00:07,  1.26it/s]Calculating loss...:  20%|██        | 2/10 [00:01<00:04,  1.69it/s]Calculating loss...:  30%|███       | 3/10 [00:02<00:07,  1.11s/it]Calculating loss...:  40%|████      | 4/10 [00:03<00:04,  1.21it/s]Calculating loss...:  50%|█████     | 5/10 [00:03<00:03,  1.44it/s]Calculating loss...:  60%|██████    | 6/10 [00:04<00:02,  1.63it/s]Calculating loss...:  70%|███████   | 7/10 [00:04<00:01,  1.93it/s]Calculating loss...:  80%|████████  | 8/10 [00:05<00:01,  1.95it/s]Calculating loss...:  90%|█████████ | 9/10 [00:05<00:00,  1.85it/s]Calculating loss...: 100%|██████████| 10/10 [00:06<00:00,  2.06it/s]Calculating loss...: 100%|██████████| 10/10 [00:06<00:00,  1.65it/s]
+Iter 400: Val loss 2.613, Val took 6.179s
+Iter 400: Train loss 2.623, Learning Rate 5.000e-05, It/sec 1.022, Tokens/sec 208.927, Trained Tokens 77878, Peak mem 9.317 GB
+Iter 400: Saved adapter weights to runs/local-integrity-2026-05-08/F_adapters_4b_v2/adapters.safetensors and runs/local-integrity-2026-05-08/F_adapters_4b_v2/0000400_adapters.safetensors.
+Iter 450: Train loss 2.521, Learning Rate 5.000e-05, It/sec 1.244, Tokens/sec 210.479, Trained Tokens 86341, Peak mem 9.317 GB
+Iter 500: Train loss 2.492, Learning Rate 5.000e-05, It/sec 1.096, Tokens/sec 204.416, Trained Tokens 95669, Peak mem 9.317 GB
+Iter 500: Saved adapter weights to runs/local-integrity-2026-05-08/F_adapters_4b_v2/adapters.safetensors and runs/local-integrity-2026-05-08/F_adapters_4b_v2/0000500_adapters.safetensors.
+[WARNING] Some sequences are longer than 768 tokens. The longest sentence 1265 will be truncated to 768. Consider pre-splitting your data to save memory.
+Iter 550: Train loss 2.527, Learning Rate 5.000e-05, It/sec 1.075, Tokens/sec 217.478, Trained Tokens 105784, Peak mem 9.317 GB
+[WARNING] Some sequences are longer than 768 tokens. The longest sentence 784 will be truncated to 768. Consider pre-splitting your data to save memory.
+Calculating loss...:   0%|          | 0/10 [00:00<?, ?it/s]Calculating loss...:  10%|█         | 1/10 [00:00<00:04,  1.83it/s]Calculating loss...:  20%|██        | 2/10 [00:01<00:05,  1.38it/s]Calculating loss...:  30%|███       | 3/10 [00:02<00:05,  1.26it/s]Calculating loss...:  40%|████      | 4/10 [00:02<00:04,  1.43it/s]Calculating loss...:  50%|█████     | 5/10 [00:03<00:02,  1.74it/s]Calculating loss...:  60%|██████    | 6/10 [00:03<00:02,  1.95it/s]Calculating loss...:  70%|███████   | 7/10 [00:04<00:02,  1.49it/s]Calculating loss...:  80%|████████  | 8/10 [00:05<00:01,  1.63it/s]Calculating loss...:  90%|█████████ | 9/10 [00:05<00:00,  1.88it/s]Calculating loss...: 100%|██████████| 10/10 [00:05<00:00,  1.91it/s]Calculating loss...: 100%|██████████| 10/10 [00:05<00:00,  1.67it/s]
+Iter 600: Val loss 2.644, Val took 6.038s
+Iter 600: Train loss 2.464, Learning Rate 5.000e-05, It/sec 1.088, Tokens/sec 211.361, Trained Tokens 115499, Peak mem 9.317 GB
+Iter 600: Saved adapter weights to runs/local-integrity-2026-05-08/F_adapters_4b_v2/adapters.safetensors and runs/local-integrity-2026-05-08/F_adapters_4b_v2/0000600_adapters.safetensors.
+Iter 650: Train loss 2.543, Learning Rate 5.000e-05, It/sec 1.195, Tokens/sec 214.677, Trained Tokens 124479, Peak mem 9.317 GB
+Iter 700: Train loss 2.467, Learning Rate 5.000e-05, It/sec 1.176, Tokens/sec 214.852, Trained Tokens 133614, Peak mem 9.317 GB
+Iter 700: Saved adapter weights to runs/local-integrity-2026-05-08/F_adapters_4b_v2/adapters.safetensors and runs/local-integrity-2026-05-08/F_adapters_4b_v2/0000700_adapters.safetensors.
+Iter 750: Train loss 2.550, Learning Rate 5.000e-05, It/sec 1.008, Tokens/sec 211.679, Trained Tokens 144118, Peak mem 9.317 GB
+Calculating loss...:   0%|          | 0/10 [00:00<?, ?it/s]Calculating loss...:  10%|█         | 1/10 [00:00<00:06,  1.39it/s]Calculating loss...:  20%|██        | 2/10 [00:01<00:04,  1.97it/s]Calculating loss...:  30%|███       | 3/10 [00:01<00:03,  2.11it/s]Calculating loss...:  40%|████      | 4/10 [00:02<00:03,  1.93it/s]Calculating loss...:  50%|█████     | 5/10 [00:03<00:03,  1.41it/s]Calculating loss...:  60%|██████    | 6/10 [00:04<00:03,  1.27it/s]Calculating loss...:  70%|███████   | 7/10 [00:04<00:02,  1.44it/s]Calculating loss...:  80%|████████  | 8/10 [00:04<00:01,  1.72it/s]Calculating loss...:  90%|█████████ | 9/10 [00:05<00:00,  1.77it/s]Calculating loss...: 100%|██████████| 10/10 [00:05<00:00,  1.85it/s]Calculating loss...: 100%|██████████| 10/10 [00:05<00:00,  1.68it/s]
+Iter 800: Val loss 2.553, Val took 6.017s
+Iter 800: Train loss 2.455, Learning Rate 5.000e-05, It/sec 1.172, Tokens/sec 204.908, Trained Tokens 152858, Peak mem 9.317 GB
+Iter 800: Saved adapter weights to runs/local-integrity-2026-05-08/F_adapters_4b_v2/adapters.safetensors and runs/local-integrity-2026-05-08/F_adapters_4b_v2/0000800_adapters.safetensors.
+Iter 850: Train loss 2.453, Learning Rate 5.000e-05, It/sec 1.063, Tokens/sec 206.300, Trained Tokens 162559, Peak mem 9.317 GB
+Iter 900: Train loss 2.452, Learning Rate 5.000e-05, It/sec 1.060, Tokens/sec 199.869, Trained Tokens 171988, Peak mem 9.317 GB
+Iter 900: Saved adapter weights to runs/local-integrity-2026-05-08/F_adapters_4b_v2/adapters.safetensors and runs/local-integrity-2026-05-08/F_adapters_4b_v2/0000900_adapters.safetensors.
+Iter 950: Train loss 2.420, Learning Rate 5.000e-05, It/sec 1.031, Tokens/sec 196.839, Trained Tokens 181533, Peak mem 9.317 GB
+Calculating loss...:   0%|          | 0/10 [00:00<?, ?it/s]Calculating loss...:  10%|█         | 1/10 [00:00<00:07,  1.15it/s]Calculating loss...:  20%|██        | 2/10 [00:02<00:08,  1.09s/it]Calculating loss...:  30%|███       | 3/10 [00:02<00:05,  1.19it/s]Calculating loss...:  40%|████      | 4/10 [00:03<00:04,  1.38it/s]Calculating loss...:  50%|█████     | 5/10 [00:04<00:04,  1.12it/s]Calculating loss...:  60%|██████    | 6/10 [00:04<00:03,  1.31it/s]Calculating loss...:  70%|███████   | 7/10 [00:05<00:02,  1.49it/s]Calculating loss...:  80%|████████  | 8/10 [00:06<00:01,  1.36it/s]Calculating loss...:  90%|█████████ | 9/10 [00:07<00:00,  1.19it/s]Calculating loss...: 100%|██████████| 10/10 [00:07<00:00,  1.33it/s]Calculating loss...: 100%|██████████| 10/10 [00:07<00:00,  1.27it/s]
+Iter 1000: Val loss 2.692, Val took 8.009s
+Iter 1000: Train loss 2.452, Learning Rate 5.000e-05, It/sec 1.052, Tokens/sec 206.895, Trained Tokens 191365, Peak mem 9.317 GB
+Iter 1000: Saved adapter weights to runs/local-integrity-2026-05-08/F_adapters_4b_v2/adapters.safetensors and runs/local-integrity-2026-05-08/F_adapters_4b_v2/0001000_adapters.safetensors.
+Saved final weights to runs/local-integrity-2026-05-08/F_adapters_4b_v2/adapters.safetensors.
+=== Stage F.v2 finished at Fri May  8 16:47:06 KST 2026 (elapsed 1041s) ===

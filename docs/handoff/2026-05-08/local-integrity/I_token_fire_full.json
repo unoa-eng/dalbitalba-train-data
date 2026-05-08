@@ -1,0 +1,382 @@
+{
+  "total_tokens_added": 240,
+  "n_special": 11,
+  "n_domain": 229,
+  "fired_at_least_once": 228,
+  "dead_token_count": 12,
+  "fire_rate": 0.95,
+  "fire_rate_threshold_passed": true,
+  "dead_tokens": [
+    "<|post|>",
+    "<|/post|>",
+    "<|/comment|>",
+    "<|thread|>",
+    "<|/thread|>",
+    "<|comment depth=0|>",
+    "<|comment depth=1|>",
+    "<|comment depth=2|>",
+    "<|comment depth=3|>",
+    "<|comment depth=4|>",
+    "<|comment depth=5|>",
+    "largodu"
+  ],
+  "dead_force_include_core": [],
+  "dead_force_include_slang_jamo": [],
+  "critical_force_include_dead": false,
+  "top_fired": [
+    {
+      "token": "언니",
+      "count": 44786
+    },
+    {
+      "token": "ㅋㅋ",
+      "count": 41253
+    },
+    {
+      "token": "손님",
+      "count": 15781
+    },
+    {
+      "token": "ㅠㅠ",
+      "count": 15217
+    },
+    {
+      "token": "하퍼",
+      "count": 12058
+    },
+    {
+      "token": "가게",
+      "count": 11067
+    },
+    {
+      "token": "출근",
+      "count": 10815
+    },
+    {
+      "token": "정도",
+      "count": 9238
+    },
+    {
+      "token": "생각",
+      "count": 9114
+    },
+    {
+      "token": "사람",
+      "count": 9035
+    },
+    {
+      "token": "얼굴",
+      "count": 8452
+    },
+    {
+      "token": "ㅈㄴ",
+      "count": 7675
+    },
+    {
+      "token": "사이즈",
+      "count": 7343
+    },
+    {
+      "token": "초이스",
+      "count": 6987
+    },
+    {
+      "token": "ㅜㅜ",
+      "count": 6720
+    },
+    {
+      "token": "수위",
+      "count": 6415
+    },
+    {
+      "token": "업진",
+      "count": 6109
+    },
+    {
+      "token": "회원",
+      "count": 6091
+    },
+    {
+      "token": "이상",
+      "count": 5552
+    },
+    {
+      "token": "강남",
+      "count": 5467
+    },
+    {
+      "token": "아가씨",
+      "count": 4781
+    },
+    {
+      "token": "가능",
+      "count": 4698
+    },
+    {
+      "token": "요즘",
+      "count": 4685
+    },
+    {
+      "token": "텐카",
+      "count": 4076
+    },
+    {
+      "token": "연락",
+      "count": 3872
+    },
+    {
+      "token": "ㅅㅂ",
+      "count": 3607
+    },
+    {
+      "token": "추천",
+      "count": 3363
+    },
+    {
+      "token": "상띠",
+      "count": 3213
+    },
+    {
+      "token": "도파민",
+      "count": 3117
+    },
+    {
+      "token": "ㄹㅇ",
+      "count": 3109
+    }
+  ],
+  "bottom_fired": [
+    {
+      "token": "블라인드",
+      "count": 18
+    },
+    {
+      "token": "차범근",
+      "count": 20
+    },
+    {
+      "token": "Rabbit",
+      "count": 28
+    },
+    {
+      "token": "마동석",
+      "count": 45
+    },
+    {
+      "token": "와리",
+      "count": 52
+    },
+    {
+      "token": "빠꾸",
+      "count": 57
+    },
+    {
+      "token": "하이사",
+      "count": 57
+    },
+    {
+      "token": "대치동",
+      "count": 62
+    },
+    {
+      "token": "백사장",
+      "count": 64
+    },
+    {
+      "token": "화요일",
+      "count": 71
+    },
+    {
+      "token": "소지섭",
+      "count": 81
+    },
+    {
+      "token": "정신병자",
+      "count": 81
+    },
+    {
+      "token": "강남역",
+      "count": 89
+    },
+    {
+      "token": "목요일",
+      "count": 89
+    },
+    {
+      "token": "TC",
+      "count": 91
+    },
+    {
+      "token": "산부인과",
+      "count": 94
+    },
+    {
+      "token": "쿠사리",
+      "count": 95
+    },
+    {
+      "token": "셔츠룸",
+      "count": 96
+    },
+    {
+      "token": "수요일",
+      "count": 97
+    },
+    {
+      "token": "블랙홀",
+      "count": 105
+    },
+    {
+      "token": "글쓴이",
+      "count": 105
+    },
+    {
+      "token": "하이퍼",
+      "count": 113
+    },
+    {
+      "token": "엔트리",
+      "count": 115
+    },
+    {
+      "token": "역삼동",
+      "count": 116
+    },
+    {
+      "token": "가락동",
+      "count": 116
+    },
+    {
+      "token": "신분증",
+      "count": 116
+    },
+    {
+      "token": "번지",
+      "count": 117
+    },
+    {
+      "token": "병오",
+      "count": 122
+    },
+    {
+      "token": "강하늘",
+      "count": 126
+    },
+    {
+      "token": "클래식",
+      "count": 126
+    }
+  ],
+  "per_corpus": {
+    "cpt_corpus.v3.jsonl": {
+      "rows": 41576,
+      "elapsed_sec": 1.51,
+      "total_fire_events": 85651,
+      "tokens_fired_at_least_once": 228,
+      "fire_rate": 0.95
+    },
+    "sft_pairs.v3.jsonl": {
+      "rows": 44716,
+      "elapsed_sec": 4.91,
+      "total_fire_events": 247637,
+      "tokens_fired_at_least_once": 228,
+      "fire_rate": 0.95
+    },
+    "sft_thread_conditioned.jsonl": {
+      "rows": 10245,
+      "elapsed_sec": 1.64,
+      "total_fire_events": 61019,
+      "tokens_fired_at_least_once": 226,
+      "fire_rate": 0.9417
+    },
+    "val_set.v3.jsonl": {
+      "rows": 2491,
+      "elapsed_sec": 0.32,
+      "total_fire_events": 14467,
+      "tokens_fired_at_least_once": 205,
+      "fire_rate": 0.8542
+    }
+  },
+  "rows_containing_top": [
+    {
+      "token": "언니",
+      "rows": 27583
+    },
+    {
+      "token": "ㅋㅋ",
+      "rows": 16851
+    },
+    {
+      "token": "손님",
+      "rows": 10662
+    },
+    {
+      "token": "ㅠㅠ",
+      "rows": 9783
+    },
+    {
+      "token": "하퍼",
+      "rows": 8146
+    },
+    {
+      "token": "가게",
+      "rows": 7833
+    },
+    {
+      "token": "출근",
+      "rows": 7478
+    },
+    {
+      "token": "정도",
+      "rows": 7204
+    },
+    {
+      "token": "생각",
+      "rows": 6913
+    },
+    {
+      "token": "사람",
+      "rows": 6707
+    },
+    {
+      "token": "ㅈㄴ",
+      "rows": 6112
+    },
+    {
+      "token": "회원",
+      "rows": 6011
+    },
+    {
+      "token": "얼굴",
+      "rows": 5832
+    },
+    {
+      "token": "초이스",
+      "rows": 5147
+    },
+    {
+      "token": "사이즈",
+      "rows": 5114
+    },
+    {
+      "token": "ㅜㅜ",
+      "rows": 4674
+    },
+    {
+      "token": "이상",
+      "rows": 4477
+    },
+    {
+      "token": "업진",
+      "rows": 4429
+    },
+    {
+      "token": "수위",
+      "rows": 4171
+    },
+    {
+      "token": "요즘",
+      "rows": 3705
+    }
+  ]
+}

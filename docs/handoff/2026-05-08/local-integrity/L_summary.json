@@ -1,0 +1,44 @@
+{
+  "stage": "L",
+  "purpose": "Persona generation matrix — 5 personas x 3 prompts on 0.6B-Base + smoke adapter",
+  "status": "COMPLETE_W_NOTES",
+  "config": {
+    "n_personas": 5,
+    "n_prompts": 3,
+    "n_total_generations": 15,
+    "model": "Qwen/Qwen3-0.6B-Base",
+    "adapter": "runs/local-smoke-2026-05-08-comprehensive/adapters",
+    "max_tokens": 80,
+    "temperature": 0.8,
+    "top_p": 0.9
+  },
+  "outputs": {
+    "raw_text": "runs/local-integrity-2026-05-08/L_persona_matrix.txt",
+    "distinguishability": "runs/local-integrity-2026-05-08/L_distinguishability.json"
+  },
+  "qualitative_finding": {
+    "verdict": "MODEL_COLLAPSED_TO_NON_KOREAN_GIBBERISH",
+    "evidence": "All 15 generations produce degenerate output: leading Thai/Lao characters (กล้า, ไม่, มนุ) followed by long repeated runs of single characters (! or ㅋ). Korean output is essentially absent.",
+    "root_cause_hypothesis": [
+      "0.6B-Base + 200-iter LoRA at lr=2e-4 is severely undertrained for this domain.",
+      "[PERSONA]...[/PERSONA] tag conditioning was never reinforced in the smoke training data — the smoke adapter saw the comprehensive synth_lw.jsonl which uses different formatting.",
+      "Default sampling temp=0.8/top_p=0.9 amplifies tail collapse in an undertrained Korean model — multilingual base routes to higher-prior non-Korean character sets.",
+      "smoke adapter was trained for token-fire validation, NOT persona conditioning."
+    ],
+    "production_implication": "This is NOT a regression in the production pipeline. Production persona-30 evaluation runs on RunPod with: (a) Qwen3-8B not 0.6B, (b) full Phase-3 SFT (epochs not iters) + Phase-4 ORPO not LoRA-only, (c) persona prompt format that matches sft_pairs.v3.jsonl conditioning."
+  },
+  "distinguishability_metrics": {
+    "mean_char3_cosine_overlap": 0.2379,
+    "mean_char_set_jaccard": 0.157,
+    "verdict_label": "DISTINCT",
+    "honest_interpretation": "The DISTINCT label is misleading: low overlap is because each persona collapsed to a DIFFERENT non-Korean character set, not because of true persona differentiation. This metric is artifact-of-failure, not signal-of-success. Re-run on RunPod 8B."
+  },
+  "verdict": "PATH_VERIFIED_QUALITY_DEFERRED_TO_RUNPOD",
+  "verdict_notes": [
+    "Generation pipeline executes end-to-end (mlx_lm.generate + adapter loading + persona-tagged prompt template).",
+    "All 15 cells produced output (no crashes/timeouts).",
+    "Quality is non-Korean gibberish — expected for 0.6B + 200-iter smoke adapter.",
+    "Persona-distinguishability evaluation is INCONCLUSIVE locally; defer to RunPod 8B + full SFT/ORPO.",
+    "Falls within Phase 5.7 directive 'fallback to 3 personas x 2 prompts on 0.6B adapter from C2' was not needed — full 5x3 matrix completed."
+  ]
+}

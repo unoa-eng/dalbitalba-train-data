@@ -1,0 +1,46 @@
+{
+  "n_pairs": 100,
+  "schema": {
+    "has_prompt": 100,
+    "has_chosen": 100,
+    "has_rejected": 100,
+    "all_complete": true
+  },
+  "chosen_len_chars": {
+    "min": 12,
+    "median": 31.0,
+    "mean": 36.9,
+    "max": 116
+  },
+  "rejected_len_chars": {
+    "min": 22,
+    "median": 55.5,
+    "mean": 64.1,
+    "max": 153
+  },
+  "domain_density_per_1k_chars": {
+    "chosen_mean": 10.566,
+    "rejected_mean": 5.731,
+    "delta": 4.835
+  },
+  "ai_marker_presence": {
+    "chosen_count": 1,
+    "rejected_count": 52,
+    "rejected_minus_chosen": 51,
+    "expectation": "rejected should contain MORE AI markers than chosen",
+    "passes_expectation": true
+  },
+  "val_leak_check": {
+    "val_completions_indexed": 2491,
+    "chosen_leaks_into_val": 5,
+    "rejected_leaks_into_val": 0,
+    "expectation": "neither should leak; rejected MUST not match val verbatim",
+    "passes": false
+  },
+  "identical_pair_count": 0,
+  "kind_distribution": {
+    "comment": 77,
+    "post": 23
+  },
+  "verdict": "PARTIAL"
+}

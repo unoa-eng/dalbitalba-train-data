@@ -1,0 +1,60 @@
+{
+  "stage": "H",
+  "purpose": "MLX continued-pretraining smoke on Qwen3-0.6B-Base, 500 iters",
+  "status": "COMPLETE",
+  "model": "Qwen/Qwen3-0.6B-Base",
+  "data": "runs/local-integrity-2026-05-08/H_cpt_data (5000 train + 500 valid, prompt='' + completion plain text)",
+  "config": {
+    "iters": 500,
+    "batch_size": 1,
+    "learning_rate": 2e-4,
+    "num_layers": 16,
+    "max_seq_length": 1024,
+    "fine_tune_type": "lora (default)",
+    "trainable_params_pct": 0.484,
+    "trainable_params": "2.884M / 596.050M"
+  },
+  "train_loss_curve_50step": {
+    "iter_50": 6.741,
+    "iter_150": 6.303,
+    "iter_200": 5.899,
+    "iter_250": 5.702,
+    "iter_300": 5.607,
+    "iter_350": 5.490,
+    "iter_400": 5.333,
+    "iter_450": 5.500,
+    "iter_500": 5.304
+  },
+  "val_loss_curve": {
+    "iter_1": 5.642,
+    "iter_100": 7.169,
+    "iter_200": 5.938,
+    "iter_300": 5.949,
+    "iter_400": 5.445,
+    "iter_500": 5.769
+  },
+  "stability_gap_analysis": {
+    "concern_threshold_nat": 0.3,
+    "max_observed_gap": 1.527,
+    "between_checkpoints": "iter_1 (5.642) -> iter_100 (7.169)",
+    "exceeds_threshold": true,
+    "interpretation": "Initial 100-step transient spike likely reflects LoRA adapter warmup on cold model + lr=2e-4 too aggressive for the very small effective batch (bs=1). After the spike the val loss settles into a 5.4-5.9 nat band with mild oscillation. Smoke verifies: (a) MLX CPT path runs end-to-end, (b) data format accepted, (c) checkpoints save. NOT a robust convergence demo: 500 iters at bs=1 is too short for cold CPT on 5K corpus. Production path on RunPod uses chain_train_round2.sh CPT stage (full Phase-3 settings). arXiv:2406.14833 cites stability instability for naive CPT — confirmed observable here, mitigation handled in production via warmup + lr_scheduler.",
+    "production_mitigation_present": true,
+    "production_mitigation_path": "train_cpt.py uses warmup + cosine schedule per Phase-3 wiring (see PR #5 R2 follow-up)"
+  },
+  "peak_memory_gb": 2.437,
+  "tokens_per_sec_avg": 680,
+  "iters_per_sec_avg": 11.0,
+  "elapsed_seconds_estimate": 50,
+  "verdict": "SMOKE_PASS_W_NOTES",
+  "verdict_notes": [
+    "Path verified: MLX accepts prompt='' + completion plain-text format for CPT-style training.",
+    "Initial-spike instability (1.53 nat) detected but recovered; production path applies warmup + scheduler.",
+    "Adapter saved: runs/local-integrity-2026-05-08/H_adapters_cpt/adapters.safetensors",
+    "5 intermediate checkpoints (every 100 iters) preserved."
+  ],
+  "artifacts": {
+    "adapter": "runs/local-integrity-2026-05-08/H_adapters_cpt/adapters.safetensors",
+    "log": "runs/local-integrity-2026-05-08/H_train_cpt.log"
+  }
+}

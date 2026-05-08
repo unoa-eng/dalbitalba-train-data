@@ -1,0 +1,213 @@
+===== persona=강남3년차 prompt=다음 한국어 댓글을 cb2 밤문화 커뮤니티 톤으로 한 ... =====
+PROMPT:
+[PERSONA] id=1 name=강남3년차 tone=존댓말 mood=resigned particles=ㅋㅋ ㅠ ㅠㅠ ㅇㅇ trait=경력자 체념 톤 [/PERSONA]
+다음 한국어 댓글을 cb2 밤문화 커뮤니티 톤으로 한 줄 생성:
+OUTPUT:
+กล้า
+!11111111111111111111111111111111111111111111111111111111111111111111111111111
+==========
+Prompt: 82 tokens, 332.353 tokens-per-sec
+Generation: 80 tokens, 53.760 tokens-per-sec
+Peak memory: 1.376 GB
+
+===== persona=강남3년차 prompt=이번달 매상 너무 안나오는데 어떡해야 좋을까요... =====
+PROMPT:
+[PERSONA] id=1 name=강남3년차 tone=존댓말 mood=resigned particles=ㅋㅋ ㅠ ㅠㅠ ㅇㅇ trait=경력자 체념 톤 [/PERSONA]
+이번달 매상 너무 안나오는데 어떡해야 좋을까요
+OUTPUT:
+不
+! ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
+==========
+Prompt: 73 tokens, 260.839 tokens-per-sec
+Generation: 80 tokens, 54.567 tokens-per-sec
+Peak memory: 1.344 GB
+
+===== persona=강남3년차 prompt=초보입니다 손님 어떻게 응대해야 하나요... =====
+PROMPT:
+[PERSONA] id=1 name=강남3년차 tone=존댓말 mood=resigned particles=ㅋㅋ ㅠ ㅠㅠ ㅇㅇ trait=경력자 체념 톤 [/PERSONA]
+초보입니다 손님 어떻게 응대해야 하나요
+OUTPUT:
+มนุ
+
+อาชีพ
+
+[4] 10-20-30-40-50-60-70-80-90-100-100-100-100-100-100-100-100-100-100-100-1
+==========
+Prompt: 70 tokens, 683.965 tokens-per-sec
+Generation: 80 tokens, 54.134 tokens-per-sec
+Peak memory: 1.352 GB
+
+===== persona=초보22 prompt=다음 한국어 댓글을 cb2 밤문화 커뮤니티 톤으로 한 ... =====
+PROMPT:
+[PERSONA] id=2 name=초보22 tone=반말 mood=nervous particles=ㄷㄷ ㅠㅠ ㅎㅎ trait=입문자 떨림 [/PERSONA]
+다음 한국어 댓글을 cb2 밤문화 커뮤니티 톤으로 한 줄 생성:
+OUTPUT:
+𖠚ينا 쳐다보면 ㅠㅜㅠ 이건 봤는데 스토리 같아요
+초이스 쳐다보면 ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
+==========
+Prompt: 77 tokens, 595.776 tokens-per-sec
+Generation: 80 tokens, 54.511 tokens-per-sec
+Peak memory: 1.365 GB
+
+===== persona=초보22 prompt=이번달 매상 너무 안나오는데 어떡해야 좋을까요... =====
+PROMPT:
+[PERSONA] id=2 name=초보22 tone=반말 mood=nervous particles=ㄷㄷ ㅠㅠ ㅎㅎ trait=입문자 떨림 [/PERSONA]
+이번달 매상 너무 안나오는데 어떡해야 좋을까요
+OUTPUT:
+!
+!어때도 심각히 저작련 ㅠㅠㅠ ㅠㅠㅠㅠㅠㅠㅠㅠㅠ요즘 22번은 정말 떨림 ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
+==========
+Prompt: 68 tokens, 358.607 tokens-per-sec
+Generation: 80 tokens, 52.898 tokens-per-sec
+Peak memory: 1.348 GB
+
+===== persona=초보22 prompt=초보입니다 손님 어떻게 응대해야 하나요... =====
+PROMPT:
+[PERSONA] id=2 name=초보22 tone=반말 mood=nervous particles=ㄷㄷ ㅠㅠ ㅎㅎ trait=입문자 떨림 [/PERSONA]
+초보입니다 손님 어떻게 응대해야 하나요
+OUTPUT:
+คุ้ม
+
+เทคโนโลยี
+
+[2] 기존인사들이 처음 보는 내용만 복습해보세요~ 개꿀한테라요 ㅠ
+[2-1] ㄱㄱㄱ 룸바닥 언니들
+[2-2] ㄱㄱㄱ 룸바닥, 키친업진
+[2-3] ㄱㄱ
+==========
+Prompt: 65 tokens, 231.355 tokens-per-sec
+Generation: 80 tokens, 54.755 tokens-per-sec
+Peak memory: 1.330 GB
+
+===== persona=텐카언니 prompt=다음 한국어 댓글을 cb2 밤문화 커뮤니티 톤으로 한 ... =====
+PROMPT:
+[PERSONA] id=3 name=텐카언니 tone=반말 mood=상냥 particles=ㅋㅋ ㅎㅎ ㅋㅋㅋ trait=친절한 멘토 [/PERSONA]
+다음 한국어 댓글을 cb2 밤문화 커뮤니티 톤으로 한 줄 생성:
+OUTPUT:
+𪤗
+
+คุณสม
+
+[4] ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
+==========
+Prompt: 77 tokens, 122.889 tokens-per-sec
+Generation: 80 tokens, 51.264 tokens-per-sec
+Peak memory: 1.306 GB
+
+===== persona=텐카언니 prompt=이번달 매상 너무 안나오는데 어떡해야 좋을까요... =====
+PROMPT:
+[PERSONA] id=3 name=텐카언니 tone=반말 mood=상냥 particles=ㅋㅋ ㅎㅎ ㅋㅋㅋ trait=친절한 멘토 [/PERSONA]
+이번달 매상 너무 안나오는데 어떡해야 좋을까요
+OUTPUT:
+สั้น
+!그럴듯한데 뭔가요? 이거정도 죽이지마고 저녁먹어 보세요! 400엔가면 200~300 정도는 살짝가는 약한데요 200엔까지 수입해서 또 떼서 개까쌍요 200엔
+==========
+Prompt: 68 tokens, 629.802 tokens-per-sec
+Generation: 80 tokens, 51.605 tokens-per-sec
+Peak memory: 1.357 GB
+
+===== persona=텐카언니 prompt=초보입니다 손님 어떻게 응대해야 하나요... =====
+PROMPT:
+[PERSONA] id=3 name=텐카언니 tone=반말 mood=상냥 particles=ㅋㅋ ㅎㅎ ㅋㅋㅋ trait=친절한 멘토 [/PERSONA]
+초보입니다 손님 어떻게 응대해야 하나요
+OUTPUT:
+ไขมัน
+
+ดิน
+
+[2] 왤발 차이가 까는거 아님 ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
+==========
+Prompt: 65 tokens, 648.196 tokens-per-sec
+Generation: 80 tokens, 53.382 tokens-per-sec
+Peak memory: 1.349 GB
+
+===== persona=쩜오씁쓸 prompt=다음 한국어 댓글을 cb2 밤문화 커뮤니티 톤으로 한 ... =====
+PROMPT:
+[PERSONA] id=4 name=쩜오씁쓸 tone=반말 mood=jaded particles=ㅋㅋ ㅎ trait=차가운 베테랑 [/PERSONA]
+다음 한국어 댓글을 cb2 밤문화 커뮤니티 톤으로 한 줄 생성:
+OUTPUT:
+สาเหตุ
+
+ศักดิ
+
+[2] 초이스 톤.. 연락주신거 했는데 근데 이언니가 생각한거여...
+저도 경계상태이고 톤 좀 낮추려고요.
+유진같은언니들 톤도 ㅠㅠ
+[2-2] 남자친구 몇명
+==========
+Prompt: 72 tokens, 189.752 tokens-per-sec
+Generation: 80 tokens, 55.706 tokens-per-sec
+Peak memory: 1.314 GB
+
+===== persona=쩜오씁쓸 prompt=이번달 매상 너무 안나오는데 어떡해야 좋을까요... =====
+PROMPT:
+[PERSONA] id=4 name=쩜오씁쓸 tone=반말 mood=jaded particles=ㅋㅋ ㅎ trait=차가운 베테랑 [/PERSONA]
+이번달 매상 너무 안나오는데 어떡해야 좋을까요
+OUTPUT:
+!
+! 하퍼하마의 상관없음 ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
+==========
+Prompt: 63 tokens, 201.189 tokens-per-sec
+Generation: 80 tokens, 54.773 tokens-per-sec
+Peak memory: 1.339 GB
+
+===== persona=쩜오씁쓸 prompt=초보입니다 손님 어떻게 응대해야 하나요... =====
+PROMPT:
+[PERSONA] id=4 name=쩜오씁쓸 tone=반말 mood=jaded particles=ㅋㅋ ㅎ trait=차가운 베테랑 [/PERSONA]
+초보입니다 손님 어떻게 응대해야 하나요
+OUTPUT:
+ข้าม
+
+ฉัน
+
+[2] 손님을 못 대화할게요.. 점프가 또 초이스나 귀찮아서 담당해요.. [2-1] 그냥 강요 했던거였는데 이번에 새로운 손님이 생겼어요 강요하는게 안되겠죠? ㅠㅠ 퇴근한
+==========
+Prompt: 60 tokens, 699.704 tokens-per-sec
+Generation: 80 tokens, 55.580 tokens-per-sec
+Peak memory: 1.339 GB
+
+===== persona=보도왕초 prompt=다음 한국어 댓글을 cb2 밤문화 커뮤니티 톤으로 한 ... =====
+PROMPT:
+[PERSONA] id=5 name=보도왕초 tone=존댓말 mood=상남 particles=ㅋㅋㅋ ㅋㅋ ㅂㅂ trait=호탕 형님 [/PERSONA]
+다음 한국어 댓글을 cb2 밤문화 커뮤니티 톤으로 한 줄 생성:
+OUTPUT:
+ทุน
+
+อันตร
+
+[3] 오늘도 퇴근하고요 티씨엔든 너무 어때요 턱 안써줘서 추운날만 돌아가시고 ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
+==========
+Prompt: 76 tokens, 686.639 tokens-per-sec
+Generation: 80 tokens, 51.446 tokens-per-sec
+Peak memory: 1.357 GB
+
+===== persona=보도왕초 prompt=이번달 매상 너무 안나오는데 어떡해야 좋을까요... =====
+PROMPT:
+[PERSONA] id=5 name=보도왕초 tone=존댓말 mood=상남 particles=ㅋㅋㅋ ㅋㅋ ㅂㅂ trait=호탕 형님 [/PERSONA]
+이번달 매상 너무 안나오는데 어떡해야 좋을까요
+OUTPUT:
+ลูกค้า
+
+ปกติ
+
+[2] 텐카가로 ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
+==========
+Prompt: 67 tokens, 217.288 tokens-per-sec
+Generation: 80 tokens, 53.410 tokens-per-sec
+Peak memory: 1.340 GB
+
+===== persona=보도왕초 prompt=초보입니다 손님 어떻게 응대해야 하나요... =====
+PROMPT:
+[PERSONA] id=5 name=보도왕초 tone=존댓말 mood=상남 particles=ㅋㅋㅋ ㅋㅋ ㅂㅂ trait=호탕 형님 [/PERSONA]
+초보입니다 손님 어떻게 응대해야 하나요
+OUTPUT:
+เชียง
+
+อุปกร
+
+[1] 초이스 고민중 이사없이 초이스. 초이스는 다들 걔처럼 걸고싶어요. 초이스는 초이스. 하루만에 얼마나 힘들어지고 ㅋㅋㅋ 초이스는 초이스. 어때요? ㅋㅋㅋㅋㅋㅋㅋㅋㅋ
+==========
+Prompt: 64 tokens, 219.056 tokens-per-sec
+Generation: 80 tokens, 55.047 tokens-per-sec
+Peak memory: 1.341 GB
+

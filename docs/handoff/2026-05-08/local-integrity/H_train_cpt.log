@@ -1,0 +1,34 @@
+Loading pretrained model
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 39304.05it/s]
+Loading datasets
+Training
+Trainable parameters: 0.484% (2.884M/596.050M)
+Starting training..., iters: 500
+Calculating loss...:   0%|          | 0/10 [00:00<?, ?it/s]Calculating loss...:  10%|█         | 1/10 [00:00<00:03,  2.91it/s]Calculating loss...:  30%|███       | 3/10 [00:00<00:00,  7.54it/s]Calculating loss...:  60%|██████    | 6/10 [00:00<00:00, 12.62it/s]Calculating loss...:  90%|█████████ | 9/10 [00:00<00:00, 16.76it/s]Calculating loss...: 100%|██████████| 10/10 [00:00<00:00, 13.36it/s]
+Iter 1: Val loss 5.642, Val took 0.752s
+Iter 50: Train loss 6.741, Learning Rate 2.000e-04, It/sec 12.343, Tokens/sec 568.030, Trained Tokens 2301, Peak mem 1.700 GB
+Calculating loss...:   0%|          | 0/10 [00:00<?, ?it/s]Calculating loss...:  30%|███       | 3/10 [00:00<00:00, 22.09it/s]Calculating loss...:  60%|██████    | 6/10 [00:00<00:00, 18.55it/s]Calculating loss...:  90%|█████████ | 9/10 [00:00<00:00, 21.76it/s]Calculating loss...: 100%|██████████| 10/10 [00:00<00:00, 21.54it/s]
+Iter 100: Val loss 7.169, Val took 0.468s
+Iter 100: Train loss 6.782, Learning Rate 2.000e-04, It/sec 12.168, Tokens/sec 655.633, Trained Tokens 4995, Peak mem 1.840 GB
+Iter 100: Saved adapter weights to runs/local-integrity-2026-05-08/H_adapters_cpt/adapters.safetensors and runs/local-integrity-2026-05-08/H_adapters_cpt/0000100_adapters.safetensors.
+Iter 150: Train loss 6.303, Learning Rate 2.000e-04, It/sec 11.867, Tokens/sec 675.696, Trained Tokens 7842, Peak mem 1.843 GB
+Calculating loss...:   0%|          | 0/10 [00:00<?, ?it/s]Calculating loss...:  30%|███       | 3/10 [00:00<00:00, 26.55it/s]Calculating loss...:  60%|██████    | 6/10 [00:00<00:00, 24.09it/s]Calculating loss...:  90%|█████████ | 9/10 [00:00<00:00, 22.95it/s]Calculating loss...: 100%|██████████| 10/10 [00:00<00:00, 23.89it/s]
+Iter 200: Val loss 5.938, Val took 0.422s
+Iter 200: Train loss 5.899, Learning Rate 2.000e-04, It/sec 10.593, Tokens/sec 703.830, Trained Tokens 11164, Peak mem 2.021 GB
+Iter 200: Saved adapter weights to runs/local-integrity-2026-05-08/H_adapters_cpt/adapters.safetensors and runs/local-integrity-2026-05-08/H_adapters_cpt/0000200_adapters.safetensors.
+Iter 250: Train loss 5.702, Learning Rate 2.000e-04, It/sec 10.420, Tokens/sec 714.800, Trained Tokens 14594, Peak mem 2.342 GB
+Calculating loss...:   0%|          | 0/10 [00:00<?, ?it/s]Calculating loss...:  30%|███       | 3/10 [00:00<00:00, 25.15it/s]Calculating loss...:  60%|██████    | 6/10 [00:00<00:00, 22.17it/s]Calculating loss...:  90%|█████████ | 9/10 [00:00<00:00, 23.29it/s]Calculating loss...: 100%|██████████| 10/10 [00:00<00:00, 19.39it/s]
+Iter 300: Val loss 5.949, Val took 0.519s
+Iter 300: Train loss 5.607, Learning Rate 2.000e-04, It/sec 10.930, Tokens/sec 660.601, Trained Tokens 17616, Peak mem 2.342 GB
+Iter 300: Saved adapter weights to runs/local-integrity-2026-05-08/H_adapters_cpt/adapters.safetensors and runs/local-integrity-2026-05-08/H_adapters_cpt/0000300_adapters.safetensors.
+Iter 350: Train loss 5.490, Learning Rate 2.000e-04, It/sec 10.955, Tokens/sec 691.916, Trained Tokens 20774, Peak mem 2.437 GB
+Calculating loss...:   0%|          | 0/10 [00:00<?, ?it/s]Calculating loss...:  30%|███       | 3/10 [00:00<00:00, 24.62it/s]Calculating loss...:  60%|██████    | 6/10 [00:00<00:00, 25.24it/s]Calculating loss...:  90%|█████████ | 9/10 [00:00<00:00, 25.62it/s]Calculating loss...: 100%|██████████| 10/10 [00:00<00:00, 25.45it/s]
+Iter 400: Val loss 5.445, Val took 0.397s
+Iter 400: Train loss 5.333, Learning Rate 2.000e-04, It/sec 11.617, Tokens/sec 670.285, Trained Tokens 23659, Peak mem 2.437 GB
+Iter 400: Saved adapter weights to runs/local-integrity-2026-05-08/H_adapters_cpt/adapters.safetensors and runs/local-integrity-2026-05-08/H_adapters_cpt/0000400_adapters.safetensors.
+Iter 450: Train loss 5.500, Learning Rate 2.000e-04, It/sec 9.701, Tokens/sec 702.165, Trained Tokens 27278, Peak mem 2.437 GB
+Calculating loss...:   0%|          | 0/10 [00:00<?, ?it/s]Calculating loss...:  30%|███       | 3/10 [00:00<00:00, 27.45it/s]Calculating loss...:  60%|██████    | 6/10 [00:00<00:00, 23.24it/s]Calculating loss...:  90%|█████████ | 9/10 [00:00<00:00, 22.09it/s]Calculating loss...: 100%|██████████| 10/10 [00:00<00:00, 19.48it/s]
+Iter 500: Val loss 5.769, Val took 0.518s
+Iter 500: Train loss 5.304, Learning Rate 2.000e-04, It/sec 10.432, Tokens/sec 646.567, Trained Tokens 30377, Peak mem 2.437 GB
+Iter 500: Saved adapter weights to runs/local-integrity-2026-05-08/H_adapters_cpt/adapters.safetensors and runs/local-integrity-2026-05-08/H_adapters_cpt/0000500_adapters.safetensors.
+Saved final weights to runs/local-integrity-2026-05-08/H_adapters_cpt/adapters.safetensors.

@@ -1,0 +1,14 @@
+=== Stage F started at Fri May  8 16:24:59 KST 2026 ===
+Loading pretrained model
+Fetching 10 files:   0%|          | 0/10 [00:00<?, ?it/s]Fetching 10 files:  10%|█         | 1/10 [00:00<00:06,  1.43it/s]Fetching 10 files:  30%|███       | 3/10 [00:00<00:01,  4.53it/s]Fetching 10 files:  30%|███       | 3/10 [00:20<00:01,  4.53it/s]Fetching 10 files:  40%|████      | 4/10 [01:15<02:35, 25.86s/it]Fetching 10 files:  50%|█████     | 5/10 [01:24<01:41, 20.34s/it]Fetching 10 files: 100%|██████████| 10/10 [01:24<00:00,  8.43s/it]
+Loading datasets
+Training
+Trainable parameters: 0.274% (11.010M/4022.468M)
+Starting training..., iters: 1000
+Calculating loss...:   0%|          | 0/20 [00:00<?, ?it/s]Calculating loss...:   5%|▌         | 1/20 [00:03<01:14,  3.94s/it]Calculating loss...:  10%|█         | 2/20 [00:04<00:39,  2.21s/it]Calculating loss...:  15%|█▌        | 3/20 [00:05<00:24,  1.42s/it]Calculating loss...:  20%|██        | 4/20 [00:05<00:15,  1.01it/s]Calculating loss...:  25%|██▌       | 5/20 [00:06<00:12,  1.23it/s]Calculating loss...:  30%|███       | 6/20 [00:06<00:10,  1.31it/s]Calculating loss...:  35%|███▌      | 7/20 [00:07<00:08,  1.49it/s]Calculating loss...:  40%|████      | 8/20 [00:07<00:07,  1.63it/s]Calculating loss...:  45%|████▌     | 9/20 [00:08<00:06,  1.74it/s]Calculating loss...:  50%|█████     | 10/20 [00:08<00:05,  1.99it/s]Calculating loss...:  55%|█████▌    | 11/20 [00:09<00:04,  1.83it/s]Calculating loss...:  60%|██████    | 12/20 [00:09<00:04,  1.84it/s]Calculating loss...:  65%|██████▌   | 13/20 [00:10<00:04,  1.72it/s]Calculating loss...:  70%|███████   | 14/20 [00:11<00:03,  1.81it/s]Calculating loss...:  75%|███████▌  | 15/20 [00:11<00:02,  1.88it/s]Calculating loss...:  80%|████████  | 16/20 [00:11<00:01,  2.10it/s]Calculating loss...:  85%|████████▌ | 17/20 [00:12<00:01,  2.09it/s]Calculating loss...:  90%|█████████ | 18/20 [00:13<00:01,  1.49it/s]Calculating loss...:  95%|█████████▌| 19/20 [00:14<00:00,  1.58it/s]Calculating loss...: 100%|██████████| 20/20 [00:14<00:00,  1.83it/s]Calculating loss...: 100%|██████████| 20/20 [00:14<00:00,  1.39it/s]
+Iter 1: Val loss 4.494, Val took 14.402s
+Iter 50: Train loss 2.891, Learning Rate 5.000e-05, It/sec 0.841, Tokens/sec 150.528, Trained Tokens 8945, Peak mem 11.299 GB
+libc++abi: terminating due to uncaught exception of type std::runtime_error: [METAL] Command buffer execution failed: Insufficient Memory (00000008:kIOGPUCommandBufferCallbackErrorOutOfMemory)
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/multiprocessing/resource_tracker.py:279: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+=== Stage F finished at Fri May  8 16:28:59 KST 2026 (elapsed 240s) ===

@@ -1,0 +1,40 @@
+[07:34:40] === Stage J: classifier v2 retrain ===
+[07:34:40] [1/5] Loading positives from cpt_corpus.v3.jsonl ...
+[07:34:40]   positives: 5000
+[07:34:40] [2/5] Loading wikipedia ko (target 1650) ...
+[07:34:49]   wikipedia: 1650
+[07:34:49] [3/5] Loading klue ynat (target 1650) ...
+[07:34:54]   ynat: 0
+[07:34:54] [4a/5] Loading klue nli premises (target 850) ...
+[07:34:56]   nli: 850
+[07:34:56] [4b/5] Synthesizing polite-forum 존댓말 from sft_pairs.v3.jsonl (target 850) ...
+[07:34:56]   polite: 685
+[07:34:59]   total negatives: 5000 (mix: wiki=1650 ynat=0 nli=850 polite=685)
+[07:34:59] [5/5] Training klue/roberta-base ...
+[07:35:04]   splits: train=8000 val=1000 test=1000
+[07:35:07]   loading tokenizer + model (klue/roberta-base)
+Loading weights:   0%|          | 0/197 [00:00<?, ?it/s]Loading weights: 100%|██████████| 197/197 [00:00<00:00, 2478.61it/s]
+[transformers] [1mRobertaForSequenceClassification LOAD REPORT[0m from: klue/roberta-base
+Key                        | Status     | 
+---------------------------+------------+-
+lm_head.layer_norm.weight  | UNEXPECTED | 
+lm_head.dense.weight       | UNEXPECTED | 
+lm_head.dense.bias         | UNEXPECTED | 
+lm_head.bias               | UNEXPECTED | 
+lm_head.layer_norm.bias    | UNEXPECTED | 
+classifier.out_proj.weight | MISSING    | 
+classifier.out_proj.bias   | MISSING    | 
+classifier.dense.bias      | MISSING    | 
+classifier.dense.weight    | MISSING    | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+- MISSING:	those params were newly initialized because missing from the checkpoint. Consider training on your downstream task.
+/Users/unoa/dalbitalba-train-data/runs/local-integrity-2026-05-08/J_train_classifier_v2.py:251: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /Users/runner/work/pytorch/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:837.)
+  ep_loss += float(out.loss)
+[07:49:50]     ep1 batch50/500 loss=0.2318
+[07:52:51]     ep1 batch100/500 loss=0.1614
+[07:56:45]     ep1 batch150/500 loss=0.1289
+[08:00:10]     ep1 batch200/500 loss=0.1059
+[08:03:40]     ep1 batch250/500 loss=0.1030

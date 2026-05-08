@@ -1,0 +1,53 @@
+{
+  "stage": "M",
+  "purpose": "Quantify R3 fix delta vs pre-R3 banker's-rounding bug",
+  "M1_blocked_locally": true,
+  "M1_blocker": "M.1 (rebuild SFT data with vs without R3 env vars + dedup toggle) is blocked locally: round2_build_tc_sft.py requires cpt_context_stream.jsonl and source_db_cache/ which are not present in this clone. The R3 manifest-hash check in chain_train_round2.sh already enforces rebuild on env-var change in the production pipeline; local repro deferred to RunPod where these inputs live.",
+  "M2_per_corpus": [
+    {
+      "name": "sft_pairs.v3.jsonl",
+      "rows_in": 44716,
+      "loss_weight_distribution": {
+        "1.0": 40063,
+        "1.5": 4653
+      },
+      "pre_r3_expanded": 49369,
+      "pre_r3_multiplier": 1.1041,
+      "post_r3_expanded_mean": 47035.5,
+      "post_r3_expanded_std": 29.45,
+      "post_r3_multiplier": 1.0519,
+      "theoretical_E_expanded": 47042.5,
+      "delta_post_minus_pre": -2333.5,
+      "delta_pct": -4.73,
+      "verdict_pre_r3_collapse": "Pre-R3 banker's rounding produces SAME multiplicity for lw=1.5 (-> 2) and lw=2.0 (-> 2). Pre-R3 expanded 44716->49369 (multiplier 1.104). Post-R3 expanded 44716->47036 (multiplier 1.052). Net effect of R3 fix: -2333 rows (-4.73%)."
+    },
+    {
+      "name": "sft_thread_conditioned.jsonl",
+      "rows_in": 10245,
+      "loss_weight_distribution": {
+        "1.0": 9183,
+        "1.5": 1062
+      },
+      "pre_r3_expanded": 11307,
+      "pre_r3_multiplier": 1.1037,
+      "post_r3_expanded_mean": 10777.0,
+      "post_r3_expanded_std": 18.61,
+      "post_r3_multiplier": 1.0519,
+      "theoretical_E_expanded": 10776.0,
+      "delta_post_minus_pre": -530.0,
+      "delta_pct": -4.69,
+      "verdict_pre_r3_collapse": "Pre-R3 banker's rounding produces SAME multiplicity for lw=1.5 (-> 2) and lw=2.0 (-> 2). Pre-R3 expanded 10245->11307 (multiplier 1.104). Post-R3 expanded 10245->10777 (multiplier 1.052). Net effect of R3 fix: -530 rows (-4.69%)."
+    }
+  ],
+  "M2_synthetic_bug_demo": {
+    "synthetic_50pct_lw1.5_50pct_lw2.0": {
+      "n_input": 1000,
+      "pre_r3_expanded": 2000,
+      "pre_r3_multiplier": 2.0,
+      "post_r3_expanded_mean": 1750.8,
+      "post_r3_multiplier": 1.7508,
+      "theoretical_E": 1750.0,
+      "key_finding": "Pre-R3 collapses both lw=1.5 and lw=2.0 to multiplicity=2 — the SFT_LOSS_WEIGHT_ARGOT escalation from 1.5 to 2.0 had ZERO effect under banker's rounding. Post-R3 correctly shows 1.75x vs 2.00x expansion."
+    }
+  }
+}

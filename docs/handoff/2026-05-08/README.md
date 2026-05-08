@@ -101,6 +101,28 @@ de91b24 feat(train): unify train_sft.py
 | `set -euo pipefail` | enabled (line 17) |
 | ORPO fatal guards | 2 sites |
 
+## Phase 5.7 — 종합 로컬 정합성 검증 (8 stages F-M)
+
+전체 리포트: [`local-integrity/FINAL_INTEGRITY_REPORT.md`](local-integrity/FINAL_INTEGRITY_REPORT.md)
+
+| Stage | 결과 | 핵심 수치 |
+|---|---|---|
+| **F** MLX SFT Qwen3-4B 1000 iter | ✅ COMPLETE | val 2.81→2.46, peak 9.3GB, 1041s |
+| **G** ORPO pairs build+validate | 🟡 PARTIAL | 5/100 chosen이 val_set leak (build script 버그) |
+| **H** MLX CPT smoke 500 iter | ✅ PASS_W_NOTES | 초기 1.53 nat 스파이크 — production warmup으로 mitigated |
+| **I** Full-corpus token-fire (4 corpora) | ✅ **95% PASS** | 0 force-include dead, 109,028 rows 검사 |
+| **J** PR #6 style classifier v2 retrain | ❌ INCOMPLETE | ep1 batch 200/500 → 다음 RunPod 사이클 |
+| **K** End-to-end glue test | ✅ **10/10 PASS** | manifest hash 4 permutation 정확 |
+| **L** Persona matrix 5×3 generation | 🟡 PATH_VERIFIED | 0.6B+200iter로는 persona 조건화 불가 — production에서 측정 |
+| **M** R3 fix delta 정량화 | ✅ COMPLETE | **합성 50:50 lw=1.5/2.0: pre 2.000x → post 1.751x (정확히 differentiable)** |
+
+### 핵심 정합성 검증 결과
+
+- **token-fire 95%** (val-only 88.6% 보다 향상, 실 production schema 기준)
+- **R3 fix 진짜 작동** — banker's rounding 버그 해결 정량 입증
+- **전체 chain script** AST + manifest hash + recipe export 모두 정상
+- **남은 5%**: 8B QLoRA fit + CUDA bnb numerical (RunPod 자체가 검증)
+
 ## RunPod 본 학습 진행 가능 여부 — **YES (with caveats)**
 
 학습 품질에 직접 영향을 주던 4건이 R3 라운드에서 발견되어 **모두 fix되었습니다**:

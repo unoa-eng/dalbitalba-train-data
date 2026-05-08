@@ -1,0 +1,27 @@
+[INFO] 11 special + 229 domain = 240 total added tokens
+[INFO] 29 force-include core, 15 force-include slang_jamo
+[cpt_corpus.v3.jsonl] processed 5000 rows (0.2s)
+[cpt_corpus.v3.jsonl] processed 10000 rows (0.3s)
+[cpt_corpus.v3.jsonl] processed 15000 rows (0.6s)
+[cpt_corpus.v3.jsonl] processed 20000 rows (0.8s)
+[cpt_corpus.v3.jsonl] processed 25000 rows (1.0s)
+[cpt_corpus.v3.jsonl] processed 30000 rows (1.2s)
+[cpt_corpus.v3.jsonl] processed 35000 rows (1.3s)
+[cpt_corpus.v3.jsonl] processed 40000 rows (1.5s)
+[cpt_corpus.v3.jsonl] DONE rows=41576 unique-fired=228/240 total_fires=85651
+[sft_pairs.v3.jsonl] processed 5000 rows (0.6s)
+[sft_pairs.v3.jsonl] processed 10000 rows (1.3s)
+[sft_pairs.v3.jsonl] processed 15000 rows (1.9s)
+[sft_pairs.v3.jsonl] processed 20000 rows (2.6s)
+[sft_pairs.v3.jsonl] processed 25000 rows (3.0s)
+[sft_pairs.v3.jsonl] processed 30000 rows (3.5s)
+[sft_pairs.v3.jsonl] processed 35000 rows (3.9s)
+[sft_pairs.v3.jsonl] processed 40000 rows (4.5s)
+[sft_pairs.v3.jsonl] DONE rows=44716 unique-fired=228/240 total_fires=247637
+[sft_thread_conditioned.jsonl] processed 5000 rows (0.8s)
+[sft_thread_conditioned.jsonl] processed 10000 rows (1.6s)
+[sft_thread_conditioned.jsonl] DONE rows=10245 unique-fired=226/240 total_fires=61019
+[val_set.v3.jsonl] DONE rows=2491 unique-fired=205/240 total_fires=14467
+[DONE] wrote /Users/unoa/dalbitalba-train-data/runs/local-integrity-2026-05-08/I_token_fire_full.json
+  fire_rate=0.95 fired=228/240
+  dead_force_core=0 dead_force_slang=0

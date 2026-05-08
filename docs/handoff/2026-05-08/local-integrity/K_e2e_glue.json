@@ -1,0 +1,105 @@
+{
+  "stage": "K",
+  "summary": "10/10 steps OK",
+  "all_pass": true,
+  "steps": [
+    {
+      "step": "1. sft_data_present_schema_check",
+      "ok": true,
+      "evidence": {
+        "path": "/Users/unoa/dalbitalba-train-data/sft_pairs.v3.jsonl",
+        "keys": [
+          "post_title",
+          "post_body_excerpt",
+          "parent_comment",
+          "target_comment",
+          "thread_key",
+          "depth",
+          "task_type",
+          "length_bucket",
+          "source_id",
+          "loss_weight"
+        ]
+      }
+    },
+    {
+      "step": "2. orpo_build_cli_help",
+      "ok": true,
+      "evidence": {
+        "head": "usage: round2_build_orpo_pairs.py [-h] [--runs-glob RUNS_GLOB]\n                                  [--val-set VAL_SET] [--samples SAMPLES]\n                                  [--cpt-corpus CPT_CORPUS] --o"
+      }
+    },
+    {
+      "step": "3. orpo_pairs_schema_check",
+      "ok": true,
+      "evidence": {
+        "keys": [
+          "prompt",
+          "chosen",
+          "rejected",
+          "kind",
+          "source_run_chosen",
+          "source_run_rejected",
+          "reason"
+        ]
+      }
+    },
+    {
+      "step": "4. phase6_generate_imports_cleanly",
+      "ok": true,
+      "evidence": {
+        "rc": 1,
+        "stderr_head": "Traceback (most recent call last):\n  File \"/Users/unoa/dalbitalba-train-data/scripts/phase6_generate.py\", line 209, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/Users/"
+      }
+    },
+    {
+      "step": "5. phase6_eval_v2_cli_help",
+      "ok": true,
+      "evidence": {
+        "head": "usage: phase6_eval_v2.py [-h] --ai AI --raw RAW [--secondary-ai SECONDARY_AI]\n                         [--persona-list PERSONA_LIST] [--out OUT]\n                         [--skip-mauve]\n\noptions:\n  -h,"
+      }
+    },
+    {
+      "step": "6. train_sft_ast_parse",
+      "ok": true,
+      "evidence": {
+        "path": "/Users/unoa/dalbitalba-train-data/train_sft.py",
+        "chars": 24619
+      }
+    },
+    {
+      "step": "7. train_cpt_ast_parse",
+      "ok": true,
+      "evidence": {
+        "path": "/Users/unoa/dalbitalba-train-data/train_cpt.py",
+        "chars": 13596
+      }
+    },
+    {
+      "step": "8. train_orpo_ast_parse",
+      "ok": true,
+      "evidence": {
+        "path": "/Users/unoa/dalbitalba-train-data/train_orpo.py",
+        "chars": 4185
+      }
+    },
+    {
+      "step": "9. manifest_hash_propagation",
+      "ok": true,
+      "evidence": {
+        "default": "weight=1.5_thresh=2_terms=default_dedup=1",
+        "weight_changed": "weight=2.0_thresh=2_terms=default_dedup=1",
+        "dedup_changed": "weight=1.5_thresh=2_terms=default_dedup=0",
+        "both_changed": "weight=2.0_thresh=2_terms=default_dedup=0"
+      }
+    },
+    {
+      "step": "10. chain_train_round2_present",
+      "ok": true,
+      "evidence": {
+        "path": "/Users/unoa/dalbitalba-train-data/chain_train_round2.sh",
+        "lines": 910
+      }
+    }
+  ]
+}

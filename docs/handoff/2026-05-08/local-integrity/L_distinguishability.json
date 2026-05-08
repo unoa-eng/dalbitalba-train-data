@@ -1,0 +1,107 @@
+{
+  "stage": "L",
+  "purpose": "Persona generation distinguishability — char-3gram cosine + char-set Jaccard between persona pairs",
+  "n_personas": 5,
+  "personas": [
+    "강남3년차",
+    "초보22",
+    "텐카언니",
+    "쩜오씁쓸",
+    "보도왕초"
+  ],
+  "n_generations_per_persona": {
+    "강남3년차": 3,
+    "초보22": 3,
+    "텐카언니": 3,
+    "쩜오씁쓸": 3,
+    "보도왕초": 3
+  },
+  "n_pair_comparisons": 10,
+  "pairwise": [
+    {
+      "a": "강남3년차",
+      "b": "초보22",
+      "char3_cosine_overlap": 0.6935,
+      "char_set_jaccard": 0.1321,
+      "len_a": 170,
+      "len_b": 171
+    },
+    {
+      "a": "강남3년차",
+      "b": "텐카언니",
+      "char3_cosine_overlap": 0.0,
+      "char_set_jaccard": 0.0984,
+      "len_a": 170,
+      "len_b": 103
+    },
+    {
+      "a": "강남3년차",
+      "b": "쩜오씁쓸",
+      "char3_cosine_overlap": 0.6999,
+      "char_set_jaccard": 0.3077,
+      "len_a": 170,
+      "len_b": 96
+    },
+    {
+      "a": "강남3년차",
+      "b": "보도왕초",
+      "char3_cosine_overlap": 0.0,
+      "char_set_jaccard": 0.3333,
+      "len_a": 170,
+      "len_b": 18
+    },
+    {
+      "a": "초보22",
+      "b": "텐카언니",
+      "char3_cosine_overlap": 0.0,
+      "char_set_jaccard": 0.1882,
+      "len_a": 171,
+      "len_b": 103
+    },
+    {
+      "a": "초보22",
+      "b": "쩜오씁쓸",
+      "char3_cosine_overlap": 0.9856,
+      "char_set_jaccard": 0.1148,
+      "len_a": 171,
+      "len_b": 96
+    },
+    {
+      "a": "초보22",
+      "b": "보도왕초",
+      "char3_cosine_overlap": 0.0,
+      "char_set_jaccard": 0.069,
+      "len_a": 171,
+      "len_b": 18
+    },
+    {
+      "a": "텐카언니",
+      "b": "쩜오씁쓸",
+      "char3_cosine_overlap": 0.0,
+      "char_set_jaccard": 0.1194,
+      "len_a": 103,
+      "len_b": 96
+    },
+    {
+      "a": "텐카언니",
+      "b": "보도왕초",
+      "char3_cosine_overlap": 0.0,
+      "char_set_jaccard": 0.0455,
+      "len_a": 103,
+      "len_b": 18
+    },
+    {
+      "a": "쩜오씁쓸",
+      "b": "보도왕초",
+      "char3_cosine_overlap": 0.0,
+      "char_set_jaccard": 0.1613,
+      "len_a": 96,
+      "len_b": 18
+    }
+  ],
+  "mean_char3_cosine_overlap": 0.2379,
+  "mean_char_set_jaccard": 0.157,
+  "verdict": "DISTINCT",
+  "interpretation": "Lower overlap = more distinct persona generation. Cosine >0.7 suggests persona conditioning failed (collapsed onto a generic style). 0.4-0.7 = partial differentiation. <0.4 = clear stylistic separation.",
+  "caveat": "0.6B + 500-iter smoke adapter is a low-capacity persona vector; this is not a full persona-30 evaluation. Production persona evaluation runs on RunPod 8B with full Phase-3 SFT + ORPO."
+}
