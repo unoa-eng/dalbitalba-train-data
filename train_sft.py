@@ -87,6 +87,12 @@ LOG_FILE = os.environ.get("SFT_LOG_FILE", "/workspace/train_sft.log")
 HUB_MODEL_ID = os.environ.get("SFT_HUB_MODEL_ID", "").strip() or None
 
 SEED = int(os.environ.get("TRAIN_SEED", "42"))
+# R3 BLOCKER fix: dedicated seeded RNG for fractional oversampling top-up.
+# Previously `multiplicity = max(1, int(round(lw)))` used banker's rounding,
+# making 1.5->2 and 2.0->2 indistinguishable (R7 mutator escalations inert).
+# We now use deterministic floor + stochastic fractional top-up so
+# E[multiplicity(w)] = w for any float w >= 1.0.
+_OVERSAMPLE_RNG = random.Random(int(os.environ.get("SFT_OVERSAMPLE_SEED", "13")))
 MAX_SEQ_LEN = int(os.environ.get("SFT_MAX_SEQ_LEN", "1024"))
 BATCH_SIZE = int(os.environ.get("SFT_BATCH_SIZE", "1"))
 GRAD_ACCUM = int(os.environ.get("SFT_GRAD_ACCUM", "16"))
@@ -343,16 +349,33 @@ def build_mixed_dataset(tokenizer) -> tuple[Dataset, Dataset | None]:
     rng.shuffle(pair_rows)
     pair_rows = pair_rows[:pairs_take]
 
-    # R2 follow-up #2: numeric loss_weight oversampling. Previously a single
-    # extra copy was added regardless of weight magnitude (1.5 == 2.0
-    # operationally), making round2_mutator.py escalations inert. Now each
-    # row is replicated `multiplicity = max(1, round(loss_weight))` times so
-    # 1.0->1, 1.5->2, 2.0->2, 2.5->3, etc. Deterministic and weight-monotonic.
+    # R3 BLOCKER fix: numeric loss_weight oversampling with fractional
+    # multiplicity. Previously `multiplicity = max(1, int(round(lw)))` used
+    # Python's banker's rounding so 1.5->2 AND 2.0->2 (identical!), making
+    # round2_mutator.py SFT_LOSS_WEIGHT_* escalations inert. Now we use
+    # deterministic-floor + stochastic fractional top-up:
+    #   floor = max(1, math.floor(lw))
+    #   frac  = lw - math.floor(lw)
+    #   multiplicity = floor + (1 if rng.random() < frac else 0)
+    # so E[multiplicity(1.0)]=1, E[multiplicity(1.5)]=1.5, E[multiplicity(2.0)]=2.
+    # Uses a dedicated seeded RNG (_OVERSAMPLE_RNG) so reproducible.
     _orig_pair_count = len(pair_rows)
     _expanded: list[dict] = []
     for row in pair_rows:
-        lw = float(row.get("loss_weight", 1.0) or 1.0)
-        multiplicity = max(1, int(round(lw)))
+        # Defensive parsing (R3): handle None / NaN / inf / non-numeric / OOR
+        _raw_lw = row.get("loss_weight", 1.0)
+        try:
+            _lw = float(_raw_lw if _raw_lw is not None else 1.0)
+            if math.isnan(_lw) or math.isinf(_lw):
+                _lw = 1.0
+            # Clamp to a sane range to prevent runaway oversampling from
+            # corrupted upstream weights.
+            _lw = max(1.0, min(_lw, 10.0))
+        except (TypeError, ValueError):
+            _lw = 1.0
+        _floor = max(1, int(math.floor(_lw)))
+        _frac = _lw - math.floor(_lw)
+        multiplicity = _floor + (1 if _OVERSAMPLE_RNG.random() < _frac else 0)
         if multiplicity == 1:
             _expanded.append(row)
         else:
@@ -362,7 +385,8 @@ def build_mixed_dataset(tokenizer) -> tuple[Dataset, Dataset | None]:
         logger.info(
             f"loss_weight oversampling: {_orig_pair_count:,} -> "
             f"{len(_expanded):,} supervised rows "
-            f"(+{len(_expanded) - _orig_pair_count:,}; multiplicity = round(weight))"
+            f"(+{len(_expanded) - _orig_pair_count:,}; "
+            f"multiplicity = floor(w) + Bernoulli(w-floor(w)))"
         )
     pair_rows = _expanded
 
