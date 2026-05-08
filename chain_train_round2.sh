@@ -331,9 +331,17 @@ source_round2_recipe() {
         log "[FATAL] recipes/round2-cycle1.env not found; copy from repo or set ROUND2_RECIPE"
         return 2
     fi
+    # R3 BLOCKER fix: recipe vars (SFT_LOSS_WEIGHT_*, BASE_MODEL, ORPO_*,
+    # CPT_*, etc.) must reach Python subprocess builders such as
+    # scripts/round2_build_tc_sft.py. Plain `source` only sets shell vars,
+    # not env vars, so subprocesses spawned by this script wouldn't see
+    # them. `set -a` toggles auto-export so every assignment in the recipe
+    # becomes an exported env var; `set +a` restores normal behaviour.
     # shellcheck disable=SC1090
+    set -a
     source "${recipe}"
-    log "[recipe] ${recipe}"
+    set +a
+    log "[recipe] ${recipe} (auto-exported via set -a)"
 }
 
 system_snapshot() {
