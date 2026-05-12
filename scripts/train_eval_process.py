@@ -54,6 +54,7 @@ ACTIVE_EVAL_SOURCE = (
     else REPO_ROOT / "val_set.v2.jsonl"
 )
 ACTIVE_PERSONA_LIST = REPO_ROOT / "runs" / "round2-obsidian-synthesis" / "persona-30-extracted.json"
+LOCAL_PYTHONWARNINGS = "ignore:urllib3 v2 only supports OpenSSL 1.1.1+"
 LAUNCH_CRITICAL_PREFIXES = (
     ".github/workflows/",
     "recipes/",
@@ -95,10 +96,17 @@ def run(
     log_dir: Path | None = None,
     label: str | None = None,
 ) -> dict[str, Any]:
+    merged_env = {**os.environ, **(env or {})}
+    existing_warnings = merged_env.get("PYTHONWARNINGS", "").strip()
+    merged_env["PYTHONWARNINGS"] = (
+        f"{LOCAL_PYTHONWARNINGS},{existing_warnings}"
+        if existing_warnings
+        else LOCAL_PYTHONWARNINGS
+    )
     proc = subprocess.run(
         cmd,
         cwd=REPO_ROOT,
-        env={**os.environ, **(env or {})},
+        env=merged_env,
         text=True,
         capture_output=True,
     )
