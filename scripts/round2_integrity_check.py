@@ -60,7 +60,24 @@ def check_tc_sft(failures: list[str]) -> None:
 
 
 def check_orpo_leak(failures: list[str]) -> None:
-    val = {str(row.get("text") or "").strip() for row in load_jsonl(ROOT / "val_set.v2.jsonl")}
+    # C5-1: audit v3 primary, fall back to v2 with warning; also include eval holdout.
+    v3_path = ROOT / "val_set.v3.jsonl"
+    v2_path = ROOT / "val_set.v2.jsonl"
+    eval_path = ROOT / "sft_thread_conditioned.eval.jsonl"
+    if v3_path.exists():
+        val_source = v3_path
+    elif v2_path.exists():
+        print(f"[WARN] val_set.v3.jsonl not found; falling back to val_set.v2.jsonl for ORPO leak audit")
+        val_source = v2_path
+    else:
+        fail("ORPO leak audit: neither val_set.v3.jsonl nor val_set.v2.jsonl found", failures)
+        return
+    val = {str(row.get("text") or "").strip() for row in load_jsonl(val_source)}
+    if eval_path.exists():
+        val |= {str(row.get("output") or "").strip() for row in load_jsonl(eval_path)}
+        val |= {str(row.get("text") or "").strip() for row in load_jsonl(eval_path)}
+    else:
+        print("[WARN] sft_thread_conditioned.eval.jsonl not found; skipping eval holdout ORPO leak check")
     rows = load_jsonl(ROOT / "orpo_pairs.jsonl")
     exact_hits = [
         i for i, row in enumerate(rows, start=1)

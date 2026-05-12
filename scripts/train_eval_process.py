@@ -308,6 +308,8 @@ def main() -> int:
         help="RunPod recipe/verifier profile to validate",
     )
     args = parser.parse_args()
+    # C5-3: propagate --profile so child scripts that read BUDGET_PROFILE pick it up.
+    os.environ["BUDGET_PROFILE"] = args.profile
 
     run_dir = STATE_DIR / utc_stamp()
     run_dir.mkdir(parents=True, exist_ok=True)

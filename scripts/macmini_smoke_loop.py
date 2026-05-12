@@ -154,6 +154,8 @@ def main() -> int:
         help="profile to verify; paper8b is the full no-feature-loss paid path",
     )
     args = parser.parse_args()
+    # C5-3: propagate --profile so child scripts that read BUDGET_PROFILE pick it up.
+    os.environ["BUDGET_PROFILE"] = args.profile
 
     run_dir = RUNS_DIR / f"macmini-smoke-{utc_stamp()}"
     run_dir.mkdir(parents=True, exist_ok=True)

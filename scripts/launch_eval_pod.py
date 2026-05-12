@@ -283,6 +283,7 @@ def main() -> None:
     openai_api_key = os.environ.get("OPENAI_API_KEY", "").strip()
     ntfy_topic = os.environ.get("NTFY_TOPIC", "").strip()
     base_model = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base").strip()
+    base_model_revision = os.environ.get("BASE_MODEL_REVISION", "").strip()
 
     # SECURITY: never embed the PAT in dockerStartCmd — RunPod persists the
     # pod spec including this field. Use env.GITHUB_TOKEN via shell expansion
@@ -306,6 +307,8 @@ def main() -> None:
         "RUNPOD_API_KEY": api_key,
         "BASE_MODEL": base_model,
         "HF_HUB_ENABLE_HF_TRANSFER": "1",
+        # BASE_MODEL_REVISION forwarded for reproducible eval pod checkouts.
+        **({"BASE_MODEL_REVISION": base_model_revision} if base_model_revision else {}),
         "RUNPOD_POD_ID": "__SELF__",
     }
     if anthropic_api_key:
@@ -333,6 +336,7 @@ def main() -> None:
         "EVAL_MAX_ROWS",
         "WANDB_API_KEY",
         "WANDB_PROJECT",
+        "BASE_MODEL_REVISION",
     ):
         value = os.environ.get(optional_key, "").strip()
         if value:
