@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Smoke -> budget30 promotion gate.
+Smoke -> paid-profile promotion gate.
 
 Reads the latest train pointer written by the active chain, verifies the
 required HF artifacts exist, and prints PROMOTE or HOLD with reasons.
@@ -368,7 +368,7 @@ def main() -> int:
                 print(f"  - {r}")
         print()
         if promote:
-            print("VERDICT: PROMOTE — safe to launch the next stage (budget30 or eval).")
+            print("VERDICT: PROMOTE — safe to launch the next paid stage (paper8b or eval).")
         else:
             print("VERDICT: HOLD — do not launch the next paid stage.")
             print("Resolve every FAIL line above. Re-run this script after fixing.")

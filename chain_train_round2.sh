@@ -286,11 +286,13 @@ graceful_abort() {
     exit 130
 }
 
-trap 'graceful_abort TERM' TERM
-trap 'graceful_abort INT' INT
-trap 'graceful_abort HUP' HUP
-trap 'graceful_abort QUIT' QUIT
-trap on_exit EXIT
+install_traps() {
+    trap 'graceful_abort TERM' TERM
+    trap 'graceful_abort INT' INT
+    trap 'graceful_abort HUP' HUP
+    trap 'graceful_abort QUIT' QUIT
+    trap on_exit EXIT
+}
 
 resolve_existing_path() {
     local raw="$1"
@@ -316,7 +318,16 @@ resolve_existing_path() {
     printf '%s' "${raw}"
 }
 
+source_env_file() {
+    local env_file="$1"
+    # shellcheck disable=SC1090
+    set -a
+    source "${env_file}"
+    set +a
+}
+
 source_round2_recipe() {
+    local launch_profile="${BUDGET_PROFILE:-}"
     local recipe="${ROUND2_RECIPE:-}"
     if [ -z "${recipe}" ]; then
         if [ -f "${RECIPES_DIR}/round2-cycle1.env" ]; then
@@ -337,11 +348,36 @@ source_round2_recipe() {
     # not env vars, so subprocesses spawned by this script wouldn't see
     # them. `set -a` toggles auto-export so every assignment in the recipe
     # becomes an exported env var; `set +a` restores normal behaviour.
-    # shellcheck disable=SC1090
-    set -a
-    source "${recipe}"
-    set +a
+    source_env_file "${recipe}"
     log "[recipe] ${recipe} (auto-exported via set -a)"
+
+    # RunPod launch profiles (smoke/budget30) are partial overlays. The base
+    # round2 recipe is still sourced first for required defaults, then the
+    # launch-requested profile is re-applied so paid-run controls such as
+    # SKIP_SFT, CPT limits, timeouts, and CPT_PHASE_* data choices cannot be
+    # silently overwritten by round2-cycle1.env inside the container.
+    if [ -n "${launch_profile}" ] && [ "${launch_profile}" != "paper8b" ]; then
+        local profile_recipe=""
+        local candidate
+        for candidate in \
+            "${RECIPES_DIR}/${launch_profile}.env" \
+            "${REPO_CLONE_DIR}/recipes/${launch_profile}.env" \
+            "recipes/${launch_profile}.env"; do
+            if [ -f "${candidate}" ]; then
+                profile_recipe="${candidate}"
+                break
+            fi
+        done
+        if [ -z "${profile_recipe}" ]; then
+            log "[FATAL] BUDGET_PROFILE=${launch_profile} but ${launch_profile}.env not found"
+            return 2
+        fi
+        if [ "${profile_recipe}" != "${recipe}" ]; then
+            source_env_file "${profile_recipe}"
+            log "[recipe-profile] ${profile_recipe} (launch overlay re-applied)"
+        fi
+    fi
+    log "[recipe-effective] budget=${BUDGET_PROFILE:-unset} cpt_phase1=${CPT_PHASE_1_DATA:-unset} cpt_phase2=${CPT_PHASE_2_DATA:-unset} skip_sft=${SKIP_SFT:-0} sft_epochs=${SFT_NUM_EPOCHS:-unset}"
 }
 
 system_snapshot() {
@@ -760,21 +796,33 @@ phase5_eval_gate() {
     local ai="${OUT_DIR}/phase5-ai-generated.jsonl"
     local eval_base="${SFT_BASE_MODEL:-${BASE_MODEL}}"
     local eval_adapter="${OUT_DIR}/round2-phase3-sft-lora"
+    local eval_cpt_merged=""
     local persona_list
     persona_list="$(resolve_existing_path "${EVAL_PERSONA_LIST:-runs/round2-obsidian-synthesis/persona-30-extracted.json}")"
     if [ -d "${OUT_DIR}/round2-phase4-orpo" ] && [ -d "${OUT_DIR}/round2-phase3-sft-merged-fp16" ]; then
         eval_base="${OUT_DIR}/round2-phase3-sft-merged-fp16"
         eval_adapter="${OUT_DIR}/round2-phase4-orpo"
     fi
+    if [ "${SKIP_SFT:-0}" = "1" ] || [ "${SFT_NUM_EPOCHS:-2}" = "0" ]; then
+        eval_cpt_merged="${OUT_DIR}/round2-phase2-cpt-merged-fp16"
+        eval_base="${BASE_MODEL}"
+        eval_adapter=""
+        if [ ! -d "${eval_cpt_merged}" ]; then
+            log "[FATAL] SKIP_SFT=1 but CPT merged model missing: ${eval_cpt_merged}"
+            return 2
+        fi
+        log "[eval] CPT-only profile detected; using CPT_MERGED_PATH=${eval_cpt_merged}"
+    fi
     if [ ! -f "${ai}" ]; then
-        if [ ! -d "${eval_adapter}" ]; then
+        if [ -n "${eval_adapter}" ] && [ ! -d "${eval_adapter}" ]; then
             log "[FATAL] no eval adapter found: ${eval_adapter}"
             return 2
         fi
-        log "[eval] generating samples base=${eval_base} adapter=${eval_adapter}"
+        log "[eval] generating samples base=${eval_base} adapter=${eval_adapter:-none} cpt_merged=${eval_cpt_merged:-none}"
         run_timeout "${EVAL_TIMEOUT_HOURS:-12}" env \
             BASE_MODEL="${eval_base}" \
             SFT_ADAPTER_REPO="${eval_adapter}" \
+            CPT_MERGED_PATH="${eval_cpt_merged}" \
             EVAL_INPUT_JSONL="${DATA_DIR}/${EVAL_INPUT_DATA:-val_set.v2.jsonl}" \
             EVAL_MAX_ROWS="${EVAL_MAX_ROWS:-500}" \
             MAX_NEW_TOKENS="${GENERATION_MAX_NEW_TOKENS:-400}" \
@@ -907,14 +955,18 @@ run_main() {
     # SFT failure (previously relied on `|| fail_with_logs` short-circuit which
     # is functionally equivalent but less explicit). fail_with_logs calls
     # notify() → ntfy alert + persist_run_artifacts → stop_pod.
-    if phase3_sft_threaded; then
-        :
+    if [ "${SKIP_SFT:-0}" = "1" ] || [ "${SFT_NUM_EPOCHS:-2}" = "0" ]; then
+        log "[INFO] SKIP_SFT=${SKIP_SFT:-0} SFT_NUM_EPOCHS=${SFT_NUM_EPOCHS:-unset}; Phase 3/3.5 SFT skipped"
     else
-        local phase3_rc=$?
-        log "[FATAL] phase 3 SFT failed rc=${phase3_rc}"
-        fail_with_logs "phase3_failed" "${PHASE3_LOG}" "${phase3_rc:-2}"
+        if phase3_sft_threaded; then
+            :
+        else
+            local phase3_rc=$?
+            log "[FATAL] phase 3 SFT failed rc=${phase3_rc}"
+            fail_with_logs "phase3_failed" "${PHASE3_LOG}" "${phase3_rc:-2}"
+        fi
+        phase3_5_merge_sft || log "[WARN] phase 3.5 merge non-fatal failure"
     fi
-    phase3_5_merge_sft || log "[WARN] phase 3.5 merge non-fatal failure"
     if phase4_orpo; then
         :
     else
@@ -948,4 +1000,7 @@ run_main() {
     log "chain_train_round2 cycle-1 END status=${final_status}"
 }
 
-run_main
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    install_traps
+    run_main
+fi

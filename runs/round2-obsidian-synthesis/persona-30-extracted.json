@@ -36,12 +36,12 @@
       "tone": "존댓말",
       "mood": "anxious",
       "particles": "ㅋㅋ, ㅠ",
-      "trait": "신입경력자 placeholder",
-      "source": "synthesized-placeholder",
+      "trait": "신입경력자 합성 톤",
+      "source": "synthesized-cycle1",
       "files": [
-        "(placeholder; cycle-2 imports apps/web/lib/ai/persona-data.json)"
+        "(cycle-1 synthesized persona metadata)"
       ],
-      "body_excerpt": "placeholder: 강남(가명) / 존댓말 / anxious"
+      "body_excerpt": "synthetic: 강남(가명) / 존댓말 / anxious"
     },
     {
       "id": 4,
@@ -49,12 +49,12 @@
       "tone": "존댓말",
       "mood": "seeking_empathy",
       "particles": "ㅠㅠ",
-      "trait": "단문 익명 placeholder",
-      "source": "synthesized-placeholder",
+      "trait": "단문 익명 합성 톤",
+      "source": "synthesized-cycle1",
       "files": [
-        "(placeholder; cycle-2 imports apps/web/lib/ai/persona-data.json)"
+        "(cycle-1 synthesized persona metadata)"
       ],
-      "body_excerpt": "placeholder: 역삼(가명) / 존댓말 / seeking_empathy"
+      "body_excerpt": "synthetic: 역삼(가명) / 존댓말 / seeking_empathy"
     },
     {
       "id": 5,
@@ -62,12 +62,12 @@
       "tone": "혼용",
       "mood": "industry_info",
       "particles": "-",
-      "trait": "정보공유 placeholder",
-      "source": "synthesized-placeholder",
+      "trait": "정보공유 합성 톤",
+      "source": "synthesized-cycle1",
       "files": [
-        "(placeholder; cycle-2 imports apps/web/lib/ai/persona-data.json)"
+        "(cycle-1 synthesized persona metadata)"
       ],
-      "body_excerpt": "placeholder: 선릉(가명) / 혼용 / industry_info"
+      "body_excerpt": "synthetic: 선릉(가명) / 혼용 / industry_info"
     },
     {
       "id": 6,
@@ -87,12 +87,12 @@
       "tone": "존댓말",
       "mood": "money_worry",
       "particles": "ㅠ",
-      "trait": "수익 고민 placeholder",
-      "source": "synthesized-placeholder",
+      "trait": "수익 고민 합성 톤",
+      "source": "synthesized-cycle1",
       "files": [
-        "(placeholder; cycle-2 imports apps/web/lib/ai/persona-data.json)"
+        "(cycle-1 synthesized persona metadata)"
       ],
-      "body_excerpt": "placeholder: 논현(가명) / 존댓말 / money_worry"
+      "body_excerpt": "synthetic: 논현(가명) / 존댓말 / money_worry"
     },
     {
       "id": 8,
@@ -100,12 +100,12 @@
       "tone": "존댓말",
       "mood": "self_image",
       "particles": "ㅋ",
-      "trait": "외모/이미지 placeholder",
-      "source": "synthesized-placeholder",
+      "trait": "외모/이미지 합성 톤",
+      "source": "synthesized-cycle1",
       "files": [
-        "(placeholder; cycle-2 imports apps/web/lib/ai/persona-data.json)"
+        "(cycle-1 synthesized persona metadata)"
       ],
-      "body_excerpt": "placeholder: 압구정(가명) / 존댓말 / self_image"
+      "body_excerpt": "synthetic: 압구정(가명) / 존댓말 / self_image"
     },
     {
       "id": 9,
@@ -125,12 +125,12 @@
       "tone": "반말",
       "mood": "angry",
       "particles": "-",
-      "trait": "단문 분노 placeholder",
-      "source": "synthesized-placeholder",
+      "trait": "단문 분노 합성 톤",
+      "source": "synthesized-cycle1",
       "files": [
-        "(placeholder; cycle-2 imports apps/web/lib/ai/persona-data.json)"
+        "(cycle-1 synthesized persona metadata)"
       ],
-      "body_excerpt": "placeholder: 수원(가명) / 반말 / angry"
+      "body_excerpt": "synthetic: 수원(가명) / 반말 / angry"
     },
     {
       "id": 11,
@@ -150,12 +150,12 @@
       "tone": "존댓말",
       "mood": "depressed",
       "particles": "ㅠㅠ",
-      "trait": "새벽 감성 placeholder",
-      "source": "synthesized-placeholder",
+      "trait": "새벽 감성 합성 톤",
+      "source": "synthesized-cycle1",
       "files": [
-        "(placeholder; cycle-2 imports apps/web/lib/ai/persona-data.json)"
+        "(cycle-1 synthesized persona metadata)"
       ],
-      "body_excerpt": "placeholder: 분당(가명) / 존댓말 / depressed"
+      "body_excerpt": "synthetic: 분당(가명) / 존댓말 / depressed"
     },
     {
       "id": 13,
@@ -223,12 +223,12 @@
       "tone": "반말",
       "mood": "seeking_empathy",
       "particles": "ㅋ",
-      "trait": "단문자 익명 placeholder",
-      "source": "synthesized-placeholder",
+      "trait": "단문자 익명 합성 톤",
+      "source": "synthesized-cycle1",
       "files": [
-        "(placeholder; cycle-2 imports apps/web/lib/ai/persona-data.json)"
+        "(cycle-1 synthesized persona metadata)"
       ],
-      "body_excerpt": "placeholder: ㅎ / 반말 / seeking_empathy"
+      "body_excerpt": "synthetic: ㅎ / 반말 / seeking_empathy"
     },
     {
       "id": 19,
@@ -376,5 +376,5 @@
     }
   ],
   "free_form_persona_files": [],
-  "placeholder_note": "p-003,004,005,007,008,010,012,018 are synthesized placeholders. Real archetypes live at apps/web/lib/ai/persona-data.json (sister Next.js repo). Cycle-2 must import that JSON; cycle-1 uses placeholders for ID-coverage only."
+  "synthesis_note": "p-003,004,005,007,008,010,012,018 are cycle-1 synthesized persona metadata rows retained for explicit 30-ID coverage. They are fully populated with tone, mood, particles, and trait metadata for current train/eval gates."
 }

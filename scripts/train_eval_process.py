@@ -151,8 +151,19 @@ def inspect_inputs() -> dict[str, Any]:
     return {"files": files, "missing": missing}
 
 
-def launch_env_status() -> dict[str, Any]:
-    launch_recipe = parse_env_file(REPO_ROOT / "recipes" / "budget30.env")
+def recipe_path_for_profile(profile: str) -> Path:
+    mapping = {
+        "paper8b": REPO_ROOT / "recipes" / "round2-cycle1.env",
+        "default": REPO_ROOT / "recipes" / "round2-cycle1.env",
+        "budget30": REPO_ROOT / "recipes" / "budget30.env",
+        "smoke": REPO_ROOT / "recipes" / "smoke.env",
+    }
+    return mapping.get(profile, mapping["paper8b"])
+
+
+def launch_env_status(profile: str) -> dict[str, Any]:
+    launch_recipe_path = recipe_path_for_profile(profile)
+    launch_recipe = parse_env_file(launch_recipe_path)
     merged = {**launch_recipe, **os.environ}
     keys = {key: bool(merged.get(key)) for key in REQUIRED_LAUNCH_ENV}
     return {
@@ -160,7 +171,8 @@ def launch_env_status() -> dict[str, Any]:
         "ready": all(keys.values()),
         "github_repo": merged.get("GITHUB_REPO", "unoa-eng/dalbitalba-train-data"),
         "train_github_ref": merged.get("TRAIN_GITHUB_REF") or merged.get("GITHUB_REF_NAME") or "current branch",
-        "launch_recipe": "recipes/budget30.env",
+        "launch_recipe": str(launch_recipe_path.relative_to(REPO_ROOT)),
+        "profile": profile,
     }
 
 
@@ -282,6 +294,12 @@ def main() -> int:
     parser.add_argument("--launch", action="store_true", help="Launch RunPod if required env is present")
     parser.add_argument("--dry-run", action="store_true", help="Render launch payload without creating a pod")
     parser.add_argument("--sample-rows", type=int, default=80)
+    parser.add_argument(
+        "--profile",
+        choices=("paper8b", "budget30", "smoke"),
+        default=os.environ.get("BUDGET_PROFILE", "paper8b"),
+        help="RunPod recipe/verifier profile to validate",
+    )
     args = parser.parse_args()
 
     run_dir = STATE_DIR / utc_stamp()
@@ -299,6 +317,7 @@ def main() -> int:
                 "-m",
                 "py_compile",
                 "scripts/launch_train_pod.py",
+                "scripts/macmini_smoke_loop.py",
                 "scripts/train_eval_process.py",
                 "scripts/phase6_eval_v2.py",
                 "scripts/phase6_generate.py",
@@ -329,14 +348,14 @@ def main() -> int:
     }
     static_ok = all(item["returncode"] == 0 for item in static_checks.values())
     preflight = run(
-        [sys.executable, "scripts/local_verification_loop.py", "--strict", "--profile", "budget30"],
+        [sys.executable, "scripts/local_verification_loop.py", "--strict", "--profile", args.profile],
         log_dir=run_dir,
         label="local_verification_loop",
     )
     preflight_details = load_preflight_details(preflight["stdout"])
     inputs = inspect_inputs()
-    env_status = launch_env_status()
-    launch_recipe_env = parse_env_file(REPO_ROOT / "recipes" / "budget30.env")
+    env_status = launch_env_status(args.profile)
+    launch_recipe_env = parse_env_file(recipe_path_for_profile(args.profile))
     remote_files = inspect_remote_ref_files(resolve_launch_ref())
     eval_smoke = run_eval_smoke(run_dir, args.sample_rows) if static_ok and not inputs["missing"] else None
     preflight_ok = preflight["returncode"] == 0
@@ -416,6 +435,7 @@ def main() -> int:
         "inputs": inputs,
         "remote_files": remote_files,
         "launch_env": env_status,
+        "launch_recipe_env": launch_recipe_env,
         "eval_smoke": eval_smoke,
         "launch": launch_result,
     }

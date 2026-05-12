@@ -1,0 +1,156 @@
+{
+  "timestamp": "2026-05-12T06:22:58.274140+00:00",
+  "run_dir": "runs/macmini-smoke-20260512-062239-603856",
+  "profile": "paper8b",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "name": "bash_n_chain_train_round2",
+      "cmd": [
+        "bash",
+        "-n",
+        "chain_train_round2.sh"
+      ],
+      "returncode": 0,
+      "ok": true,
+      "stdout_log": "runs/macmini-smoke-20260512-062239-603856/bash_n_chain_train_round2.stdout.log",
+      "stderr_log": "runs/macmini-smoke-20260512-062239-603856/bash_n_chain_train_round2.stderr.log",
+      "stdout_tail": "",
+      "stderr_tail": ""
+    },
+    {
+      "name": "bash_n_chain_train",
+      "cmd": [
+        "bash",
+        "-n",
+        "chain_train.sh"
+      ],
+      "returncode": 0,
+      "ok": true,
+      "stdout_log": "runs/macmini-smoke-20260512-062239-603856/bash_n_chain_train.stdout.log",
+      "stderr_log": "runs/macmini-smoke-20260512-062239-603856/bash_n_chain_train.stderr.log",
+      "stdout_tail": "",
+      "stderr_tail": ""
+    },
+    {
+      "name": "py_compile",
+      "cmd": [
+        "/Users/unoa/dalbitalba-train-data/.venv/bin/python",
+        "-m",
+        "py_compile",
+        "scripts/launch_train_pod.py",
+        "scripts/train_eval_process.py",
+        "scripts/local_verification_loop.py",
+        "scripts/phase6_eval_v2.py",
+        "scripts/phase6_generate.py",
+        "scripts/round2_integrity_check.py",
+        "scripts/sft_format_smoke_test.py",
+        "scripts/prelaunch_research_check.py",
+        "train_cpt.py",
+        "train_sft.py",
+        "train_orpo.py"
+      ],
+      "returncode": 0,
+      "ok": true,
+      "stdout_log": "runs/macmini-smoke-20260512-062239-603856/py_compile.stdout.log",
+      "stderr_log": "runs/macmini-smoke-20260512-062239-603856/py_compile.stderr.log",
+      "stdout_tail": "",
+      "stderr_tail": ""
+    },
+    {
+      "name": "round2_integrity",
+      "cmd": [
+        "/Users/unoa/dalbitalba-train-data/.venv/bin/python",
+        "scripts/round2_integrity_check.py"
+      ],
+      "returncode": 0,
+      "ok": true,
+      "stdout_log": "runs/macmini-smoke-20260512-062239-603856/round2_integrity.stdout.log",
+      "stderr_log": "runs/macmini-smoke-20260512-062239-603856/round2_integrity.stderr.log",
+      "stdout_tail": "[OK] TC-SFT schema rows=10245 eval_rows=1139 weighted=1062 persona=10245\n[OK] ORPO leak audit pairs=1472 chosen_sources={'cpt_corpus.v3.jsonl': 1472}\n[OK] phase6_eval_v2 rejects missing persona tags when persona-list is required\n[OK] phase6_eval_v2 passes identity/persona fixture on thread-conditioned eval rows\n{\"verdict\": \"PASS\", \"failures\": []}\n",
+      "stderr_tail": ""
+    },
+    {
+      "name": "prelaunch_research",
+      "cmd": [
+        "/Users/unoa/dalbitalba-train-data/.venv/bin/python",
+        "scripts/prelaunch_research_check.py"
+      ],
+      "returncode": 0,
+      "ok": true,
+      "stdout_log": "runs/macmini-smoke-20260512-062239-603856/prelaunch_research.stdout.log",
+      "stderr_log": "runs/macmini-smoke-20260512-062239-603856/prelaunch_research.stderr.log",
+      "stdout_tail": "[OK] protocol doc exists: MODEL_SELECTION.md\n[OK] protocol doc exists: RESEARCH_PROTOCOL.md\n[OK] BASE_MODEL selected: Qwen/Qwen3-8B-Base\n[OK] recipe W&B key present: WANDB_PROJECT=dalbitalba-round2\n[OK] recipe W&B key present: WANDB_RUN_GROUP=round2-qwen3-8b-paper\n[OK] recipe W&B key present: WANDB_TAGS=round2,qwen3-8b,cpt,dora,tc-sft,orpo,phase6-v2\n[OK] tokenizer audit max_tokens=4 counts={'TC': 1, '밀빵': 2, '쩜오': 2, '텐카': 2, '케어': 2, '초이스': 3, '강남': 2, '이태원': 3, 'ㅋㅋㅋㅋ': 4, 'ㅠㅠ': 2, 'ㄹㅇ': 2, 'ㅇㅈ': 2, 'ㅈㄴ': 2, 'ㅅㅂ': 2}\n[OK] required artifact hashes computed\n[OK] phase6_generate.py no longer appears to use first-40-char seed eval\n[OK] WANDB_API_KEY present in runtime env\n{\"verdict\": \"PASS\", \"failures\": []}\n",
+      "stderr_tail": ""
+    },
+    {
+      "name": "sft_format_smoke",
+      "cmd": [
+        "/Users/unoa/dalbitalba-train-data/.venv/bin/python",
+        "scripts/sft_format_smoke_test.py"
+      ],
+      "returncode": 0,
+      "ok": true,
+      "stdout_log": "runs/macmini-smoke-20260512-062239-603856/sft_format_smoke.stdout.log",
+      "stderr_log": "runs/macmini-smoke-20260512-062239-603856/sft_format_smoke.stderr.log",
+      "stdout_tail": "v3 thread-conditioned chatml builder]\n2026-05-12 15:22:44,942 [INFO]   load /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-2aziq_iy/raw.jsonl -> 1\n2026-05-12 15:22:44,942 [INFO] v3 pair loader active: /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-2aziq_iy/pair_v3.jsonl\n2026-05-12 15:22:44,942 [INFO]   load /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-2aziq_iy/pair_v3.jsonl -> 1\n2026-05-12 15:22:44,942 [INFO]   load /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-2aziq_iy/val.jsonl -> 1\n2026-05-12 15:22:44,942 [INFO] mix policy: raw=0.00 pair=1.00 format=chatml v3=True\n2026-05-12 15:22:44,942 [INFO] sampled sizes: raw=0 pair=1 / 1 available\n2026-05-12 15:22:44,952 [INFO] merged train size: 1\n2026-05-12 15:22:44,953 [INFO] val size: 1\n  [PASS] v3_chatml: example not None\n  [PASS] v3_chatml: prompt non-empty — len=168\n  [PASS] v3_chatml: prompt tokens masked — masked_count=142\n  [PASS] v3_chatml: response tokens trainable — non_masked_count=26\n  [PASS] v3_chatml: labels length == input_ids length — 168 == 168\n  [PASS] v3_chatml: chatml seq_len > bare text seq_len — chatml=168 raw=25\n\n[v2 chatml builder]\n  [PASS] v2_chatml: example not None\n  [PASS] v2_chatml: prompt non-empty — len=91\n  [PASS] v2_chatml: prompt tokens masked — masked_count=75\n  [PASS] v2_chatml: response tokens trainable — non_masked_count=16\n  [PASS] v2_chatml: labels length == input_ids length — 91 == 91\n\n[chatml special token round-trip]\n  [PASS] round-trip: <|im_start|> preserved — decoded[:80]='<|im_start|>system\\n테스트<|im_end|>\\n<|im_start|>user\\n안녕<|im_end|>\\n<|im_start|>assis'\n  [PASS] round-trip: <|im_end|> preserved\n\n[v3 user text builder]\n  [PASS] user_text: non-empty\n  [PASS] user_text: contains post_title\n  [PASS] user_text: contains parent_comment\n  [PASS] user_text: contains depth marker\n\n============================================================\nResults: 27/27 passed, 0 failed\nSUCCESS — all assertions passed\n",
+      "stderr_tail": ""
+    },
+    {
+      "name": "local_verification_paper8b",
+      "cmd": [
+        "/Users/unoa/dalbitalba-train-data/.venv/bin/python",
+        "scripts/local_verification_loop.py",
+        "--strict",
+        "--profile",
+        "paper8b"
+      ],
+      "returncode": 0,
+      "ok": true,
+      "stdout_log": "runs/macmini-smoke-20260512-062239-603856/local_verification_paper8b.stdout.log",
+      "stderr_log": "runs/macmini-smoke-20260512-062239-603856/local_verification_paper8b.stderr.log",
+      "stdout_tail": "{\"verdict\": \"PASS\", \"report\": \"/Users/unoa/dalbitalba-train-data/runs/local-verification-20260512-062249-850335/report.md\"}\n",
+      "stderr_tail": ""
+    },
+    {
+      "name": "train_eval_process_dry_run",
+      "cmd": [
+        "/Users/unoa/dalbitalba-train-data/.venv/bin/python",
+        "scripts/train_eval_process.py",
+        "--dry-run",
+        "--sample-rows",
+        "40",
+        "--profile",
+        "paper8b"
+      ],
+      "returncode": 0,
+      "ok": true,
+      "stdout_log": "runs/macmini-smoke-20260512-062239-603856/train_eval_process_dry_run.stdout.log",
+      "stderr_log": "runs/macmini-smoke-20260512-062239-603856/train_eval_process_dry_run.stderr.log",
+      "stdout_tail": "**REDACTED***\\\",\\n    \\\"ORPO_BETA\\\": \\\"***REDACTED***\\\",\\n    \\\"WANDB_API_KEY\\\": \\\"***REDACTED***\\\",\\n    \\\"TRAIN_REPORT_TO\\\": \\\"***REDACTED***\\\",\\n    \\\"WANDB_RUN_GROUP\\\": \\\"***REDACTED***\\\",\\n    \\\"WANDB_TAGS\\\": \\\"***REDACTED***\\\",\\n    \\\"WANDB_NOTES\\\": \\\"***REDACTED***\\\"\\n  },\\n  \\\"dockerEntrypoint\\\": [],\\n  \\\"dockerStartCmd\\\": [\\n    \\\"bash\\\",\\n    \\\"-lc\\\",\\n    \\\"set -o pipefail && mkdir -p /workspace/logs /workspace/data /workspace/scripts /workspace/out /workspace/hf_cache /workspace/recipes && export HF_HOME=/workspace/hf_cache && export TOKENIZERS_PARALLELISM=false && rm -rf /workspace/repo && git clone --branch main --single-branch \\\\\\\"https://x-access-token:***REDACTED***@github.com/unoa-eng/dalbitalba-train-data.git\\\\\\\" /workspace/repo && (cp /workspace/repo/*.jsonl /workspace/data/ 2>/dev/null || true) && (cp /workspace/repo/recipes/*.env /workspace/recipes/ 2>/dev/null || true) && mkdir -p /workspace/runs && (cp -a /workspace/repo/runs/round2-obsidian-synthesis /workspace/runs/ 2>/dev/null || true) && (cp -a /workspace/repo/tokenizer_v4 /workspace/ 2>/dev/null || true) && (cp -a /workspace/repo/source_db_cache /workspace/data/ 2>/dev/null || true) && (cp /workspace/repo/train_*.py /workspace/ 2>/dev/null || true) && mkdir -p /workspace/scripts && (cp /workspace/repo/scripts/*.py /workspace/scripts/ 2>/dev/null || true) && cp /workspace/repo/chain_train_round2.sh /workspace/chain_train_round2.sh && chmod +x /workspace/chain_train_round2.sh && bash /workspace/chain_train_round2.sh 2>&1 | tee -a /workspace/logs/chain_$(date -u '+%Y%m%dT%H%M%SZ').log; rc=${PIPESTATUS[0]}; echo \\\\\\\"$(date -u '+%Y-%m-%dT%H:%M:%SZ') chain exit rc=${rc}\\\\\\\" >> /workspace/logs/launcher.log; exit ${rc}\\\"\\n  ],\\n  \\\"gpuTypeIds\\\": [\\n    \\\"NVIDIA L40S\\\"\\n  ]\\n}\\n\",\n    \"stderr\": \"\",\n    \"stdout_log\": \".state/train-eval-process/20260512T062249884856Z/launch_train_pod.stdout.log\",\n    \"stderr_log\": \".state/train-eval-process/20260512T062249884856Z/launch_train_pod.stderr.log\"\n  }\n}\n",
+      "stderr_tail": ""
+    }
+  ],
+  "local_verification": {
+    "verdict": "PASS",
+    "report": "/Users/unoa/dalbitalba-train-data/runs/local-verification-20260512-062249-850335/report.md"
+  },
+  "train_eval_process": {
+    "name": "train_eval_process_dry_run",
+    "cmd": [
+      "/Users/unoa/dalbitalba-train-data/.venv/bin/python",
+      "scripts/train_eval_process.py",
+      "--dry-run",
+      "--sample-rows",
+      "40",
+      "--profile",
+      "paper8b"
+    ],
+    "returncode": 0,
+    "ok": true,
+    "stdout_log": "runs/macmini-smoke-20260512-062239-603856/train_eval_process_dry_run.stdout.log",
+    "stderr_log": "runs/macmini-smoke-20260512-062239-603856/train_eval_process_dry_run.stderr.log",
+    "stdout_tail": "**REDACTED***\\\",\\n    \\\"ORPO_BETA\\\": \\\"***REDACTED***\\\",\\n    \\\"WANDB_API_KEY\\\": \\\"***REDACTED***\\\",\\n    \\\"TRAIN_REPORT_TO\\\": \\\"***REDACTED***\\\",\\n    \\\"WANDB_RUN_GROUP\\\": \\\"***REDACTED***\\\",\\n    \\\"WANDB_TAGS\\\": \\\"***REDACTED***\\\",\\n    \\\"WANDB_NOTES\\\": \\\"***REDACTED***\\\"\\n  },\\n  \\\"dockerEntrypoint\\\": [],\\n  \\\"dockerStartCmd\\\": [\\n    \\\"bash\\\",\\n    \\\"-lc\\\",\\n    \\\"set -o pipefail && mkdir -p /workspace/logs /workspace/data /workspace/scripts /workspace/out /workspace/hf_cache /workspace/recipes && export HF_HOME=/workspace/hf_cache && export TOKENIZERS_PARALLELISM=false && rm -rf /workspace/repo && git clone --branch main --single-branch \\\\\\\"https://x-access-token:***REDACTED***@github.com/unoa-eng/dalbitalba-train-data.git\\\\\\\" /workspace/repo && (cp /workspace/repo/*.jsonl /workspace/data/ 2>/dev/null || true) && (cp /workspace/repo/recipes/*.env /workspace/recipes/ 2>/dev/null || true) && mkdir -p /workspace/runs && (cp -a /workspace/repo/runs/round2-obsidian-synthesis /workspace/runs/ 2>/dev/null || true) && (cp -a /workspace/repo/tokenizer_v4 /workspace/ 2>/dev/null || true) && (cp -a /workspace/repo/source_db_cache /workspace/data/ 2>/dev/null || true) && (cp /workspace/repo/train_*.py /workspace/ 2>/dev/null || true) && mkdir -p /workspace/scripts && (cp /workspace/repo/scripts/*.py /workspace/scripts/ 2>/dev/null || true) && cp /workspace/repo/chain_train_round2.sh /workspace/chain_train_round2.sh && chmod +x /workspace/chain_train_round2.sh && bash /workspace/chain_train_round2.sh 2>&1 | tee -a /workspace/logs/chain_$(date -u '+%Y%m%dT%H%M%SZ').log; rc=${PIPESTATUS[0]}; echo \\\\\\\"$(date -u '+%Y-%m-%dT%H:%M:%SZ') chain exit rc=${rc}\\\\\\\" >> /workspace/logs/launcher.log; exit ${rc}\\\"\\n  ],\\n  \\\"gpuTypeIds\\\": [\\n    \\\"NVIDIA L40S\\\"\\n  ]\\n}\\n\",\n    \"stderr\": \"\",\n    \"stdout_log\": \".state/train-eval-process/20260512T062249884856Z/launch_train_pod.stdout.log\",\n    \"stderr_log\": \".state/train-eval-process/20260512T062249884856Z/launch_train_pod.stderr.log\"\n  }\n}\n",
+    "stderr_tail": ""
+  }
+}

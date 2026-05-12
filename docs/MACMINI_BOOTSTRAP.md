@@ -97,12 +97,13 @@ md5sum *.v2.jsonl   # 또는 macOS: md5 *.v2.jsonl
 ## 6. Local Verifier — 무료 게이트
 
 ```bash
-python scripts/local_verification_loop.py --strict
+python scripts/local_verification_loop.py --strict --profile paper8b
 ```
 
 기대 결과:
+- `Verdict: PASS`
 - `Severe: 0`
-- 허용 WARN 은 리포트에서 명시적으로 확인한다. 현재 round2/budget30 기준 정상 WARN 은 `cpt_corpus.v3.jsonl: many very short rows` 1건이다.
+- `Warnings: 0`
 - local smoke 포함: `tokenizer_v4` 기준 SFT 포맷/마스킹 smoke PASS
 
 이 local smoke 는 tokenizer-only control-plane 검증이다.
@@ -114,6 +115,14 @@ Obsidian 범위 정책은 `docs/OBSIDIAN_SCOPE_POLICY.md` 를 따른다. 로컬 
 `research/obsidian-ref`, `research/obsidian-export`,
 `runs/round2-obsidian-synthesis/persona-30-extracted.json` 의 존재와 persona-30
 coverage 를 함께 확인한다.
+
+Mac mini에서 전체 control-plane smoke 루프를 한 번에 남기려면:
+
+```bash
+python scripts/macmini_smoke_loop.py --profile paper8b
+```
+
+산출물은 `runs/macmini-smoke-<timestamp>/summary.json` 및 `report.md`에 기록된다.
 
 ```bash
 # 추가 — 기존 0618 HF artifact 검증 (release-worthy 아님 확정)
@@ -130,16 +139,16 @@ set -a; source recipes/smoke.env; set +a
 python scripts/launch_train_pod.py --dry-run | jq '.imageName, .gpuTypeIds, .env | keys' | head -40
 unset $(grep -oE '^[A-Z_]+=' recipes/smoke.env | tr -d '=')
 
-# budget30.env 검증 (CPT only, $30 ceiling)
-set -a; source recipes/budget30.env; set +a
-python scripts/launch_train_pod.py --dry-run | jq '.imageName, .env.SKIP_SFT, .env.CPT_TIMEOUT_HOURS'
+# paper8b full run 검증 (CPT 2단계 + SFT + phase6 eval)
+set -a; source recipes/round2-cycle1.env; set +a
+python scripts/launch_train_pod.py --dry-run | jq '.imageName, .gpuTypeIds, .env.BUDGET_PROFILE, .env.CPT_PHASE_1_DATA, .env.CPT_PHASE_2_DATA, .env.SFT_NUM_EPOCHS, .env.CPT_TIMEOUT_HOURS, .env.SFT_TIMEOUT_HOURS'
 ```
 
 기대:
 - `imageName` = `runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04`
 - `gpuTypeIds[0]` = `NVIDIA L40S`
-- budget30: `SKIP_SFT=1`, `CPT_TIMEOUT_HOURS=32`, `CPT_NUM_EPOCHS=1`, `SFT_NUM_EPOCHS=0`
-- smoke: `CPT_LIMIT_ROWS=512`, `CPT_MAX_STEPS=20`, `SFT_MAX_STEPS=20`
+- paper8b: `BUDGET_PROFILE=paper8b`, `CPT_PHASE_1_DATA=cpt_enriched.jsonl`, `CPT_PHASE_2_DATA=cpt_corpus.v3.jsonl`, `SFT_NUM_EPOCHS=2`, `BUDGET_CAP_USD=60`
+- smoke: `CPT_LIMIT_ROWS=512`, `CPT_MAX_STEPS=20`, `SFT_MAX_STEPS=20`, `MAUVE_DISABLED=1`
 
 ## 8. 첫 paid run — smoke (배관 검증)
 
@@ -160,7 +169,7 @@ smoke 가 끝나면 `runs/train-run-<stamp>/` 브랜치에 `DONE.txt`, `manifest
 `*.log` 가 푸시된다. round2 chain 은 `runs/latest-round2-train.json`, classic chain 은
 `runs/latest-train.json` 포인터를 업데이트한다.
 
-## 8.5. PROMOTION 게이트 (smoke → budget30 진입 전 필수)
+## 8.5. PROMOTION 게이트 (smoke → paper8b 진입 전 필수)
 
 ```bash
 git fetch origin
@@ -174,17 +183,18 @@ python3 scripts/check_smoke_promotion.py --require-sft
 - round2 chain: `latest-round2-train status=done_ok`, `hf_repo_round2`, `eval/phase5-eval-v2.json`
 - `DONE.txt = done_ok`, `manifest.json present`
 
-`HOLD` 가 떨어지면 budget30 절대 launch 금지. 실패 사유 모두 해결 후 재시도.
+`HOLD` 가 떨어지면 paper8b 절대 launch 금지. 실패 사유 모두 해결 후 재시도.
 
-## 9. 본 run — budget30 CPT-only
+## 9. 본 run — paper8b full pipeline
 
 8.5 PROMOTE 통과 후에만:
 
 ```bash
-set -a; source recipes/budget30.env; set +a
+set -a; source recipes/round2-cycle1.env; set +a
 python scripts/launch_train_pod.py
-# 예상 시간: ~30시간, 비용 ~$23.36
-# Stage timeout 자동 작동 (CPT 32h cap, A100 fallback 차단됨 — recipes/budget30.env 참조)
+# 예상 train 시간: ~35h, 예상 train 비용: ~$28
+# timeout hard-cap exposure: ~61h / ~$48 under BUDGET_CAP_USD=60
+# 기능 축소 없음: CPT phase1/2 + SFT + integrated phase6 eval 유지
 ```
 
 ## 10. 평가 (eval pod)
@@ -193,8 +203,6 @@ CPT 완료 후:
 
 ```bash
 export SFT_ADAPTER_REPO=UNOA/dalbitalba-qwen3-sft-<stamp>
-# budget30 은 SFT 미수행이라 generate_samples 는 base+CPT만 사용
-# CPT_MERGED_REPO 또는 CPT_MERGED_PATH 를 명시적으로 export
 export CPT_MERGED_REPO=UNOA/dalbitalba-qwen3-cpt-<stamp>
 python scripts/launch_eval_pod.py
 ```
@@ -218,15 +226,17 @@ python scripts/launch_eval_pod.py
 | 단계 | hard cap | 누적 |
 |---|---|---|
 | smoke (worst-case 7h) | $5.53 | $5.53 |
-| **§8.5 PROMOTION 게이트 — HOLD 시 budget30 launch 거부** | — | — |
-| budget30 CPT 32h | $25.28 | $30.81 |
-| budget30 merge 2h | $1.58 | $32.39 |
-| budget30 HF upload 1h | $0.79 | $33.18 |
-| eval pod (worst 4h) | $3.16 | **$36.34 ceiling** |
+| **§8.5 PROMOTION 게이트 — HOLD 시 paper8b launch 거부** | — | — |
+| paper8b CPT phase1+2 40h | $31.60 | $37.13 |
+| paper8b merge 3h | $2.37 | $39.50 |
+| paper8b SFT 10h | $7.90 | $47.40 |
+| paper8b integrated eval 6h | $4.74 | $52.14 |
+| paper8b HF upload 2h | $1.58 | **$53.72 ceiling** |
 
-**$60 같은 폭주는 구조적으로 불가능.** 단 한 cycle 의 hard cap ≈ $36.
+`BUDGET_CAP_USD=60` 아래에서 기능 손실 없이 full pipeline 을 실행한다. 현재
+추정 train 비용은 약 `$28`, timeout hard-cap exposure 는 약 `$48` 이다.
 
-만약 budget30 의 5-metric gate 가 fail 하면 **§14 rollback playbook 진입 — 같은 recipe 로 재시도 절대 금지.**
+만약 paper8b 의 5-metric gate 가 fail 하면 **§14 rollback playbook 진입 — 같은 recipe 로 재시도 절대 금지.**
 
 ## 12. Stop / 비상 정지
 
@@ -249,51 +259,50 @@ for p in json.loads(r.read()):
 
 ## 13. 작업 종료 체크리스트
 
-- [ ] local verifier `Severe: 0` (`--profile budget30`)
+- [ ] local verifier `PASS`, `Severe: 0`, `Warnings: 0` (`--profile paper8b`)
 - [ ] dry-run payload 정상
 - [ ] L40S 가용성 + RunPod 잔고 확인 (`check_l40s_availability.py`)
 - [ ] smoke run DONE.txt + HF adapter 확인
 - [ ] PROMOTION 게이트 PROMOTE (`check_smoke_promotion.py --require-sft`)
 - [ ] adapter 무결성 OK (`check_adapter_integrity.py`)
-- [ ] budget30 run DONE.txt + HF adapter 확인
+- [ ] paper8b run DONE.txt + HF adapter 확인
 - [ ] eval pod `eval/phase5-eval-v2.json` 또는 classic `metrics.json` 생성
 - [ ] 5-metric gate PASS (jsd ≤0.15, length_kl ≤0.10, digit/eng delta, mauve ≥0.80)
 - [ ] PR 생성 (`scripts/create_final_pr.sh`)
 - [ ] 비활성 pod 정리 (위 12번 스크립트)
 
-## 14. budget30 의 5-metric gate FAIL 시 rollback playbook
+## 14. paper8b 의 5-metric gate FAIL 시 rollback playbook
 
 **같은 recipe 로 절대 재시도 금지.** 동일 데이터·동일 hparam 으로 두 번째 시도해도 결과는 동일하고 또 ~$25 burn 한다 (0618 → 0424 식 누적 burn 의 패턴).
 
 세 가지 분기 중 하나 선택:
 
-### 분기 A — 데이터 재정제 후 재시도 ($30 + $25 = ~$55)
+### 분기 A — 데이터 재정제 후 재시도
 적용 조건: eval gate fail 의 원인이 **데이터 품질** (high duplicate rate, 짧은 행 비율 과다) 일 때
 ```bash
 # 1) 원본 크롤에서 더 엄격한 정제로 재생성
 python3 scripts/phase1_data_pipeline.py --min-chars 50 --dedup-threshold 0.85
 # 2) verifier 재실행 — duplicate_rate < 0.30 이어야 함
-python3 scripts/local_verification_loop.py --strict --profile budget30
-# 3) smoke + budget30 재실행
+python3 scripts/local_verification_loop.py --strict --profile paper8b
+# 3) smoke + paper8b 재실행
 ```
 
-### 분기 B — 학습 강도 상향 후 재시도 ($60 ceiling 으로 상향, ~$50 spend)
+### 분기 B — 학습 강도 상향 후 재시도
 적용 조건: gate fail 의 원인이 **under-fit** (loss 감소 추세 좋았지만 1 epoch 부족) 일 때
 ```bash
-# recipes/budget30.env 사본을 만들고 epoch 2 + ceiling $60 로 변경
-cp recipes/budget30.env recipes/budget60.env
-sed -i.bak -e 's/CPT_NUM_EPOCHS=1/CPT_NUM_EPOCHS=2/' \
-           -e 's/CPT_TIMEOUT_HOURS=32/CPT_TIMEOUT_HOURS=60/' recipes/budget60.env
-# 사용자 동의 필수 — $30 cap 상향이므로 명시적 결정
-set -a; source recipes/budget60.env; export BUDGET_PROFILE=budget60; set +a
+# 사용자 동의 필수 — budget cap 상향이므로 명시적 결정
+cp recipes/round2-cycle1.env recipes/paper8b-strong.env
+sed -i.bak -e 's/SFT_NUM_EPOCHS=2/SFT_NUM_EPOCHS=3/' \
+           -e 's/BUDGET_CAP_USD=60/BUDGET_CAP_USD=90/' recipes/paper8b-strong.env
+set -a; source recipes/paper8b-strong.env; export BUDGET_PROFILE=paper8b; set +a
 python3 scripts/launch_train_pod.py
 ```
 
 ### 분기 C — partial 0618 adapter 채택 후 종료 ($0 추가 spend)
-적용 조건: 시간/예산 더 못 쓰는 상황. budget30 부분 adapter 라도 가져가서 향후 재학습용 baseline 으로 사용
+적용 조건: 시간/예산 더 못 쓰는 상황. paper8b 부분 adapter 라도 가져가서 향후 재학습용 baseline 으로 사용
 ```bash
 # HF adapter 보존, 메모/PR 작성
-gh issue create --title "dalbitalba budget30 cycle 1 partial — eval failed" \
+gh issue create --title "dalbitalba paper8b cycle 1 partial — eval failed" \
   --body "5-metric gate fail. adapter @ UNOA/dalbitalba-qwen3-cpt-<stamp>. next cycle to be funded separately."
 ```
 
@@ -305,8 +314,8 @@ gh issue create --title "dalbitalba budget30 cycle 1 partial — eval failed" \
 ## 15. 자율 루프 / recipe mutator 범위 명시
 
 이 부트스트랩은 **단발성 manual 운영** 전용이다. `scripts/autonomous_loop.sh` 와 `scripts/recipe_mutator.py` 는 본 가이드 사용 시 **호출하지 않는다.**
-- 이유: autonomous_loop 의 budget cap 은 `$25 static estimate` 이라 budget30 ($23.36 nominal) 한 사이클에서 트립되어 mutator 가 unreachable.
-- 자율 루프는 **$90+ 예산 프로파일** (budget90.env 가 별도 정의될 때) 에서만 의미 있음.
+- 이유: autonomous_loop 의 budget cap 은 오래된 `$25 static estimate` 기준이라 paper8b full pipeline 의 실제 비용/timeout cap 을 반영하지 못한다.
+- 자율 루프는 **$90+ 예산 프로파일** 이 별도 정의될 때만 의미 있음.
 - 비개발자 운영자: §1~§14 만 따른다. autonomous_loop.sh 호출 금지.
 
 ## 16. 기계적 방어선 요약 (0618 식 의미없는 학습 재발 방지)
@@ -316,10 +325,10 @@ gh issue create --title "dalbitalba budget30 cycle 1 partial — eval failed" \
 | 사고 패턴 | 차단 메커니즘 | 우회 가능? |
 |---|---|---|
 | SOLAR / 비-Qwen3 base 로 학습 | `chain_train.sh:46-65` BASE_MODEL_CPT case 검사 → exit 2 | `FORCE_BASE_MODEL=1` 명시적 override 시에만 |
-| budget30 + dup rate > 0.50 | `local_verification_loop.py` SEVERE → verdict=FAIL → launcher 거부 | `FORCE_LAUNCH=1` 명시적 override |
-| budget30 + 비용 추정 > $30 | verifier `--profile budget30` SEVERE | 같은 override |
-| budget30 launch 시 verifier 미수행 | `launch_train_pod.py:assert_verifier_pass_for_budget30()` exit 1 | 같은 override |
-| A100 ($1.19/hr) 폴백 silent overspend | `recipes/budget30.env: GPU_TYPE="NVIDIA L40S"` 단일화 | recipe 직접 편집 시에만 |
+| paper8b + dup rate > 0.50 | `local_verification_loop.py` SEVERE → verdict=FAIL → launcher 거부 | `FORCE_LAUNCH=1` 명시적 override |
+| paper8b + 비용 추정 > cap | verifier `--profile paper8b` SEVERE | 같은 override |
+| paper8b launch 시 verifier 미수행 | `launch_train_pod.py` gated-profile verifier check → exit 1 | 같은 override |
+| A100 ($1.19/hr) 폴백 silent overspend | `recipes/round2-cycle1.env: GPU_TYPE="NVIDIA L40S"` 단일화 | recipe 직접 편집 시에만 |
 | Eval 이 비어있는 SFT repo 호출 | `check_smoke_promotion.py` HOLD → exit 1 | 사용자가 무시하고 launch_eval_pod 직접 실행 시 |
 | Adapter 깨졌는데 PROMOTE | `check_adapter_integrity.py` safetensors 헤더 파싱 실패 시 FAIL | 무시 시 |
 | trainer 가 step 50/5775 에서 멈춤 → PROMOTE | `check_smoke_promotion.py` global_step ≥ max_steps 검증 → HOLD | 무시 시 |

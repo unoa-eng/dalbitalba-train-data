@@ -1,0 +1,724 @@
+{
+  "timestamp": "2026-05-12T06:22:58.269612+00:00",
+  "static_checks": {
+    "round2_shell_syntax": {
+      "returncode": 0,
+      "stdout_log": ".state/train-eval-process/20260512T062249884856Z/bash_n_chain_train_round2.stdout.log",
+      "stderr_log": ".state/train-eval-process/20260512T062249884856Z/bash_n_chain_train_round2.stderr.log",
+      "stderr_tail": ""
+    },
+    "python_compile": {
+      "returncode": 0,
+      "stdout_log": ".state/train-eval-process/20260512T062249884856Z/py_compile.stdout.log",
+      "stderr_log": ".state/train-eval-process/20260512T062249884856Z/py_compile.stderr.log",
+      "stderr_tail": ""
+    },
+    "round2_integrity": {
+      "returncode": 0,
+      "stdout_log": ".state/train-eval-process/20260512T062249884856Z/round2_integrity_check.stdout.log",
+      "stderr_log": ".state/train-eval-process/20260512T062249884856Z/round2_integrity_check.stderr.log",
+      "stderr_tail": ""
+    },
+    "prelaunch_research": {
+      "returncode": 0,
+      "stdout_log": ".state/train-eval-process/20260512T062249884856Z/prelaunch_research_check.stdout.log",
+      "stderr_log": ".state/train-eval-process/20260512T062249884856Z/prelaunch_research_check.stderr.log",
+      "stderr_tail": ""
+    }
+  },
+  "preflight": {
+    "returncode": 0,
+    "stdout": "{\"verdict\": \"PASS\", \"report\": \"/Users/unoa/dalbitalba-train-data/runs/local-verification-20260512-062257-508389/report.md\"}",
+    "stderr_tail": "",
+    "stdout_log": ".state/train-eval-process/20260512T062249884856Z/local_verification_loop.stdout.log",
+    "stderr_log": ".state/train-eval-process/20260512T062249884856Z/local_verification_loop.stderr.log",
+    "details": {
+      "verdict": "PASS",
+      "report": "/Users/unoa/dalbitalba-train-data/runs/local-verification-20260512-062257-508389/report.md",
+      "report_json": "runs/local-verification-20260512-062257-508389/report.json",
+      "details": {
+        "timestamp": "2026-05-12T06:22:57Z",
+        "verdict": "PASS",
+        "severe": [],
+        "warnings": [],
+        "datasets": {
+          "cpt_phase1": {
+            "path": "cpt_enriched.jsonl",
+            "rows": 48247,
+            "json_errors": [],
+            "json_error_count": 0,
+            "missing_required_rows": 0,
+            "key_counts": {
+              "text": 48247,
+              "kind": 48247,
+              "source_id": 48247,
+              "views": 48247,
+              "is_reply": 37715,
+              "comment_count": 10532,
+              "view_bucket": 10532,
+              "comment_bucket": 10532
+            },
+            "kind_counts": {
+              "comment": 27167,
+              "context_comment": 10548,
+              "post": 10532
+            },
+            "length_bucket_counts": {},
+            "char_stats": {
+              "count": 48247,
+              "avg": 124.45,
+              "p50": 112,
+              "p90": 209,
+              "p95": 248,
+              "p99": 374,
+              "max": 1539
+            },
+            "approx_token_stats": {
+              "count": 48247,
+              "avg": 56.57,
+              "p50": 51,
+              "p90": 95,
+              "p95": 113,
+              "p99": 170,
+              "max": 700
+            },
+            "duplicates": 0,
+            "duplicate_rate": 0.0,
+            "encoding_profile": {
+              "total_chars": 6004329,
+              "hangul_chars": 4092912,
+              "hangul_ratio": 0.6817,
+              "cjk_chars": 4,
+              "cjk_ratio": 0.0,
+              "replacement_chars": 0
+            },
+            "pii_signals": {
+              "phone_like": 0,
+              "email_like": 0,
+              "url_like": 0,
+              "rrn_like": 0,
+              "account_like": 0,
+              "minor_sexual_proximity": 0
+            },
+            "warnings": [],
+            "severe": []
+          },
+          "cpt_phase2": {
+            "path": "cpt_corpus.v3.jsonl",
+            "rows": 41576,
+            "json_errors": [],
+            "json_error_count": 0,
+            "missing_required_rows": 0,
+            "key_counts": {
+              "text": 41576,
+              "kind": 41576,
+              "source_id": 41576,
+              "source_field": 41576,
+              "length_bucket": 41576
+            },
+            "kind_counts": {
+              "comment": 31567,
+              "post": 10009
+            },
+            "length_bucket_counts": {
+              "sm": 22350,
+              "md": 10360,
+              "xs": 4352,
+              "lg": 3508,
+              "xl": 950,
+              "xxl": 56
+            },
+            "char_stats": {
+              "count": 41576,
+              "avg": 51.23,
+              "p50": 35,
+              "p90": 101,
+              "p95": 141,
+              "p99": 283,
+              "max": 1804
+            },
+            "approx_token_stats": {
+              "count": 41576,
+              "avg": 23.28,
+              "p50": 16,
+              "p90": 46,
+              "p95": 64,
+              "p99": 129,
+              "max": 820
+            },
+            "duplicates": 0,
+            "duplicate_rate": 0.0,
+            "encoding_profile": {
+              "total_chars": 2130094,
+              "hangul_chars": 1486518,
+              "hangul_ratio": 0.6979,
+              "cjk_chars": 4,
+              "cjk_ratio": 0.0,
+              "replacement_chars": 0
+            },
+            "pii_signals": {
+              "phone_like": 0,
+              "email_like": 0,
+              "url_like": 0,
+              "rrn_like": 0,
+              "account_like": 0,
+              "minor_sexual_proximity": 0
+            },
+            "warnings": [],
+            "severe": [],
+            "notes": [
+              "short CPT rows accepted by CPT_SHORT_ROW_POLICY=style_signal"
+            ]
+          },
+          "sft": {
+            "path": "sft_thread_conditioned.jsonl",
+            "rows": 10245,
+            "json_errors": [],
+            "json_error_count": 0,
+            "missing_required_rows": 0,
+            "key_counts": {
+              "instruction": 10245,
+              "input": 10245,
+              "output": 10245,
+              "kind": 10245,
+              "depth": 10245,
+              "root_id": 10245,
+              "parent_id": 10245,
+              "persona_id": 10245,
+              "loss_weight": 10245
+            },
+            "kind_counts": {
+              "comment": 10245
+            },
+            "length_bucket_counts": {},
+            "char_stats": {
+              "count": 10245,
+              "avg": 267.83,
+              "p50": 225,
+              "p90": 413,
+              "p95": 510,
+              "p99": 873,
+              "max": 1951
+            },
+            "approx_token_stats": {
+              "count": 10245,
+              "avg": 121.74,
+              "p50": 102,
+              "p90": 188,
+              "p95": 232,
+              "p99": 397,
+              "max": 887
+            },
+            "duplicates": 0,
+            "duplicate_rate": 0.0,
+            "encoding_profile": {
+              "total_chars": 2743902,
+              "hangul_chars": 1165021,
+              "hangul_ratio": 0.4246,
+              "cjk_chars": 5,
+              "cjk_ratio": 0.0,
+              "replacement_chars": 0
+            },
+            "pii_signals": {
+              "phone_like": 0,
+              "email_like": 0,
+              "url_like": 0,
+              "rrn_like": 0,
+              "account_like": 0,
+              "minor_sexual_proximity": 0
+            },
+            "warnings": [],
+            "severe": []
+          },
+          "eval": {
+            "path": "sft_thread_conditioned.eval.jsonl",
+            "rows": 1139,
+            "json_errors": [],
+            "json_error_count": 0,
+            "missing_required_rows": 0,
+            "key_counts": {
+              "instruction": 1139,
+              "input": 1139,
+              "output": 1139,
+              "kind": 1139,
+              "depth": 1139,
+              "root_id": 1139,
+              "parent_id": 1139,
+              "persona_id": 1139,
+              "loss_weight": 1139
+            },
+            "kind_counts": {
+              "comment": 1139
+            },
+            "length_bucket_counts": {},
+            "char_stats": {
+              "count": 1139,
+              "avg": 271.27,
+              "p50": 228,
+              "p90": 407,
+              "p95": 544,
+              "p99": 857,
+              "max": 1763
+            },
+            "approx_token_stats": {
+              "count": 1139,
+              "avg": 123.31,
+              "p50": 104,
+              "p90": 185,
+              "p95": 247,
+              "p99": 390,
+              "max": 801
+            },
+            "duplicates": 0,
+            "duplicate_rate": 0.0,
+            "encoding_profile": {
+              "total_chars": 308978,
+              "hangul_chars": 132434,
+              "hangul_ratio": 0.4286,
+              "cjk_chars": 0,
+              "cjk_ratio": 0.0,
+              "replacement_chars": 0
+            },
+            "pii_signals": {
+              "phone_like": 0,
+              "email_like": 0,
+              "url_like": 0,
+              "rrn_like": 0,
+              "account_like": 0,
+              "minor_sexual_proximity": 0
+            },
+            "warnings": [],
+            "severe": []
+          },
+          "cai": {
+            "path": "orpo_pairs.jsonl",
+            "rows": 1472,
+            "json_errors": [],
+            "json_error_count": 0,
+            "missing_required_rows": 0,
+            "key_counts": {
+              "prompt": 1472,
+              "chosen": 1472,
+              "rejected": 1472,
+              "kind": 1472,
+              "source_run_chosen": 1472,
+              "source_run_rejected": 1472,
+              "reason": 1472
+            },
+            "kind_counts": {
+              "comment": 1118,
+              "post": 354
+            },
+            "length_bucket_counts": {},
+            "char_stats": {
+              "count": 1472,
+              "avg": 225.61,
+              "p50": 216,
+              "p90": 295,
+              "p95": 325,
+              "p99": 377,
+              "max": 480
+            },
+            "approx_token_stats": {
+              "count": 1472,
+              "avg": 102.55,
+              "p50": 98,
+              "p90": 134,
+              "p95": 148,
+              "p99": 171,
+              "max": 218
+            },
+            "duplicates": 0,
+            "duplicate_rate": 0.0,
+            "encoding_profile": {
+              "total_chars": 332095,
+              "hangul_chars": 154367,
+              "hangul_ratio": 0.4648,
+              "cjk_chars": 0,
+              "cjk_ratio": 0.0,
+              "replacement_chars": 0
+            },
+            "pii_signals": {
+              "phone_like": 0,
+              "email_like": 0,
+              "url_like": 0,
+              "rrn_like": 0,
+              "account_like": 0,
+              "minor_sexual_proximity": 0
+            },
+            "warnings": [],
+            "severe": []
+          }
+        },
+        "scripts": {
+          "results": [
+            {
+              "path": "train_cpt.py",
+              "ok": true
+            },
+            {
+              "path": "train_sft.py",
+              "ok": true
+            },
+            {
+              "path": "scripts/sft_format_smoke_test.py",
+              "ok": true
+            },
+            {
+              "path": "scripts/launch_train_pod.py",
+              "ok": true
+            },
+            {
+              "path": "scripts/launch_eval_pod.py",
+              "ok": true
+            },
+            {
+              "path": "scripts/macmini_smoke_loop.py",
+              "ok": true
+            },
+            {
+              "path": "scripts/phase6_generate.py",
+              "ok": true
+            },
+            {
+              "path": "scripts/phase6_eval.py",
+              "ok": true
+            },
+            {
+              "path": "scripts/phase6_eval_v2.py",
+              "ok": true
+            },
+            {
+              "path": "scripts/poll_pod.py",
+              "ok": true
+            },
+            {
+              "path": "scripts/recipe_mutator.py",
+              "ok": true
+            },
+            {
+              "path": "scripts/cycle_report.py",
+              "ok": true
+            },
+            {
+              "path": "chain_train.sh",
+              "ok": true
+            },
+            {
+              "path": "chain_train_round2.sh",
+              "ok": true
+            },
+            {
+              "path": "scripts/run_eval.sh",
+              "ok": true
+            },
+            {
+              "path": "scripts/autonomous_loop.sh",
+              "ok": true
+            }
+          ],
+          "severe": []
+        },
+        "contract": {
+          "severe": [],
+          "warnings": []
+        },
+        "obsidian": {
+          "paths": {
+            "ref_dir": "research/obsidian-ref",
+            "export_dir": "research/obsidian-export",
+            "persona_list": "runs/round2-obsidian-synthesis/persona-30-extracted.json"
+          },
+          "ref_markdown_files": 18,
+          "export_markdown_files": 510,
+          "persona_count": 30,
+          "personas_accepted_count": 30,
+          "persona_sources": {
+            "inline": 15,
+            "synthesized-cycle1": 8,
+            "p-table": 7
+          },
+          "placeholder_count": 0,
+          "severe": [],
+          "warnings": [],
+          "notes": []
+        },
+        "smoke": {
+          "results": [
+            {
+              "name": "sft_format_smoke",
+              "python": "/Users/unoa/dalbitalba-train-data/.venv/bin/python",
+              "cmd": [
+                "/Users/unoa/dalbitalba-train-data/.venv/bin/python",
+                "scripts/sft_format_smoke_test.py",
+                "--tokenizer",
+                "/Users/unoa/dalbitalba-train-data/tokenizer_v4"
+              ],
+              "returncode": 0,
+              "ok": true,
+              "stdout_tail": "v3 thread-conditioned chatml builder]\n2026-05-12 15:22:57,309 [INFO]   load /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-diywluwk/raw.jsonl -> 1\n2026-05-12 15:22:57,309 [INFO] v3 pair loader active: /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-diywluwk/pair_v3.jsonl\n2026-05-12 15:22:57,309 [INFO]   load /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-diywluwk/pair_v3.jsonl -> 1\n2026-05-12 15:22:57,309 [INFO]   load /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-diywluwk/val.jsonl -> 1\n2026-05-12 15:22:57,309 [INFO] mix policy: raw=0.00 pair=1.00 format=chatml v3=True\n2026-05-12 15:22:57,309 [INFO] sampled sizes: raw=0 pair=1 / 1 available\n2026-05-12 15:22:57,318 [INFO] merged train size: 1\n2026-05-12 15:22:57,318 [INFO] val size: 1\n  [PASS] v3_chatml: example not None\n  [PASS] v3_chatml: prompt non-empty — len=168\n  [PASS] v3_chatml: prompt tokens masked — masked_count=142\n  [PASS] v3_chatml: response tokens trainable — non_masked_count=26\n  [PASS] v3_chatml: labels length == input_ids length — 168 == 168\n  [PASS] v3_chatml: chatml seq_len > bare text seq_len — chatml=168 raw=25\n\n[v2 chatml builder]\n  [PASS] v2_chatml: example not None\n  [PASS] v2_chatml: prompt non-empty — len=91\n  [PASS] v2_chatml: prompt tokens masked — masked_count=75\n  [PASS] v2_chatml: response tokens trainable — non_masked_count=16\n  [PASS] v2_chatml: labels length == input_ids length — 91 == 91\n\n[chatml special token round-trip]\n  [PASS] round-trip: <|im_start|> preserved — decoded[:80]='<|im_start|>system\\n테스트<|im_end|>\\n<|im_start|>user\\n안녕<|im_end|>\\n<|im_start|>assis'\n  [PASS] round-trip: <|im_end|> preserved\n\n[v3 user text builder]\n  [PASS] user_text: non-empty\n  [PASS] user_text: contains post_title\n  [PASS] user_text: contains parent_comment\n  [PASS] user_text: contains depth marker\n\n============================================================\nResults: 27/27 passed, 0 failed\nSUCCESS — all assertions passed\n",
+              "stderr_tail": ""
+            }
+          ],
+          "probes": [
+            {
+              "python": "/Users/unoa/dalbitalba-train-data/.venv/bin/python",
+              "module": "transformers",
+              "ok": true,
+              "stderr_tail": ""
+            }
+          ],
+          "severe": [],
+          "warnings": []
+        },
+        "recipe": {
+          "path": "recipes/round2-cycle1.env",
+          "profile": "paper8b",
+          "env": {
+            "BASE_MODEL": "Qwen/Qwen3-8B-Base",
+            "CPT_PHASE_1_DATA": "cpt_enriched.jsonl",
+            "CPT_PHASE_2_DATA": "cpt_corpus.v3.jsonl",
+            "CPT_SHORT_ROW_POLICY": "style_signal",
+            "CPT_NUM_EPOCHS": "1",
+            "LORA_R": "128",
+            "CPT_USE_DORA": "1",
+            "SEQ_LEN": "2048",
+            "OVERSAMPLE_LG_XXL": "2",
+            "CPT_LR": "1e-4",
+            "CPT_WARMUP_RATIO": "0.08",
+            "SFT_DATA": "sft_thread_conditioned.jsonl",
+            "SFT_EVAL_DATA": "sft_thread_conditioned.eval.jsonl",
+            "SFT_NUM_EPOCHS": "2",
+            "SFT_RAW_RATIO": "0.0",
+            "SFT_PERSONA_LIST": "runs/round2-obsidian-synthesis/persona-30-extracted.json",
+            "SFT_LOSS_WEIGHT_ARGOT": "1.5",
+            "SFT_LOSS_WEIGHT_THRESHOLD": "2",
+            "ORPO_DATA": "orpo_pairs.jsonl",
+            "ORPO_NUM_EPOCHS": "0",
+            "ORPO_BETA": "0.1",
+            "ORPO_STATUS": "deferred_until_real_judged_pairs",
+            "GENERATION_TEMP": "0.6",
+            "GENERATION_TOP_P": "0.9",
+            "GENERATION_MAX_NEW_TOKENS": "400",
+            "EVAL_GATE": "phase6_eval_v2",
+            "EVAL_GATE_REQUIRES_PASS": "base+v2",
+            "EVAL_PERSONA_LIST": "runs/round2-obsidian-synthesis/persona-30-extracted.json",
+            "EVAL_INPUT_DATA": "sft_thread_conditioned.eval.jsonl",
+            "EVAL_SECONDARY_AI_OPTIONAL": "1   # cross_machine_agreement waived if not provided",
+            "MUTATOR_RULESET": "round2-r1-r11",
+            "WANDB_PROJECT": "dalbitalba-round2",
+            "WANDB_RUN_GROUP": "round2-qwen3-8b-paper",
+            "WANDB_TAGS": "round2,qwen3-8b,cpt,dora,tc-sft,orpo,phase6-v2",
+            "BUDGET_PROFILE": "paper8b",
+            "EXPECTED_USD_MIN": "35",
+            "EXPECTED_USD_MAX": "55",
+            "BUDGET_CAP_USD": "60",
+            "GPU_TYPE": "NVIDIA L40S",
+            "CONTAINER_IMAGE": "runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04",
+            "CPT_TIMEOUT_HOURS": "20",
+            "MERGE_TIMEOUT_HOURS": "3",
+            "SFT_TIMEOUT_HOURS": "10",
+            "EVAL_TIMEOUT_HOURS": "6",
+            "HF_UPLOAD_TIMEOUT_HOURS": "2",
+            "STOP_FILE": ".state/round2/STOP",
+            "STAGNATION_DELTA": "0.01",
+            "CONVERGENCE_BIGRAM_JSD": "0.04"
+          }
+        },
+        "cost_estimate": {
+          "sec_per_step": 18.43,
+          "hourly_usd": 0.79,
+          "effective_batch": 16,
+          "cpt_phase_rows": [
+            48247,
+            41576
+          ],
+          "cpt_phase_steps": [
+            3016,
+            2599
+          ],
+          "cpt_steps": 5615,
+          "cpt_hours": 28.75,
+          "cpt_usd": 22.71,
+          "sft_pair_rows_used": 10245,
+          "sft_train_rows": 10245,
+          "sft_steps": 1282,
+          "sft_hours": 6.56,
+          "sft_usd": 5.18,
+          "total_train_hours": 35.31,
+          "total_train_usd": 27.89,
+          "timeout_cap_hours": 61.0,
+          "timeout_cap_usd": 48.19,
+          "budget_usd": 60.0
+        },
+        "hf": {}
+      }
+    }
+  },
+  "inputs": {
+    "files": {
+      "cpt_enriched.jsonl": {
+        "exists": true,
+        "bytes": 19626531,
+        "lines": 48247
+      },
+      "cpt_corpus.v3.jsonl": {
+        "exists": true,
+        "bytes": 9660817,
+        "lines": 41576
+      },
+      "sft_thread_conditioned.jsonl": {
+        "exists": true,
+        "bytes": 6939475,
+        "lines": 10245
+      },
+      "sft_thread_conditioned.eval.jsonl": {
+        "exists": true,
+        "bytes": 781501,
+        "lines": 1139
+      },
+      "orpo_pairs.jsonl": {
+        "exists": true,
+        "bytes": 824907,
+        "lines": 1472
+      },
+      "val_set.v2.jsonl": {
+        "exists": true,
+        "bytes": 618127,
+        "lines": 2315
+      },
+      "recipes/round2-cycle1.env": {
+        "exists": true,
+        "bytes": 2627,
+        "lines": null
+      },
+      "runs/round2-obsidian-synthesis/persona-30-extracted.json": {
+        "exists": true,
+        "bytes": 9781,
+        "lines": null
+      },
+      "tokenizer_v4/tokenizer.json": {
+        "exists": true,
+        "bytes": 11467134,
+        "lines": null
+      },
+      "chain_train_round2.sh": {
+        "exists": true,
+        "bytes": 40339,
+        "lines": null
+      }
+    },
+    "missing": []
+  },
+  "remote_files": {
+    "ref": "main",
+    "resolved_ref": "origin/main",
+    "ready": true,
+    "missing": [],
+    "fetch_returncode": 0,
+    "fetch_stderr_tail": "",
+    "dirty_worktree": true,
+    "launch_critical_dirty": [
+      " M chain_train_round2.sh",
+      " M cpt_corpus.v3.jsonl",
+      " M cpt_enriched.jsonl",
+      " M recipes/budget30.env",
+      " M recipes/round2-cycle1.env",
+      " M recipes/smoke.env",
+      " M runs/round2-obsidian-synthesis/persona-30-extracted.json",
+      " M scripts/check_smoke_promotion.py",
+      " M scripts/launch_train_pod.py",
+      " M scripts/local_verification_loop.py",
+      " M scripts/train_eval_process.py",
+      "?? scripts/macmini_smoke_loop.py"
+    ]
+  },
+  "launch_env": {
+    "required": {
+      "RUNPOD_API_KEY": false,
+      "HF_TOKEN": false,
+      "HF_USERNAME": false,
+      "GITHUB_TOKEN": false,
+      "WANDB_API_KEY": true
+    },
+    "ready": false,
+    "github_repo": "unoa-eng/dalbitalba-train-data",
+    "train_github_ref": "current branch",
+    "launch_recipe": "recipes/round2-cycle1.env",
+    "profile": "paper8b"
+  },
+  "launch_recipe_env": {
+    "BASE_MODEL": "Qwen/Qwen3-8B-Base",
+    "CPT_PHASE_1_DATA": "cpt_enriched.jsonl",
+    "CPT_PHASE_2_DATA": "cpt_corpus.v3.jsonl",
+    "CPT_SHORT_ROW_POLICY": "style_signal",
+    "CPT_NUM_EPOCHS": "1",
+    "LORA_R": "128",
+    "CPT_USE_DORA": "1",
+    "SEQ_LEN": "2048",
+    "OVERSAMPLE_LG_XXL": "2",
+    "CPT_LR": "1e-4",
+    "CPT_WARMUP_RATIO": "0.08",
+    "SFT_DATA": "sft_thread_conditioned.jsonl",
+    "SFT_EVAL_DATA": "sft_thread_conditioned.eval.jsonl",
+    "SFT_NUM_EPOCHS": "2",
+    "SFT_RAW_RATIO": "0.0",
+    "SFT_PERSONA_LIST": "runs/round2-obsidian-synthesis/persona-30-extracted.json",
+    "SFT_LOSS_WEIGHT_ARGOT": "1.5",
+    "SFT_LOSS_WEIGHT_THRESHOLD": "2",
+    "ORPO_DATA": "orpo_pairs.jsonl",
+    "ORPO_NUM_EPOCHS": "0",
+    "ORPO_BETA": "0.1",
+    "ORPO_STATUS": "deferred_until_real_judged_pairs",
+    "GENERATION_TEMP": "0.6",
+    "GENERATION_TOP_P": "0.9",
+    "GENERATION_MAX_NEW_TOKENS": "400",
+    "EVAL_GATE": "phase6_eval_v2",
+    "EVAL_GATE_REQUIRES_PASS": "base+v2",
+    "EVAL_PERSONA_LIST": "runs/round2-obsidian-synthesis/persona-30-extracted.json",
+    "EVAL_INPUT_DATA": "sft_thread_conditioned.eval.jsonl",
+    "EVAL_SECONDARY_AI_OPTIONAL": "1   # cross_machine_agreement waived if not provided",
+    "MUTATOR_RULESET": "round2-r1-r11",
+    "WANDB_PROJECT": "dalbitalba-round2",
+    "WANDB_RUN_GROUP": "round2-qwen3-8b-paper",
+    "WANDB_TAGS": "round2,qwen3-8b,cpt,dora,tc-sft,orpo,phase6-v2",
+    "BUDGET_PROFILE": "paper8b",
+    "EXPECTED_USD_MIN": "35",
+    "EXPECTED_USD_MAX": "55",
+    "BUDGET_CAP_USD": "60",
+    "GPU_TYPE": "NVIDIA L40S",
+    "CONTAINER_IMAGE": "runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04",
+    "CPT_TIMEOUT_HOURS": "20",
+    "MERGE_TIMEOUT_HOURS": "3",
+    "SFT_TIMEOUT_HOURS": "10",
+    "EVAL_TIMEOUT_HOURS": "6",
+    "HF_UPLOAD_TIMEOUT_HOURS": "2",
+    "STOP_FILE": ".state/round2/STOP",
+    "STAGNATION_DELTA": "0.01",
+    "CONVERGENCE_BIGRAM_JSD": "0.04"
+  },
+  "eval_smoke": {
+    "returncode": 0,
+    "report": ".state/train-eval-process/20260512T062249884856Z/phase6_v2_smoke.json",
+    "purpose": "metric_identity_smoke_only_not_quality_gate",
+    "overall": {
+      "verdict": "PASS",
+      "violations": []
+    },
+    "stderr_tail": ""
+  },
+  "launch": {
+    "cmd": [
+      "/Users/unoa/dalbitalba-train-data/.venv/bin/python",
+      "scripts/launch_train_pod.py",
+      "--chain",
+      "round2",
+      "--dry-run"
+    ],
+    "returncode": 0,
+    "stdout": "[gate] verifier PASS severe_count=0 @ 2026-05-12T06:22:57Z\n{\n  \"name\": \"dalbitalba-train-20260512-0622\",\n  \"imageName\": \"runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04\",\n  \"computeType\": \"GPU\",\n  \"cloudType\": \"COMMUNITY\",\n  \"gpuCount\": 1,\n  \"gpuTypePriority\": \"availability\",\n  \"volumeInGb\": 80,\n  \"containerDiskInGb\": 40,\n  \"minVCPUPerGPU\": 8,\n  \"minRAMPerGPU\": 48,\n  \"volumeMountPath\": \"/workspace\",\n  \"ports\": [],\n  \"interruptible\": false,\n  \"env\": {\n    \"HF_TOKEN\": \"***REDACTED***\",\n    \"HF_USERNAME\": \"***REDACTED***\",\n    \"GITHUB_TOKEN\": \"***REDACTED***\",\n    \"GITHUB_REPO\": \"***REDACTED***\",\n    \"RUNPOD_API_KEY\": \"***REDACTED***\",\n    \"BASE_MODEL\": \"***REDACTED***\",\n    \"TRAIN_CPT_JSONL\": \"***REDACTED***\",\n    \"INPUT_JSONL\": \"***REDACTED***\",\n    \"TRAIN_SFT_PAIR_JSONL\": \"***REDACTED***\",\n    \"SFT_PAIR_JSONL\": \"***REDACTED***\",\n    \"TRAIN_VAL_JSONL\": \"***REDACTED***\",\n    \"CPT_VAL_JSONL\": \"***REDACTED***\",\n    \"CPT_NUM_EPOCHS\": \"***REDACTED***\",\n    \"SFT_NUM_EPOCHS\": \"***REDACTED***\",\n    \"CPT_LR\": \"***REDACTED***\",\n    \"SFT_LR\": \"***REDACTED***\",\n    \"WANDB_PROJECT\": \"***REDACTED***\",\n    \"TRAIN_CHAIN\": \"***REDACTED***\",\n    \"SFT_RAW_RATIO\": \"***REDACTED***\",\n    \"CPT_PHASE_1_DATA\": \"***REDACTED***\",\n    \"CPT_PHASE_2_DATA\": \"***REDACTED***\",\n    \"CPT_TIMEOUT_HOURS\": \"***REDACTED***\",\n    \"MERGE_TIMEOUT_HOURS\": \"***REDACTED***\",\n    \"SFT_TIMEOUT_HOURS\": \"***REDACTED***\",\n    \"HF_UPLOAD_TIMEOUT_HOURS\": \"***REDACTED***\",\n    \"EVAL_TIMEOUT_HOURS\": \"***REDACTED***\",\n    \"BUDGET_PROFILE\": \"***REDACTED***\",\n    \"BUDGET_CAP_USD\": \"***REDACTED***\",\n    \"EVAL_GATE\": \"***REDACTED***\",\n    \"EVAL_PERSONA_LIST\": \"***REDACTED***\",\n    \"GENERATION_TEMP\": \"***REDACTED***\",\n    \"GENERATION_TOP_P\": \"***REDACTED***\",\n    \"GENERATION_MAX_NEW_TOKENS\": \"***REDACTED***\",\n    \"ORPO_NUM_EPOCHS\": \"***REDACTED***\",\n    \"ORPO_BETA\": \"***REDACTED***\",\n    \"WANDB_API_KEY\": \"***REDACTED***\",\n    \"TRAIN_REPORT_TO\": \"***REDACTED***\",\n    \"WANDB_RUN_GROUP\": \"***REDACTED***\",\n    \"WANDB_TAGS\": \"***REDACTED***\",\n    \"WANDB_NOTES\": \"***REDACTED***\"\n  },\n  \"dockerEntrypoint\": [],\n  \"dockerStartCmd\": [\n    \"bash\",\n    \"-lc\",\n    \"set -o pipefail && mkdir -p /workspace/logs /workspace/data /workspace/scripts /workspace/out /workspace/hf_cache /workspace/recipes && export HF_HOME=/workspace/hf_cache && export TOKENIZERS_PARALLELISM=false && rm -rf /workspace/repo && git clone --branch main --single-branch \\\"https://x-access-token:***REDACTED***@github.com/unoa-eng/dalbitalba-train-data.git\\\" /workspace/repo && (cp /workspace/repo/*.jsonl /workspace/data/ 2>/dev/null || true) && (cp /workspace/repo/recipes/*.env /workspace/recipes/ 2>/dev/null || true) && mkdir -p /workspace/runs && (cp -a /workspace/repo/runs/round2-obsidian-synthesis /workspace/runs/ 2>/dev/null || true) && (cp -a /workspace/repo/tokenizer_v4 /workspace/ 2>/dev/null || true) && (cp -a /workspace/repo/source_db_cache /workspace/data/ 2>/dev/null || true) && (cp /workspace/repo/train_*.py /workspace/ 2>/dev/null || true) && mkdir -p /workspace/scripts && (cp /workspace/repo/scripts/*.py /workspace/scripts/ 2>/dev/null || true) && cp /workspace/repo/chain_train_round2.sh /workspace/chain_train_round2.sh && chmod +x /workspace/chain_train_round2.sh && bash /workspace/chain_train_round2.sh 2>&1 | tee -a /workspace/logs/chain_$(date -u '+%Y%m%dT%H%M%SZ').log; rc=${PIPESTATUS[0]}; echo \\\"$(date -u '+%Y-%m-%dT%H:%M:%SZ') chain exit rc=${rc}\\\" >> /workspace/logs/launcher.log; exit ${rc}\"\n  ],\n  \"gpuTypeIds\": [\n    \"NVIDIA L40S\"\n  ]\n}\n",
+    "stderr": "",
+    "stdout_log": ".state/train-eval-process/20260512T062249884856Z/launch_train_pod.stdout.log",
+    "stderr_log": ".state/train-eval-process/20260512T062249884856Z/launch_train_pod.stderr.log"
+  }
+}

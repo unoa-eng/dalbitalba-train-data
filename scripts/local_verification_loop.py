@@ -59,6 +59,7 @@ PYTHON_SCRIPTS = [
     "scripts/sft_format_smoke_test.py",
     "scripts/launch_train_pod.py",
     "scripts/launch_eval_pod.py",
+    "scripts/macmini_smoke_loop.py",
     "scripts/phase6_generate.py",
     "scripts/phase6_eval.py",
     "scripts/phase6_eval_v2.py",
@@ -75,8 +76,11 @@ REQUIRED_SHELL = [
 ]
 
 LOCAL_SMOKE_SCRIPT = "scripts/sft_format_smoke_test.py"
+LOCAL_PYTHONWARNINGS = "ignore:urllib3 v2 only supports OpenSSL 1.1.1+"
 
-PHONE_RE = re.compile(r"\b(?:\+?82[- ]?)?(?:0\d{1,2})[- .]?\d{3,4}[- .]?\d{4}\b")
+PHONE_RE = re.compile(
+    r"(?<!\d)(?:\+?82[- ]?)?(?:0\d{1,2}[- ]\d{3,4}[- ]\d{4}|01[016789]\d{7,8})(?!\d)"
+)
 EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b")
 URL_RE = re.compile(r"\bhttps?://|www\.", re.IGNORECASE)
 RRN_RE = re.compile(r"\b\d{6}[-\s]?\d{7}\b")
@@ -270,7 +274,7 @@ def validate_dataset(kind: str, path: Path) -> dict[str, Any]:
     lengths = [len(text) for text in nonempty_texts]
 
     if kind == "cpt":
-        required = {"text", "kind", "source_id", "source_field", "length_bucket"}
+        required = {"text", "kind", "source_id"}
     elif kind == "sft":
         has_thread_schema = bool(rows and (rows[0].get("instruction") is not None or rows[0].get("output") is not None))
         if has_thread_schema:
@@ -320,6 +324,13 @@ def validate_dataset(kind: str, path: Path) -> dict[str, Any]:
         severe.append(f"{path.name}: invalid JSONL rows={len(errors)}")
     if missing_required:
         severe.append(f"{path.name}: missing required keys rows={missing_required}")
+    if kind == "cpt" and rows:
+        has_length_metadata = any(
+            "length_bucket" in row or "view_bucket" in row or "comment_bucket" in row
+            for row in rows
+        )
+        if not has_length_metadata:
+            warn.append(f"{path.name}: CPT rows lack bucket metadata")
     if not rows:
         severe.append(f"{path.name}: no valid rows")
     if pii["phone_like"] or pii["email_like"] or pii["rrn_like"]:
@@ -438,6 +449,12 @@ def verify_contract() -> dict[str, Any]:
         severe.append("launch_train_pod.py does not copy tokenizer_v4 into the pod workspace")
     if "ALLOW_DIRTY_LAUNCH" not in launch_train or "launch-critical local changes" not in launch_train:
         severe.append("launch_train_pod.py does not block dirty launch-critical local changes")
+    if "[recipe-profile]" not in chain:
+        severe.append("chain_train_round2.sh does not re-apply launch profile overlays after base recipe")
+    if "SKIP_SFT" not in chain or "CPT_MERGED_PATH" not in chain:
+        severe.append("chain_train_round2.sh does not support CPT-only eval path")
+    if "VERIFIER_GATED_PROFILES" not in launch_train or 'verdict != "PASS"' not in launch_train:
+        severe.append("launch_train_pod.py does not require zero-warning PASS verifier for gated profiles")
     if "WANDB_API_KEY" not in workflow_train:
         severe.append(".github/workflows/runpod-train.yml does not pass WANDB_API_KEY")
     if "metrics.json" not in run_eval:
@@ -542,8 +559,18 @@ def python_can_import(python_exe: str, module: str) -> tuple[bool, str]:
         cwd=REPO_ROOT,
         text=True,
         capture_output=True,
+        env=local_subprocess_env(),
     )
     return proc.returncode == 0, proc.stderr[-1000:]
+
+
+def local_subprocess_env() -> dict[str, str]:
+    env = os.environ.copy()
+    existing = env.get("PYTHONWARNINGS", "").strip()
+    env["PYTHONWARNINGS"] = (
+        f"{LOCAL_PYTHONWARNINGS},{existing}" if existing else LOCAL_PYTHONWARNINGS
+    )
+    return env
 
 
 def resolve_smoke_python() -> tuple[str | None, list[dict[str, Any]], list[str]]:
@@ -609,6 +636,7 @@ def run_local_smoke() -> dict[str, Any]:
         cwd=REPO_ROOT,
         text=True,
         capture_output=True,
+        env=local_subprocess_env(),
     )
     results.append(
         {
@@ -724,7 +752,7 @@ def last_eval_loss(history: list[Any]) -> float | None:
 
 
 def estimate_training_cost(
-    cpt_rows: int,
+    cpt_rows: int | list[int],
     sft_raw_rows: int,
     sft_pair_rows: int,
     sec_per_step: float,
@@ -735,10 +763,19 @@ def estimate_training_cost(
     sft_raw_ratio: float = 0.8,
     cpt_max_steps: int = 0,
     sft_max_steps: int = 0,
+    cpt_limit_rows: int = 0,
 ) -> dict[str, Any]:
-    cpt_steps = math.ceil(cpt_rows / batch) * cpt_epochs
-    if cpt_max_steps > 0:
-        cpt_steps = min(cpt_steps, cpt_max_steps)
+    cpt_phase_source_rows = cpt_rows if isinstance(cpt_rows, list) else [cpt_rows]
+    cpt_phase_effective_rows: list[int] = []
+    cpt_phase_steps: list[int] = []
+    for phase_rows in cpt_phase_source_rows:
+        effective_rows = min(phase_rows, cpt_limit_rows) if cpt_limit_rows > 0 else phase_rows
+        phase_steps = math.ceil(effective_rows / batch) * cpt_epochs
+        if cpt_max_steps > 0:
+            phase_steps = min(phase_steps, cpt_max_steps)
+        cpt_phase_effective_rows.append(effective_rows)
+        cpt_phase_steps.append(phase_steps)
+    cpt_steps = sum(cpt_phase_steps)
     if sft_epochs <= 0:
         sft_pair_take = 0
         sft_rows = 0
@@ -766,6 +803,8 @@ def estimate_training_cost(
         "sec_per_step": sec_per_step,
         "hourly_usd": hourly_usd,
         "effective_batch": batch,
+        "cpt_phase_rows": cpt_phase_effective_rows,
+        "cpt_phase_steps": cpt_phase_steps,
         "cpt_steps": cpt_steps,
         "cpt_hours": round(cpt_hours, 2),
         "cpt_usd": round(cpt_hours * hourly_usd, 2),
@@ -809,10 +848,56 @@ def float_env(env: dict[str, str], key: str, default: float) -> float:
 def pick_recipe_path(profile: str) -> Path:
     mapping = {
         "default": REPO_ROOT / "recipes" / "round2-cycle1.env",
+        "paper8b": REPO_ROOT / "recipes" / "round2-cycle1.env",
         "budget30": REPO_ROOT / "recipes" / "budget30.env",
         "smoke": REPO_ROOT / "recipes" / "smoke.env",
     }
     return mapping.get(profile, mapping["default"])
+
+
+def effective_recipe_env(profile: str) -> tuple[dict[str, str], list[Path]]:
+    """Match chain_train_round2.sh: base recipe first, launch overlay second."""
+    base_path = REPO_ROOT / "recipes" / "round2-cycle1.env"
+    env = parse_recipe_env(base_path)
+    paths = [base_path]
+    if profile not in ("default", "paper8b"):
+        overlay_path = pick_recipe_path(profile)
+        env.update(parse_recipe_env(overlay_path))
+        paths.append(overlay_path)
+    return env, paths
+
+
+def repo_data_path(raw_value: str | None, fallback: Path) -> Path:
+    if not raw_value:
+        return fallback
+    value = raw_value.strip()
+    if not value:
+        return fallback
+    if value.startswith("/workspace/data/"):
+        value = value.removeprefix("/workspace/data/")
+    if value.startswith("./"):
+        value = value[2:]
+    if value.startswith("data/"):
+        value = value.removeprefix("data/")
+    path = Path(value)
+    if path.is_absolute():
+        return path
+    return REPO_ROOT / path
+
+
+def dataset_specs_for_recipe(recipe_env: dict[str, str]) -> dict[str, tuple[str, Path]]:
+    cpt_phase1 = recipe_env.get("CPT_PHASE_1_DATA")
+    cpt_phase2 = recipe_env.get("CPT_PHASE_2_DATA") or recipe_env.get("TRAIN_CPT_JSONL")
+    specs: dict[str, tuple[str, Path]] = {}
+    if cpt_phase1 or cpt_phase2:
+        specs["cpt_phase1"] = ("cpt", repo_data_path(cpt_phase1 or cpt_phase2, ACTIVE_CPT_PATH))
+        specs["cpt_phase2"] = ("cpt", repo_data_path(cpt_phase2 or cpt_phase1, ACTIVE_CPT_PATH))
+    else:
+        specs["cpt"] = ("cpt", ACTIVE_CPT_PATH)
+    specs["sft"] = ("sft", repo_data_path(recipe_env.get("SFT_DATA"), ACTIVE_SFT_PATH))
+    specs["eval"] = ("eval", repo_data_path(recipe_env.get("EVAL_INPUT_DATA"), ACTIVE_EVAL_PATH))
+    specs["cai"] = ("cai", repo_data_path(recipe_env.get("ORPO_DATA"), REPO_ROOT / "cai_pairs.filtered.jsonl"))
+    return specs
 
 
 def write_reports(payload: dict[str, Any], run_dir: Path) -> None:
@@ -829,6 +914,7 @@ def write_reports(payload: dict[str, Any], run_dir: Path) -> None:
         "warning_count": len(payload["warnings"]),
         "profile": (payload.get("recipe") or {}).get("profile"),
         "recipe": (payload.get("recipe") or {}).get("path"),
+        "report": str((run_dir / "report.md").relative_to(REPO_ROOT)),
     }
     (RUNS_DIR / "latest-local-verification.json").write_text(
         json.dumps(latest, indent=2, ensure_ascii=False), encoding="utf-8"
@@ -882,6 +968,14 @@ def render_markdown(payload: dict[str, Any]) -> str:
             f"{item['duplicate_rate']:.4f} | {hangul_pct} | {stats.get('avg', 'N/A')} | "
             f"{stats.get('p95', 'N/A')} | {pii_count} |"
         )
+    dataset_notes = [
+        f"- {name}: {note}"
+        for name, item in payload["datasets"].items()
+        for note in (item.get("notes") or [])
+    ]
+    if dataset_notes:
+        lines.extend(["", "## Dataset Notes", ""])
+        lines.extend(dataset_notes)
     if payload.get("cost_estimate"):
         cost = payload["cost_estimate"]
         lines.extend(
@@ -892,6 +986,8 @@ def render_markdown(payload: dict[str, Any]) -> str:
                 f"- CPT: `{cost['cpt_hours']}h`, `${cost['cpt_usd']}`",
                 f"- SFT: `{cost['sft_hours']}h`, `${cost['sft_usd']}`",
                 f"- Total train: `{cost['total_train_hours']}h`, `${cost['total_train_usd']}`",
+                f"- Budget cap: `${cost.get('budget_usd', 'N/A')}`",
+                f"- Train/eval/upload timeout cap: `{cost.get('timeout_cap_hours', 'N/A')}h`, `${cost.get('timeout_cap_usd', 'N/A')}`",
             ]
         )
     if payload.get("hf"):
@@ -920,24 +1016,35 @@ def main() -> int:
     parser.add_argument("--hf-token-env", default="HF_TOKEN")
     parser.add_argument("--sec-per-step", type=float, default=18.43)
     parser.add_argument("--hourly-usd", type=float, default=0.79)
-    parser.add_argument("--budget-usd", type=float, default=30.0)
+    parser.add_argument("--budget-usd", type=float, default=None)
     parser.add_argument("--strict", action="store_true")
     parser.add_argument(
         "--profile",
-        choices=("default", "budget30", "smoke"),
-        default=os.environ.get("BUDGET_PROFILE", "default"),
-        help="when 'budget30', a budget overrun escalates from WARN to SEVERE",
+        choices=("default", "paper8b", "budget30", "smoke"),
+        default=os.environ.get("BUDGET_PROFILE", "paper8b"),
+        help="verification profile; paper8b is the full no-feature-loss paid profile",
     )
     args = parser.parse_args()
 
-    datasets = {name: validate_dataset(name, path) for name, path in DEFAULT_FILES.items()}
+    recipe_env, recipe_paths = effective_recipe_env(args.profile)
+    dataset_specs = dataset_specs_for_recipe(recipe_env)
+    datasets = {
+        name: validate_dataset(kind, path)
+        for name, (kind, path) in dataset_specs.items()
+    }
+    if recipe_env.get("CPT_SHORT_ROW_POLICY") == "style_signal":
+        for item in datasets.values():
+            item_warnings = item.get("warnings") or []
+            short_warnings = [warning for warning in item_warnings if "many very short rows" in warning]
+            if short_warnings:
+                item["warnings"] = [warning for warning in item_warnings if warning not in short_warnings]
+                item.setdefault("notes", []).append(
+                    "short CPT rows accepted by CPT_SHORT_ROW_POLICY=style_signal"
+                )
     compile_report = compile_scripts()
     contract = verify_contract()
     obsidian = verify_obsidian_scope()
     smoke = run_local_smoke()
-
-    recipe_path = pick_recipe_path(args.profile)
-    recipe_env = parse_recipe_env(recipe_path)
 
     severe: list[str] = []
     warnings: list[str] = []
@@ -952,17 +1059,24 @@ def main() -> int:
     warnings.extend(obsidian["warnings"])
     warnings.extend(smoke["warnings"])
 
-    cpt_rows = datasets["cpt"]["rows"]
+    cpt_datasets = [
+        item for name, item in datasets.items()
+        if name == "cpt" or name.startswith("cpt_phase")
+    ]
+    cpt_phase_rows = [int(item["rows"]) for item in cpt_datasets]
+    cpt_phase2_rows = int(
+        (
+            datasets.get("cpt_phase2")
+            or datasets.get("cpt")
+            or (cpt_datasets[-1] if cpt_datasets else {"rows": 0})
+        )["rows"]
+    )
     sft_rows = datasets["sft"]["rows"]
     eval_rows = datasets["eval"]["rows"]
     default_sft_raw_ratio = 0.0 if ACTIVE_SFT_PATH.name == "sft_thread_conditioned.jsonl" else 0.8
-    cpt_rows_for_cost = min(
-        cpt_rows,
-        int_env(recipe_env, "CPT_LIMIT_ROWS", cpt_rows) or cpt_rows,
-    )
     sft_raw_rows_for_cost = min(
-        cpt_rows,
-        int_env(recipe_env, "SFT_RAW_LIMIT_ROWS", cpt_rows) or cpt_rows,
+        cpt_phase2_rows,
+        int_env(recipe_env, "SFT_RAW_LIMIT_ROWS", cpt_phase2_rows) or cpt_phase2_rows,
     )
     sft_pair_rows_for_cost = min(
         sft_rows,
@@ -972,8 +1086,13 @@ def main() -> int:
     sft_epochs = int_env(recipe_env, "SFT_NUM_EPOCHS", 2)
     if recipe_env.get("SKIP_SFT") == "1":
         sft_epochs = 0
+    budget_usd = (
+        args.budget_usd
+        if args.budget_usd is not None
+        else float_env(recipe_env, "BUDGET_CAP_USD", 30.0)
+    )
     cost = estimate_training_cost(
-        cpt_rows=cpt_rows_for_cost,
+        cpt_rows=cpt_phase_rows,
         sft_raw_rows=sft_raw_rows_for_cost,
         sft_pair_rows=sft_pair_rows_for_cost,
         sec_per_step=args.sec_per_step,
@@ -983,39 +1102,44 @@ def main() -> int:
         sft_raw_ratio=float_env(recipe_env, "SFT_RAW_RATIO", default_sft_raw_ratio),
         cpt_max_steps=int_env(recipe_env, "CPT_MAX_STEPS", 0),
         sft_max_steps=int_env(recipe_env, "SFT_MAX_STEPS", 0),
+        cpt_limit_rows=int_env(recipe_env, "CPT_LIMIT_ROWS", 0),
     )
-    # Profile-aware budget gating.
-    # default: full CPT+SFT vs budget (warn only, since the operator may pick a sub-profile).
-    # budget30: CPT-only — overrun is SEVERE (a paid run under this profile must fit $30).
-    # smoke: budget bound is much smaller; overrun is SEVERE.
+    timeout_cap_hours = (
+        len(cpt_phase_rows) * float_env(recipe_env, "CPT_TIMEOUT_HOURS", 0.0)
+        + float_env(recipe_env, "MERGE_TIMEOUT_HOURS", 0.0)
+        + float_env(recipe_env, "EVAL_TIMEOUT_HOURS", 0.0)
+        + float_env(recipe_env, "HF_UPLOAD_TIMEOUT_HOURS", 0.0)
+    )
+    if recipe_env.get("SKIP_SFT") != "1" and int_env(recipe_env, "SFT_NUM_EPOCHS", 2) > 0:
+        timeout_cap_hours += float_env(recipe_env, "SFT_TIMEOUT_HOURS", 0.0)
+    cost["timeout_cap_hours"] = round(timeout_cap_hours, 2)
+    cost["timeout_cap_usd"] = round(timeout_cap_hours * args.hourly_usd, 2)
+    cost["budget_usd"] = budget_usd
+    # Profile-aware budget gating. paper8b is the no-feature-loss paid profile:
+    # full CPT phase 1/2 + SFT + integrated phase6 eval must fit its recipe cap.
     profile = args.profile
     if profile == "budget30":
         duplicate_warnings = [item for item in warnings if "high duplicate rate" in item]
         if duplicate_warnings:
             severe.extend(f"[budget30] {item}" for item in duplicate_warnings)
-    if profile == "budget30":
-        cpt_cost = cost["cpt_usd"]
-        if cpt_cost > args.budget_usd:
+    if profile in ("paper8b", "default", "budget30"):
+        expected_cost = cost["total_train_usd"]
+        if expected_cost > budget_usd:
             severe.append(
-                f"[budget30] estimated CPT cost ${cpt_cost} exceeds ceiling ${args.budget_usd}; refuse to launch"
+                f"[{profile}] estimated train cost ${expected_cost} exceeds budget cap ${budget_usd}; refuse to launch"
             )
-        elif cpt_cost > args.budget_usd * 0.92:
+        if cost["timeout_cap_usd"] > budget_usd:
+            severe.append(
+                f"[{profile}] timeout cap ${cost['timeout_cap_usd']} exceeds budget cap ${budget_usd}; refuse to launch"
+            )
+        elif expected_cost > budget_usd * 0.92:
             warnings.append(
-                f"[budget30] CPT cost ${cpt_cost} ≥ 92% of ${args.budget_usd}; safety margin almost gone"
+                f"[{profile}] estimated train cost ${expected_cost} ≥ 92% of budget cap ${budget_usd}; safety margin almost gone"
             )
     elif profile == "smoke":
         if cost["cpt_usd"] > 8:
             severe.append(
                 f"[smoke] CPT cost estimate ${cost['cpt_usd']} > $8 ceiling for plumbing test"
-            )
-    else:
-        if cost["total_train_usd"] > args.budget_usd:
-            warnings.append(
-                f"estimated full train cost ${cost['total_train_usd']} exceeds budget ${args.budget_usd}; use a smoke or CPT-only budget recipe"
-            )
-        elif cost["total_train_usd"] > args.budget_usd * 0.85:
-            warnings.append(
-                f"estimated train cost ${cost['total_train_usd']} is close to budget ${args.budget_usd}"
             )
     if eval_rows < 500:
         warnings.append("validation set is small for stable generation metrics")
@@ -1031,6 +1155,8 @@ def main() -> int:
         severe.extend(hf["sft"].get("severe", []))
         warnings.extend(hf["sft"].get("warnings", []))
 
+    severe = list(dict.fromkeys(severe))
+    warnings = list(dict.fromkeys(warnings))
     verdict = "FAIL" if severe else ("WARN" if warnings else "PASS")
     payload = {
         "timestamp": utc_now(),
@@ -1043,7 +1169,7 @@ def main() -> int:
         "obsidian": obsidian,
         "smoke": smoke,
         "recipe": {
-            "path": str(recipe_path.relative_to(REPO_ROOT)),
+            "path": " + ".join(str(path.relative_to(REPO_ROOT)) for path in recipe_paths),
             "profile": args.profile,
             "env": recipe_env,
         },
@@ -1056,8 +1182,11 @@ def main() -> int:
     write_reports(payload, run_dir)
 
     print(json.dumps({"verdict": verdict, "report": str(run_dir / "report.md")}, ensure_ascii=False))
-    if severe and args.strict:
-        return 2
+    if args.strict:
+        if severe:
+            return 2
+        if warnings:
+            return 1
     return 0 if not severe else 2
 
 

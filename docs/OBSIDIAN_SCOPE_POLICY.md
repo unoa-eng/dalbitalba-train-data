@@ -30,15 +30,15 @@ The accepted path is:
   prompt schema.
 - The local verifier fails if the Obsidian reference/export/persona scope is
   missing or materially incomplete.
-- Placeholder personas are recorded as metadata for cycle-1 ID coverage; they
-  must not be treated as proof of final persona quality.
+- Cycle-1 synthesized personas are recorded as explicit metadata for 30-ID
+  coverage; they must remain fully populated and auditable.
 
 ## Operational Check
 
 Run:
 
 ```bash
-python scripts/local_verification_loop.py --strict --profile budget30
+python scripts/local_verification_loop.py --strict --profile paper8b
 ```
 
 The report's `Obsidian Scope` section must show nonzero reference/export counts

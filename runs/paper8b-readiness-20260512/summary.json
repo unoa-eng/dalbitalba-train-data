@@ -1,0 +1,205 @@
+{
+  "profile": "paper8b",
+  "verdict": "PASS",
+  "local_verification": {
+    "run_dir": "runs/local-verification-20260512-062257-508389",
+    "verdict": "PASS",
+    "severe_count": 0,
+    "warning_count": 0,
+    "report": "runs/local-verification-20260512-062257-508389/report.md"
+  },
+  "macmini_smoke": {
+    "run_dir": "runs/macmini-smoke-20260512-062239-603856",
+    "verdict": "PASS",
+    "checks": [
+      {
+        "name": "bash_n_chain_train_round2",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "name": "bash_n_chain_train",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "name": "py_compile",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "name": "round2_integrity",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "name": "prelaunch_research",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "name": "sft_format_smoke",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "name": "local_verification_paper8b",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "name": "train_eval_process_dry_run",
+        "ok": true,
+        "returncode": 0
+      }
+    ],
+    "report": "runs/macmini-smoke-20260512-062239-603856/report.md"
+  },
+  "train_eval_dry_run": {
+    "state_dir": ".state/train-eval-process/20260512T062249884856Z",
+    "preflight_verdict": "PASS",
+    "preflight_severe": 0,
+    "preflight_warnings": 0,
+    "eval_smoke": {
+      "verdict": "PASS",
+      "violations": []
+    },
+    "launch_returncode": 0
+  },
+  "recipe": {
+    "BUDGET_PROFILE": "paper8b",
+    "BUDGET_CAP_USD": "60",
+    "GPU_TYPE": "NVIDIA L40S",
+    "BASE_MODEL": "Qwen/Qwen3-8B-Base",
+    "CPT_PHASE_1_DATA": "cpt_enriched.jsonl",
+    "CPT_PHASE_2_DATA": "cpt_corpus.v3.jsonl",
+    "CPT_SHORT_ROW_POLICY": "style_signal",
+    "SFT_NUM_EPOCHS": "2",
+    "ORPO_NUM_EPOCHS": "0",
+    "CPT_TIMEOUT_HOURS": "20",
+    "MERGE_TIMEOUT_HOURS": "3",
+    "SFT_TIMEOUT_HOURS": "10",
+    "EVAL_TIMEOUT_HOURS": "6",
+    "HF_UPLOAD_TIMEOUT_HOURS": "2"
+  },
+  "cost_estimate": {
+    "sec_per_step": 18.43,
+    "hourly_usd": 0.79,
+    "effective_batch": 16,
+    "cpt_phase_rows": [
+      48247,
+      41576
+    ],
+    "cpt_phase_steps": [
+      3016,
+      2599
+    ],
+    "cpt_steps": 5615,
+    "cpt_hours": 28.75,
+    "cpt_usd": 22.71,
+    "sft_pair_rows_used": 10245,
+    "sft_train_rows": 10245,
+    "sft_steps": 1282,
+    "sft_hours": 6.56,
+    "sft_usd": 5.18,
+    "total_train_hours": 35.31,
+    "total_train_usd": 27.89,
+    "timeout_cap_hours": 61.0,
+    "timeout_cap_usd": 48.19,
+    "budget_usd": 60.0
+  },
+  "datasets": {
+    "cpt_phase1": {
+      "path": "cpt_enriched.jsonl",
+      "rows": 48247,
+      "pii_signals": {
+        "phone_like": 0,
+        "email_like": 0,
+        "url_like": 0,
+        "rrn_like": 0,
+        "account_like": 0,
+        "minor_sexual_proximity": 0
+      },
+      "warnings": [],
+      "notes": []
+    },
+    "cpt_phase2": {
+      "path": "cpt_corpus.v3.jsonl",
+      "rows": 41576,
+      "pii_signals": {
+        "phone_like": 0,
+        "email_like": 0,
+        "url_like": 0,
+        "rrn_like": 0,
+        "account_like": 0,
+        "minor_sexual_proximity": 0
+      },
+      "warnings": [],
+      "notes": [
+        "short CPT rows accepted by CPT_SHORT_ROW_POLICY=style_signal"
+      ]
+    },
+    "sft": {
+      "path": "sft_thread_conditioned.jsonl",
+      "rows": 10245,
+      "pii_signals": {
+        "phone_like": 0,
+        "email_like": 0,
+        "url_like": 0,
+        "rrn_like": 0,
+        "account_like": 0,
+        "minor_sexual_proximity": 0
+      },
+      "warnings": [],
+      "notes": []
+    },
+    "eval": {
+      "path": "sft_thread_conditioned.eval.jsonl",
+      "rows": 1139,
+      "pii_signals": {
+        "phone_like": 0,
+        "email_like": 0,
+        "url_like": 0,
+        "rrn_like": 0,
+        "account_like": 0,
+        "minor_sexual_proximity": 0
+      },
+      "warnings": [],
+      "notes": []
+    },
+    "cai": {
+      "path": "orpo_pairs.jsonl",
+      "rows": 1472,
+      "pii_signals": {
+        "phone_like": 0,
+        "email_like": 0,
+        "url_like": 0,
+        "rrn_like": 0,
+        "account_like": 0,
+        "minor_sexual_proximity": 0
+      },
+      "warnings": [],
+      "notes": []
+    }
+  },
+  "obsidian": {
+    "paths": {
+      "ref_dir": "research/obsidian-ref",
+      "export_dir": "research/obsidian-export",
+      "persona_list": "runs/round2-obsidian-synthesis/persona-30-extracted.json"
+    },
+    "ref_markdown_files": 18,
+    "export_markdown_files": 510,
+    "persona_count": 30,
+    "personas_accepted_count": 30,
+    "persona_sources": {
+      "inline": 15,
+      "synthesized-cycle1": 8,
+      "p-table": 7
+    },
+    "placeholder_count": 0,
+    "severe": [],
+    "warnings": [],
+    "notes": []
+  }
+}

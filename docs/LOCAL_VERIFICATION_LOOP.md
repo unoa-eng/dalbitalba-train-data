@@ -1,20 +1,22 @@
 # Local Verification Loop
 
 This repo must pass local verification before any RunPod training launch or
-final Hugging Face promotion. The default budget assumption is now `$30`, so a
-full CPT + SFT run is expected to warn unless a cheaper profile is selected.
+final Hugging Face promotion. The default paid target is `paper8b`: full
+round2 CPT phase 1/2 + SFT + integrated phase6 eval. `budget30` remains a
+legacy CPT-only probe, not the final quality target.
 
 ## 1. Local gate
 
 Run:
 
 ```bash
-python scripts/local_verification_loop.py --strict
+python scripts/local_verification_loop.py --strict --profile paper8b
 ```
 
 Expected result before spending GPU money:
 
 - `Severe: 0`
+- `Warnings: 0`
 - JSONL parse errors: `0`
 - direct PII signals: `0`
 - all Python training/eval scripts compile
@@ -29,14 +31,14 @@ the 8B base model and does not replace the paid RunPod smoke.
 
 The verifier also checks Obsidian-derived reference coverage mechanically. Raw
 Obsidian markdown remains reference/export material; the training/eval path uses
-the curated persona metadata list and treats synthesized placeholder personas as
-non-blocking metadata until the cycle-2 source persona JSON is imported.
+the curated persona metadata list. Cycle-1 synthesized persona rows are fully
+populated metadata entries, not launch-blocking placeholders.
 
-Warnings are allowed only when they are explicitly accepted in the run notes.
-For the active round2/budget30 path, the expected non-blocking warning is
-`cpt_corpus.v3.jsonl: many very short rows`. Duplicate-rate escalation, JSONL
-parse errors, PII signals, launch-contract failures, and budget overruns remain
-blocking severe findings.
+Warnings are not accepted for gated paid profiles. `scripts/launch_train_pod.py`
+refuses `paper8b`, `budget30`, or `smoke` launch unless the latest matching
+verifier report is `PASS` with `Severe: 0` and `Warnings: 0`. Duplicate-rate
+escalation, JSONL parse errors, PII signals, launch-contract failures, and
+budget overruns remain blocking severe findings.
 
 ## 2. Existing HF artifact gate
 
@@ -52,7 +54,7 @@ python scripts/local_verification_loop.py \
 The 20260424-0618 artifacts are expected to fail this gate because the auditable
 CPT checkpoint is incomplete and the SFT repo has no adapter payload.
 
-## 3. Smoke run before budget run
+## 3. Smoke run before full run
 
 Load `recipes/smoke.env` before launching the next paid GPU job. This limits the
 job to a tiny CPT/SFT run whose only purpose is to prove the whole chain:
@@ -61,12 +63,17 @@ job to a tiny CPT/SFT run whose only purpose is to prove the whole chain:
 
 Do not treat smoke metrics as model quality.
 
-For the `$30` ceiling, use `recipes/budget30.env` after the smoke run. It is a
-CPT-only profile and intentionally skips SFT via `SKIP_SFT=1`.
+For the no-feature-loss paid run, use `recipes/round2-cycle1.env` (`paper8b`).
+It keeps both CPT phases, SFT, and phase6 eval enabled. The expected train cost
+is tracked separately from the timeout hard cap; current L40S estimate is about
+`$28` train cost and about `$48` timeout-cap exposure under a `$60` cap.
+
+Use `recipes/budget30.env` only when explicitly choosing a CPT-only probe. It
+skips SFT, so it is not a substitute for the full research run.
 
 ## 4. Promotion rule
 
-Do not promote from smoke to budget30, or to a final Hugging Face model repo,
+Do not promote from smoke to `paper8b`, or to a final Hugging Face model repo,
 until all of these hold:
 
 - CPT `trainer_state.json` has `global_step >= max_steps`.

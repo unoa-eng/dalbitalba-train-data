@@ -1,0 +1,11 @@
+[OK] protocol doc exists: MODEL_SELECTION.md
+[OK] protocol doc exists: RESEARCH_PROTOCOL.md
+[OK] BASE_MODEL selected: Qwen/Qwen3-8B-Base
+[OK] recipe W&B key present: WANDB_PROJECT=dalbitalba-round2
+[OK] recipe W&B key present: WANDB_RUN_GROUP=round2-qwen3-8b-paper
+[OK] recipe W&B key present: WANDB_TAGS=round2,qwen3-8b,cpt,dora,tc-sft,orpo,phase6-v2
+[OK] tokenizer audit max_tokens=4 counts={'TC': 1, '밀빵': 2, '쩜오': 2, '텐카': 2, '케어': 2, '초이스': 3, '강남': 2, '이태원': 3, 'ㅋㅋㅋㅋ': 4, 'ㅠㅠ': 2, 'ㄹㅇ': 2, 'ㅇㅈ': 2, 'ㅈㄴ': 2, 'ㅅㅂ': 2}
+[OK] required artifact hashes computed
+[OK] phase6_generate.py no longer appears to use first-40-char seed eval
+[OK] WANDB_API_KEY present in runtime env
+{"verdict": "PASS", "failures": []}

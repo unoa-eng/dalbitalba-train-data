@@ -1,0 +1,74 @@
+============================================================
+sft_format_smoke_test.py — P1-C
+============================================================
+
+Loading tokenizer: tokenizer_v4 ...
+  eos_token     : '<|endoftext|>'
+  chat_template : yes
+
+[raw continuation builder]
+2026-05-12 15:22:44,940 [INFO]   load /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-2aziq_iy/raw.jsonl -> 1
+2026-05-12 15:22:44,940 [INFO] v2 pair loader active (compat): /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-2aziq_iy/pair.jsonl
+2026-05-12 15:22:44,940 [INFO]   load /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-2aziq_iy/pair.jsonl -> 1
+2026-05-12 15:22:44,940 [INFO]   load /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-2aziq_iy/val.jsonl -> 1
+2026-05-12 15:22:44,940 [INFO] mix policy: raw=1.00 pair=0.00 format=raw v3=False
+2026-05-12 15:22:44,940 [INFO] sampled sizes: raw=1 pair=0 / 1 available
+2026-05-12 15:22:44,941 [INFO] merged train size: 1
+2026-05-12 15:22:44,941 [INFO] val size: 1
+  [PASS] raw_continuation: example not None
+  [PASS] raw_continuation: labels exactly match input_ids — len=26
+  [PASS] raw_continuation: attention length == input_ids length — 26 == 26
+  [PASS] raw_continuation: eval dataset built
+  [PASS] raw_continuation: eval dataset has rows — len=1
+
+[v2 supervised raw-format builder]
+2026-05-12 15:22:44,941 [INFO]   load /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-2aziq_iy/raw.jsonl -> 1
+2026-05-12 15:22:44,941 [INFO] v2 pair loader active (compat): /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-2aziq_iy/pair.jsonl
+2026-05-12 15:22:44,941 [INFO]   load /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-2aziq_iy/pair.jsonl -> 1
+2026-05-12 15:22:44,942 [INFO]   load /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-2aziq_iy/val.jsonl -> 1
+2026-05-12 15:22:44,942 [INFO] mix policy: raw=0.00 pair=1.00 format=raw v3=False
+2026-05-12 15:22:44,942 [INFO] sampled sizes: raw=0 pair=1 / 1 available
+2026-05-12 15:22:44,942 [INFO] merged train size: 1
+2026-05-12 15:22:44,942 [INFO] val size: 1
+  [PASS] v2_raw: example not None
+  [PASS] v2_raw: prompt non-empty — len=30
+  [PASS] v2_raw: prompt tokens masked — masked_count=19
+  [PASS] v2_raw: response tokens trainable — non_masked_count=11
+  [PASS] v2_raw: labels length == input_ids length — 30 == 30
+
+[v3 thread-conditioned chatml builder]
+2026-05-12 15:22:44,942 [INFO]   load /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-2aziq_iy/raw.jsonl -> 1
+2026-05-12 15:22:44,942 [INFO] v3 pair loader active: /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-2aziq_iy/pair_v3.jsonl
+2026-05-12 15:22:44,942 [INFO]   load /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-2aziq_iy/pair_v3.jsonl -> 1
+2026-05-12 15:22:44,942 [INFO]   load /var/folders/ck/jn50zykx7v3cpfnhxz8r6hsh0000gn/T/sft-format-smoke-2aziq_iy/val.jsonl -> 1
+2026-05-12 15:22:44,942 [INFO] mix policy: raw=0.00 pair=1.00 format=chatml v3=True
+2026-05-12 15:22:44,942 [INFO] sampled sizes: raw=0 pair=1 / 1 available
+2026-05-12 15:22:44,952 [INFO] merged train size: 1
+2026-05-12 15:22:44,953 [INFO] val size: 1
+  [PASS] v3_chatml: example not None
+  [PASS] v3_chatml: prompt non-empty — len=168
+  [PASS] v3_chatml: prompt tokens masked — masked_count=142
+  [PASS] v3_chatml: response tokens trainable — non_masked_count=26
+  [PASS] v3_chatml: labels length == input_ids length — 168 == 168
+  [PASS] v3_chatml: chatml seq_len > bare text seq_len — chatml=168 raw=25
+
+[v2 chatml builder]
+  [PASS] v2_chatml: example not None
+  [PASS] v2_chatml: prompt non-empty — len=91
+  [PASS] v2_chatml: prompt tokens masked — masked_count=75
+  [PASS] v2_chatml: response tokens trainable — non_masked_count=16
+  [PASS] v2_chatml: labels length == input_ids length — 91 == 91
+
+[chatml special token round-trip]
+  [PASS] round-trip: <|im_start|> preserved — decoded[:80]='<|im_start|>system\n테스트<|im_end|>\n<|im_start|>user\n안녕<|im_end|>\n<|im_start|>assis'
+  [PASS] round-trip: <|im_end|> preserved
+
+[v3 user text builder]
+  [PASS] user_text: non-empty
+  [PASS] user_text: contains post_title
+  [PASS] user_text: contains parent_comment
+  [PASS] user_text: contains depth marker
+
+============================================================
+Results: 27/27 passed, 0 failed
+SUCCESS — all assertions passed

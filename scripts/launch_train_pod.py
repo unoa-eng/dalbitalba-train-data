@@ -26,6 +26,7 @@ STATE_DIR = REPO_ROOT / ".state"
 STATE_FILE = STATE_DIR / "train_pod_state.json"
 RUNPOD_REST = "https://rest.runpod.io/v1/pods"
 LOCAL_VERIFICATION_LATEST = REPO_ROOT / "runs" / "latest-local-verification.json"
+VERIFIER_GATED_PROFILES = {"paper8b", "budget30", "smoke"}
 LAUNCH_CRITICAL_PREFIXES = (
     ".github/workflows/",
     "recipes/",
@@ -42,25 +43,21 @@ LAUNCH_CRITICAL_FILES = {
 }
 
 
-def assert_verifier_pass_for_budget30() -> None:
-    """Refuse budget30 when the latest verifier has severe findings.
-
-    WARN is allowed because this repo has accepted non-blocking warnings such
-    as short community snippets. Severe findings include budget overrun and
-    duplicate-rate escalation, so those still block launch.
+def assert_verifier_pass_for_profile() -> None:
+    """Refuse gated paid profiles unless the latest verifier is a clean PASS.
 
     Override with FORCE_LAUNCH=1 only for explicit experiments.
     """
-    profile = os.environ.get("BUDGET_PROFILE", "").strip()
-    if profile != "budget30":
+    expected_profile = os.environ.get("BUDGET_PROFILE", "").strip()
+    if expected_profile not in VERIFIER_GATED_PROFILES:
         return
     if os.environ.get("FORCE_LAUNCH", "0") == "1":
-        print("[WARN] FORCE_LAUNCH=1 — skipping verifier gate for budget30")
+        print(f"[WARN] FORCE_LAUNCH=1 — skipping verifier gate for {expected_profile}")
         return
     if not LOCAL_VERIFICATION_LATEST.exists():
         raise SystemExit(
-            f"[FATAL] BUDGET_PROFILE=budget30 requires a fresh local verification report.\n"
-            f"        Run: python3 scripts/local_verification_loop.py --strict --profile budget30\n"
+            f"[FATAL] BUDGET_PROFILE={expected_profile} requires a fresh local verification report.\n"
+            f"        Run: python3 scripts/local_verification_loop.py --strict --profile {expected_profile}\n"
             f"        Expected file: {LOCAL_VERIFICATION_LATEST}"
         )
     try:
@@ -69,18 +66,19 @@ def assert_verifier_pass_for_budget30() -> None:
         raise SystemExit(f"[FATAL] cannot parse {LOCAL_VERIFICATION_LATEST}: {exc}")
     verdict = report.get("verdict", "")
     severe_count = int(report.get("severe_count") or 0)
-    profile = report.get("profile")
-    if severe_count or verdict == "FAIL":
+    warning_count = int(report.get("warning_count") or 0)
+    report_profile = report.get("profile")
+    if severe_count or warning_count or verdict != "PASS":
         raise SystemExit(
-            f"[FATAL] latest local verification verdict={verdict!r} severe_count={severe_count}.\n"
-            f"        Refuse to launch budget30 with severe verifier output.\n"
+            f"[FATAL] latest local verification verdict={verdict!r} severe_count={severe_count} warning_count={warning_count}.\n"
+            f"        Refuse to launch {expected_profile} unless local verification is PASS with zero warnings.\n"
             f"        Inspect: {report.get('report', LOCAL_VERIFICATION_LATEST)}\n"
             f"        Override only with FORCE_LAUNCH=1 for explicit experiments."
         )
-    if profile and profile != "budget30":
+    if report_profile and report_profile != expected_profile:
         raise SystemExit(
-            f"[FATAL] latest local verification profile={profile!r} (expected 'budget30').\n"
-            f"        Run: python3 scripts/local_verification_loop.py --strict --profile budget30"
+            f"[FATAL] latest local verification profile={report_profile!r} (expected {expected_profile!r}).\n"
+            f"        Run: python3 scripts/local_verification_loop.py --strict --profile {expected_profile}"
         )
     print(f"[gate] verifier {verdict} severe_count=0 @ {report.get('timestamp', '?')}")
 
@@ -314,9 +312,9 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    # Mechanical defense — refuse budget30 launch without a fresh PASS verifier
-    # report. Bypassable only with FORCE_LAUNCH=1.
-    assert_verifier_pass_for_budget30()
+    # Mechanical defense — refuse gated paid profiles without a fresh PASS
+    # verifier report. Bypassable only with FORCE_LAUNCH=1.
+    assert_verifier_pass_for_profile()
     assert_launch_ref_clean(args.dry_run)
 
     api_key = require_or_placeholder("RUNPOD_API_KEY", args.dry_run)
@@ -429,6 +427,8 @@ def main() -> None:
         "CPT_LOGGING_STEPS",
         "SFT_LOGGING_STEPS",
         "SKIP_SFT",
+        "CPT_PHASE_1_DATA",
+        "CPT_PHASE_2_DATA",
         "CPT_TIMEOUT_HOURS",
         "MERGE_TIMEOUT_HOURS",
         "SFT_TIMEOUT_HOURS",
@@ -448,6 +448,7 @@ def main() -> None:
         "EVAL_MODE",
         "EVAL_MAX_ROWS",
         "EVAL_GATE",
+        "MAUVE_DISABLED",
         "EVAL_PERSONA_LIST",
         "GENERATION_TEMP",
         "GENERATION_TOP_P",
