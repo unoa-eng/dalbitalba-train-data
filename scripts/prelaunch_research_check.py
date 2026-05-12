@@ -20,6 +20,9 @@ TOKENIZER_TERMS = [
     "ㅋㅋㅋㅋ", "ㅠㅠ", "ㄹㅇ", "ㅇㅈ", "ㅈㄴ", "ㅅㅂ",
 ]
 
+# Profiles that require a pinned revision (FAIL, not WARN)
+STRICT_REVISION_PROFILES = {"paper8b", "budget30"}
+
 
 def parse_env(path: Path) -> dict[str, str]:
     out: dict[str, str] = {}
@@ -129,18 +132,45 @@ def check_phase6_generate_alignment(failures: list[str]) -> None:
 
 
 def check_base_model_revision(failures: list[str]) -> None:
-    """Warn when BASE_MODEL_REVISION is unset or 'main' (not pinned to a commit SHA)."""
+    """Fail when BASE_MODEL_REVISION is unset or 'main' for strict profiles (paper8b/budget30).
+
+    Other profiles (smoke, etc.) still emit WARN-only so they remain fast-path.
+    Known good Qwen3-8B-Base HF HEAD (verified 2026-05-12):
+      49e3418fbbbca6ecbdf9608b4d22e5a407081db4
+    """
     revision = os.environ.get("BASE_MODEL_REVISION", "").strip()
-    if not revision:
-        print(
-            "[WARN] BASE_MODEL_REVISION is not set; defaulting to 'main'. "
-            "Pin to a commit SHA for reproducibility."
+    budget_profile = os.environ.get("BUDGET_PROFILE", "").strip().lower()
+
+    # Also parse from recipe file when env vars are absent (common in local prelaunch runs)
+    if RECIPE.exists():
+        for line in RECIPE.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, val = line.partition("=")
+            key = key.strip()
+            val = val.strip().strip('"').strip("'")
+            if key == "BUDGET_PROFILE" and not budget_profile:
+                budget_profile = val.lower()
+            if key == "BASE_MODEL_REVISION" and not revision:
+                revision = val
+
+    is_strict = budget_profile in STRICT_REVISION_PROFILES
+
+    if not revision or revision == "main":
+        msg = (
+            f"BASE_MODEL_REVISION is {'not set' if not revision else repr(revision)} "
+            f"(floating ref). Pin to a commit SHA for reproducibility. "
+            f"Known good Qwen3-8B-Base HEAD: 49e3418fbbbca6ecbdf9608b4d22e5a407081db4 "
+            f"(verified 2026-05-12)."
         )
-    elif revision == "main":
-        print(
-            "[WARN] BASE_MODEL_REVISION='main' (floating ref). "
-            "Pin to a commit SHA for a fully reproducible paper-grade run."
-        )
+        if is_strict:
+            fail(
+                f"[strict profile '{budget_profile}'] {msg}",
+                failures,
+            )
+        else:
+            print(f"[WARN] {msg}")
     else:
         ok(f"BASE_MODEL_REVISION pinned: {revision}")
 

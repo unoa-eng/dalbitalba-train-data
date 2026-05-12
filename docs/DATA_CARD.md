@@ -1,9 +1,9 @@
-# DATA_CARD — dalbitalba-train-data v3.1
+# DATA_CARD — dalbitalba-train-data v3.2
 
 > NeurIPS *Datasheets for Datasets* (Gebru et al., 2021) 양식에 맞춰 작성된 단일 데이터셋 카드.
 > 본 카드는 dalbitalba 한국어 성인 커뮤니티 라이팅 스택의 학습용 코퍼스(6종)를 통합 기술한다.
 >
-> - **Version**: v3.1 (audit close-out, post B3/B4 patch)
+> - **Version**: v3.2 (cycle-3 critical fixes: eval thread holdout, meta sync)
 > - **Date**: 2026-05-12
 > - **Maintainer**: unoa-eng `<mapdrawer2@gmail.com>`
 > - **Repo**: `dalbitalba-train-data`
@@ -18,11 +18,11 @@
 | `cpt_enriched.jsonl` | 48,247 | CPT Phase 1 | `text`, `kind`, `source_id`, `view_bucket`, `comment_bucket` | Continued Pre-Training (구조 마커 enriched) | `68a60f9e5832346f4bee1b7f91c212690384c6fa46ebac58812f795a5127d7ed` |
 | `cpt_corpus.v3.jsonl` | 41,576 | CPT Phase 2 | `text`, `kind`, `source_field`, `length_bucket` | CPT short-row style_signal 정책 적용본 | `87f6aa1b8219f5d928d0690d3bfaa174ae4121f6f9502e146b08a0ca543aa34a` |
 | `sft_thread_conditioned.jsonl` | 10,245 | SFT (train) | `instruction`, `input`, `output`, `depth`, `root_id`, `parent_id`, `persona_id`, `loss_weight` | Thread-conditioned SFT (T2 69.7% / T3 30.3%) | `79a7c00fd5d558aabb351b704d7e108cfb0adaf1ce82f1a9c7c22e3e8be85ff5` |
-| `sft_thread_conditioned.eval.jsonl` | 1,139 | SFT (held-out) | 위와 동일 | SFT 내부 평가 (held-out) | `2a23e1e8d8f65e8884736f61e49832399f14acd495d7552e802ae5c6ecdd7d26` |
+| `sft_thread_conditioned.eval.jsonl` | 322 | SFT (held-out) | 위와 동일 | SFT 내부 평가 (held-out, cycle-3 eval thread holdout 후) | `02d2d623b28007aa88834444d47f54656d5e3477173258c077604669d2a7c6e0` |
 | `orpo_pairs.jsonl` | 1,472 | ORPO/CAI | `prompt`, `chosen`, `rejected`, `reason` | CAI/ORPO 선호쌍 (현 사이클 `ORPO_EPOCHS=0`이라 미사용) | `fae20a8343cbb4ce6e0d0f591c5ba29b4cf77d26557f762a5cd54e9bfb47a211` |
-| `val_set.v3.jsonl` | 417 | Validation | `post_title`, `post_body_excerpt`, `parent_comment`, `target_comment`, `thread_key`, `depth`, `task_type` | 외부 평가셋 (post-leak-removal) | `2589b3c975ddbcaaaf501ffb75f0cc71aa85b708d0fcd0a6a267ed5a5ef3513c` |
+| `val_set.v3.jsonl` | 119 | Validation | `post_title`, `post_body_excerpt`, `parent_comment`, `target_comment`, `thread_key`, `depth`, `task_type` | 외부 평가셋 (post-leak-removal + thread-holdout) | `1deffc8bc4cf4060df3d4fb2c43f976f982936521459ff8f72cb720fa17ff0ef` |
 
-총 행수: **103,096** (CPT 89,823 + SFT 11,384 + ORPO 1,472 + Val 417).
+총 행수: **101,880** (CPT 89,823 + SFT 10,567 + ORPO 1,472 + Val 119).
 
 ---
 
@@ -53,9 +53,9 @@
 - CPT Phase 1 (`cpt_enriched.jsonl`): 48,247 rows (post + comment 혼합, `[조회수:X|댓글:Y]` 구조 마커 prepend).
 - CPT Phase 2 (`cpt_corpus.v3.jsonl`): 41,576 rows (short-row 비율 보정 후 `style_signal` 정책 적용본).
 - SFT train (`sft_thread_conditioned.jsonl`): 10,245 페어 — T2 root reply 7,141건(69.7%) + T3 deep reply 3,104건(30.3%).
-- SFT eval held-out (`sft_thread_conditioned.eval.jsonl`): 1,139 페어.
+- SFT eval held-out (`sft_thread_conditioned.eval.jsonl`): 322 페어 (cycle-3 eval thread holdout 후; 원 1,139에서 817행 제거).
 - ORPO/CAI pairs (`orpo_pairs.jsonl`): 1,472 chosen/rejected 쌍.
-- External validation (`val_set.v3.jsonl`): 417 페어 (B3 leak 제거 후).
+- External validation (`val_set.v3.jsonl`): 119 페어 (B3 leak 제거 + thread-holdout 후).
 
 ### 2.3 필드 (schema)
 - **CPT**: `text`, `kind`(post/comment), `source_id`, `views`, `comment_count`, `view_bucket`, `comment_bucket`, `length_bucket`, `source_field`.
@@ -81,7 +81,8 @@
 ### 2.7 데이터 분할
 - Train (CPT+SFT): `cpt_enriched.jsonl` + `cpt_corpus.v3.jsonl` + `sft_thread_conditioned.jsonl`.
 - Held-out internal: `sft_thread_conditioned.eval.jsonl`.
-- External validation: `val_set.v3.jsonl` — 원본 2,491개 중 CPT 누수(leak) 2,074개를 B3 패치로 제거하여 **417개**만 보존(누수 제거율 83.3%).
+- External validation: `val_set.v3.jsonl` — 원본 2,491개 중 CPT 누수(leak) 2,074개를 B3 패치로 제거 후 417개 → cycle-2 A10 thread-holdout 적용으로 **119개** 보존.
+- SFT eval held-out: `sft_thread_conditioned.eval.jsonl` — 원 1,139개에서 cycle-3 eval thread holdout(SFT train과 root_id 겹치는 817행 제거)으로 **322개** 보존. 잔여 root_id 교집합 = 0 검증.
 
 ### 2.8 중복 제거
 - MinHash LSH (perms=128, shingle=5) 적용.
@@ -133,8 +134,9 @@ Python `httpx` + BeautifulSoup 기반 자체 스크레이퍼(미공개). User-Ag
 ### 4.3 미성년 근접 (minor-proximity)
 미성년자 관련 표현 휴리스틱으로 스캔 후 검출된 **1건**을 수동 검토하여 제거.
 
-### 4.4 누수 제거 (CPT ↔ val leak)
-B3 패치(2026-05): val_set 원본 2,491개 중 CPT 코퍼스에 정확 일치하는 2,074개(83.3%)를 제거 → **417개** 잔존. 이를 통해 외부 검증 점수 인플레이션을 차단.
+### 4.4 누수 제거 (CPT ↔ val leak / SFT eval thread holdout)
+- B3 패치(2026-05, cycle-2): val_set 원본 2,491개 중 CPT 코퍼스에 정확 일치하는 2,074개(83.3%)를 제거 → **417개** → cycle-2 A10 thread-holdout으로 **119개** 잔존. 외부 검증 점수 인플레이션 차단.
+- cycle-3 C1 패치(2026-05-12): `sft_thread_conditioned.eval.jsonl` (SFT 내부 평가셋) 에서 SFT train(`sft_thread_conditioned.jsonl`) 과 root_id가 겹치는 817행 제거 → **322개** 잔존. H2(Turing pass-rate) thread leakage 차단. root_id 교집합 = 0 검증.
 
 ### 4.5 구조 마커 enrichment (CPT Phase 1)
 `cpt_enriched.jsonl`은 각 row 앞에 `[조회수:X|댓글:Y]` 구조 마커를 prepend하여 인기도 시그널을 부여. Phase 2(`cpt_corpus.v3.jsonl`)는 짧은 댓글(<30자) 비율을 보정하고 `style_signal` 정책을 적용하여 톤 일관성을 강화.
@@ -196,6 +198,7 @@ GitHub repo issue tracker (private) 또는 이메일 직접 연락.
 
 ### 7.3 erratum
 - **v3 → v3.1** (2026-05-12): B3 leak removal patch (val 2,491→417), B4 PII residual patch (phone_like→0), audit close-out.
+- **v3.1 → v3.2** (2026-05-12): cycle-3 C1 eval thread holdout (sft eval 1,139→322, intersect=0); val_set.v3 meta sync (rows 417→119, SHA 2589...→1def...); sft eval SHA 갱신 (2a23...→02d2...); prelaunch fail-closed on revision (C3).
 - 이전 erratum은 `docs/BRANCH_MERGE_AUDIT_20260512.md`, `docs/PR3_VERIFICATION_REPORT_20260507.md` 참조.
 
 ### 7.4 업데이트 정책
@@ -244,6 +247,7 @@ GitHub repo issue tracker (private) 또는 이메일 직접 연락.
 |---|---|---|
 | v3 | 2026-04-28 | 초안 — paper-grade 학습 설계 확정, MLX 로컬 실험 완료 |
 | v3.1 | 2026-05-12 | B3 leak removal patch (val 2491→417), B4 PII residual zero, 본 DATA_CARD.md 작성 |
+| v3.2 | 2026-05-12 | cycle-3 C1: sft eval thread holdout (1139→322, intersect=0); C2: val meta sync (419→119, SHA 갱신); C3: prelaunch fail-closed on BASE_MODEL_REVISION for paper8b/budget30 |
 
 ---
 

@@ -45,8 +45,10 @@ def check_tc_sft(failures: list[str]) -> None:
     persona = sum(1 for row in rows if row.get("persona_id"))
     if len(rows) < 8000:
         fail(f"TC-SFT too small: rows={len(rows)} < 8000", failures)
-    elif len(eval_rows) < 500:
-        fail(f"TC-SFT heldout eval too small: rows={len(eval_rows)} < 500", failures)
+    elif len(eval_rows) < 100:
+        # Threshold updated post cycle-3 C1 eval thread holdout (1139→322 rows).
+        # Paper-grade minimum is 100 (matches remove_val_train_leak.py MIN_EVAL_ROWS).
+        fail(f"TC-SFT heldout eval too small: rows={len(eval_rows)} < 100", failures)
     elif bad:
         fail(f"TC-SFT malformed instruction/input/output rows: first={bad[:5]}", failures)
     elif weighted == 0:

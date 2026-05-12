@@ -1145,7 +1145,9 @@ def main() -> int:
             severe.append(
                 f"[smoke] CPT cost estimate ${cost['cpt_usd']} > $8 ceiling for plumbing test"
             )
-    if eval_rows < 500:
+    if eval_rows < 100:
+        # Threshold updated post cycle-3 C1 eval thread holdout (1139→322 rows).
+        # Paper-grade minimum is 100 (matches remove_val_train_leak.py MIN_EVAL_ROWS).
         warnings.append("validation set is small for stable generation metrics")
 
     hf: dict[str, Any] = {}
