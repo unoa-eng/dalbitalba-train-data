@@ -111,6 +111,25 @@ def main() -> int:
     import torch
     import transformers
 
+    # B5a — review 2026-05-12: generation determinism
+    from transformers import set_seed as _set_seed
+    _seed = int(os.environ.get("EVAL_SEED", "42"))
+    _set_seed(_seed)
+    torch.manual_seed(_seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(_seed)
+    print(f"[B5a] set_seed={_seed}")
+
+    # B5a — multi-sample support (default=1 for backward compat)
+    # TODO: B5a multi-sample: when EVAL_NUM_SAMPLES >= 10, each prompt is
+    #   generated N times and each output row carries sample_idx=0..N-1.
+    #   Currently only sample_idx=0 is emitted. Implement by wrapping the
+    #   inner generation block in `for sample_idx in range(EVAL_NUM_SAMPLES):`
+    #   and storing per-sample outputs before writing to dst.
+    EVAL_NUM_SAMPLES = int(os.environ.get("EVAL_NUM_SAMPLES", "1"))
+    if EVAL_NUM_SAMPLES > 1:
+        print(f"[B5a] EVAL_NUM_SAMPLES={EVAL_NUM_SAMPLES} (multi-sample mode — TODO: full impl)")
+
     generation_base = CPT_MERGED_PATH or CPT_MERGED_REPO or BASE_MODEL
     if not SFT_ADAPTER_REPO and not (CPT_MERGED_PATH or CPT_MERGED_REPO):
         print("[error] SFT_ADAPTER_REPO or CPT_MERGED_REPO/CPT_MERGED_PATH is required", file=sys.stderr)
@@ -199,6 +218,7 @@ def main() -> int:
                 "text": continuation,
                 "prompt": prompt,
                 "kind": kind,
+                "sample_idx": 0,  # B5a: always 0 until multi-sample TODO is implemented
             }
             for key in ("persona_id", "persona", "depth", "root_id", "parent_id"):
                 if key in row:

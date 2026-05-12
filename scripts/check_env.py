@@ -20,6 +20,7 @@ REQUIRED_KEYS = {
         "HF_TOKEN",
         "HF_USERNAME",
         "GITHUB_TOKEN",
+        "WANDB_API_KEY",
     ],
     "eval": [
         "RUNPOD_API_KEY",
@@ -35,6 +36,10 @@ OPTIONAL_KEYS = {
         "NTFY_TOPIC",
         "GPU_TYPE",
         "CONTAINER_IMAGE",
+        "WANDB_PROJECT",
+        "WANDB_TAGS",
+        "WANDB_NOTES",
+        "WANDB_USERNAME",
     ],
     "eval": [
         "HF_TOKEN",

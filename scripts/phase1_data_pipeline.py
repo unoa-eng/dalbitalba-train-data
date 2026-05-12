@@ -60,8 +60,13 @@ RRN_RE = re.compile(
     r"\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])-[1-8]\d{6}"
 )
 # Korean mobile + landline. Runs AFTER NFKC normalize.
+# Extended: truncated Korean (1~4 trailing digits) + overseas format (US/CA: NXX-NXX-XXXX)
 PHONE_RE = re.compile(
-    r"\b(?:\+?82[- ]?)?(?:0\d{1,2})[- .]?\d{3,4}[- .]?\d{4}\b"
+    r"(?<!\d)(?:"
+    r"(?:\+?82[- ]?)?(?:0\d{1,2})[- .]?\d{3,4}[- .]?\d{4}"  # 정상 한국/국제코드
+    r"|01[016789]-?\d{3,4}-?\d{1,4}"                           # 절단형 한국
+    r"|(?<!\d)\d{3}-\d{3}-\d{4}"                               # 해외형 (US/CA)
+    r")(?!\d)"
 )
 BIZNUM_RE = re.compile(r"\b\d{3}-\d{2}-\d{5}\b")
 # Very permissive account pattern restricted to bank-name proximity

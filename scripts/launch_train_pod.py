@@ -27,6 +27,8 @@ STATE_FILE = STATE_DIR / "train_pod_state.json"
 RUNPOD_REST = "https://rest.runpod.io/v1/pods"
 LOCAL_VERIFICATION_LATEST = REPO_ROOT / "runs" / "latest-local-verification.json"
 VERIFIER_GATED_PROFILES = {"paper8b", "budget30", "smoke"}
+# B2 — review 2026-05-12: GPU lock for cost-bound profiles
+STRICT_L40S_PROFILES = {"paper8b", "budget30"}
 LAUNCH_CRITICAL_PREFIXES = (
     ".github/workflows/",
     "recipes/",
@@ -81,6 +83,23 @@ def assert_verifier_pass_for_profile() -> None:
             f"        Run: python3 scripts/local_verification_loop.py --strict --profile {expected_profile}"
         )
     print(f"[gate] verifier {verdict} severe_count=0 @ {report.get('timestamp', '?')}")
+
+
+def _enforce_gpu_lock(profile: str, gpu_type: str) -> None:
+    """B2 — review 2026-05-12: GPU lock for cost-bound profiles.
+
+    paper8b and budget30 are strictly L40S-only to prevent cost-cap overrun
+    when A100 ($1.19/h) or RTX-6000-Ada are selected as fallback.
+    """
+    if not profile or profile not in STRICT_L40S_PROFILES:
+        return
+    allowed = {"NVIDIA L40S"}
+    requested = {g.strip() for g in gpu_type.split(",") if g.strip()}
+    if not requested.issubset(allowed):
+        raise SystemExit(
+            f"GPU lock violation: profile={profile} allows only L40S, "
+            f"got {sorted(requested)}. Set GPU_TYPE='NVIDIA L40S' or change profile."
+        )
 
 
 def load_env() -> None:
@@ -311,6 +330,9 @@ def main() -> None:
         help="Training chain to execute inside RunPod",
     )
     args = parser.parse_args()
+
+    # B2 — GPU lock: paper8b/budget30 must not slip to A100/RTX-6000-Ada
+    _enforce_gpu_lock(os.environ.get("BUDGET_PROFILE", "").strip(), args.gpu_type)
 
     # Mechanical defense — refuse gated paid profiles without a fresh PASS
     # verifier report. Bypassable only with FORCE_LAUNCH=1.

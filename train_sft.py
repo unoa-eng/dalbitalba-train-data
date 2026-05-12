@@ -70,6 +70,9 @@ except ImportError as e:
     sys.exit(1)
 
 # ── Env ──────────────────────────────────────────────────────────────
+# W&B resume: pod 재시작 시 동일 run에 이어 붙임 (WANDB_RESUME이 미설정이면 "allow" 기본)
+os.environ.setdefault("WANDB_RESUME", "allow")
+
 BASE_MODEL = os.environ.get("BASE_MODEL", "/workspace/out/cpt-merged-fp16")
 # Tokenizer path: explicit override > local tokenizer_v4 dir > BASE_MODEL.
 # tokenizer_v4 contains the +210 domain tokens used end-to-end.
@@ -544,6 +547,17 @@ def main() -> None:
     base_model = prepare_model_for_kbit_training(
         base_model, use_gradient_checkpointing=True
     )
+
+    # B1 — review 2026-05-12: tokenizer_v4 확장 토큰 임베딩 resize.
+    # vocab mismatch silent OOB 방지.
+    tok_vocab = len(tokenizer)
+    model_vocab = base_model.get_input_embeddings().weight.shape[0]
+    if tok_vocab != model_vocab:
+        print(f"[resize] tokenizer={tok_vocab} model={model_vocab} -> resizing")
+        base_model.resize_token_embeddings(tok_vocab)
+        assert base_model.get_input_embeddings().weight.shape[0] == tok_vocab, "resize failed"
+    else:
+        print(f"[resize] tokenizer==model vocab={tok_vocab}, skip")
 
     lora_config = LoraConfig(
         r=LORA_R,

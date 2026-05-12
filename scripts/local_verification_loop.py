@@ -79,7 +79,11 @@ LOCAL_SMOKE_SCRIPT = "scripts/sft_format_smoke_test.py"
 LOCAL_PYTHONWARNINGS = "ignore:urllib3 v2 only supports OpenSSL 1.1.1+"
 
 PHONE_RE = re.compile(
-    r"(?<!\d)(?:\+?82[- ]?)?(?:0\d{1,2}[- ]\d{3,4}[- ]\d{4}|01[016789]\d{7,8})(?!\d)"
+    r"(?<!\d)(?:"
+    r"(?:\+?82[- ]?)?(?:0\d{1,2}[- ]\d{3,4}[- ]\d{4}|01[016789]\d{7,8})"  # 정상 한국
+    r"|01[016789]-?\d{3,4}-?\d{1,4}"   # 절단형 한국 (끝자리 1~4자리)
+    r"|(?<!\d)\d{3}-\d{3}-\d{4}"       # 해외형 (US/CA: 778-665-0585)
+    r")(?!\d)"
 )
 EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b")
 URL_RE = re.compile(r"\bhttps?://|www\.", re.IGNORECASE)

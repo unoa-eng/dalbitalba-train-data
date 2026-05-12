@@ -346,16 +346,35 @@ GATE = {
 }
 
 
-def evaluate_gate(metrics: dict[str, float | None]) -> tuple[str, list[str]]:
+def evaluate_gate(
+    metrics: dict[str, float | None],
+    skipped_keys: frozenset[str] = frozenset(),
+) -> tuple[str, list[str]]:
+    # B5a — review 2026-05-12: silent-pass blocked; None on active gate = FAIL
+    # B5a — AUC overshoot: value > 0.99 on a "ge" gate is leakage-suspect
+    # B5a-fix: mauve_score is explicitly skipped when --skip-mauve is passed;
+    #          skipped metrics are not failures (they were never computed).
+    # B5a-fix: domain_keyword_alignment is a ratio not an AUC; 1.0 is valid on
+    #          identity/overlapping data and must not trigger auc_overshoot.
+    _AUC_OVERSHOOT_KEYS = frozenset({"mauve_score"})
     violations: list[str] = []
     for key, (op, threshold) in GATE.items():
+        if key in skipped_keys:
+            continue
         value = metrics.get(key)
         if value is None:
+            # Silent skip was here before B5a. Now: gate failure with reason.
+            violations.append(f"{key}=value_unavailable reason=value_unavailable")
             continue
         if op == "le" and value > threshold:
             violations.append(f"{key}={value:.4f} > {threshold}")
         elif op == "ge" and value < threshold:
             violations.append(f"{key}={value:.4f} < {threshold}")
+        elif op == "ge" and value > 0.99 and key in _AUC_OVERSHOOT_KEYS:
+            # B5a: suspiciously perfect score on AUC-style ge-gate is leakage-suspect
+            violations.append(
+                f"{key}={value:.4f} > 0.99 reason=auc_overshoot_leakage_suspect"
+            )
     return ("PASS" if not violations else "FAIL"), violations
 
 
@@ -415,8 +434,9 @@ def main() -> int:
         )
         return 3
 
+    skipped: frozenset[str] = frozenset({"mauve_score"}) if args.skip_mauve else frozenset()
     metrics, details = compute_metric_bundle(ai, raw, include_mauve=not args.skip_mauve)
-    verdict, violations = evaluate_gate(metrics)
+    verdict, violations = evaluate_gate(metrics, skipped_keys=skipped)
 
     kind_breakdown: dict[str, object] = {}
     kind_breakdown_mode = "unavailable"

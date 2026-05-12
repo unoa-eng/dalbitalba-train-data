@@ -247,7 +247,11 @@ persist_run_artifacts() {
   "hf_repo_sft": "${HF_REPO_SFT:-}",
   "cpt_epochs": ${CPT_EPOCHS},
   "sft_epochs": ${SFT_EPOCHS},
-  "source_repo": "${GITHUB_REPO}"
+  "source_repo": "${GITHUB_REPO}",
+  "wandb_project": "${WANDB_PROJECT:-dalbitalba}",
+  "wandb_run_group": "${WANDB_RUN_GROUP:-}",
+  "wandb_tags": "${WANDB_TAGS:-}",
+  "wandb_username": "${WANDB_USERNAME:-}"
 }
 EOF
 
@@ -482,7 +486,7 @@ if [ ${PREFLIGHT_RC} -ne 0 ]; then
     fail_with_logs "preflight_failed" "${PREFLIGHT_LOG}" "${PREFLIGHT_RC}"
 fi
 log "[1.5/6] pre-flight OK"
-notify "dalbit preflight OK — starting CPT on ${RUNPOD_POD_ID:-unknown}"
+notify "dalbit preflight OK — starting CPT on ${RUNPOD_POD_ID:-unknown} | wandb: project=${WANDB_PROJECT:-dalbitalba} url=https://wandb.ai/${WANDB_USERNAME:-anonymous}/${WANDB_PROJECT:-dalbitalba}"
 
 # ── copy train scripts from repo to workspace if needed ─────────────
 for script in train_cpt.py train_sft.py; do
@@ -511,6 +515,11 @@ run_timeout "${CPT_TIMEOUT_HOURS}" env \
     CPT_CKPT_DIR="${OUT_DIR}/cpt-ckpt" \
     CPT_LOG_FILE="${CPT_PY_LOG}" \
     CPT_HUB_MODEL_ID="${HF_REPO_CPT}" \
+    WANDB_NAME="${WANDB_NAME:-phase1-cpt-classic}" \
+    TRAIN_REPORT_TO="${TRAIN_REPORT_TO:-none}" \
+    WANDB_PROJECT="${WANDB_PROJECT:-dalbitalba}" \
+    WANDB_RUN_GROUP="${WANDB_RUN_GROUP:-}" \
+    WANDB_RESUME="${WANDB_RESUME:-allow}" \
     HF_HUB_ENABLE_HF_TRANSFER=1 \
     python3 "${WORKSPACE}/train_cpt.py" >> "${LOG_FILE}" 2>&1
 CPT_EXIT=$?
@@ -562,6 +571,11 @@ else
     SFT_CKPT_DIR="${OUT_DIR}/sft-ckpt" \
     SFT_LOG_FILE="${SFT_PY_LOG}" \
     SFT_HUB_MODEL_ID="${HF_REPO_SFT}" \
+    WANDB_NAME="${WANDB_NAME:-phase2-sft-classic}" \
+    TRAIN_REPORT_TO="${TRAIN_REPORT_TO:-none}" \
+    WANDB_PROJECT="${WANDB_PROJECT:-dalbitalba}" \
+    WANDB_RUN_GROUP="${WANDB_RUN_GROUP:-}" \
+    WANDB_RESUME="${WANDB_RESUME:-allow}" \
     HF_HUB_ENABLE_HF_TRANSFER=1 \
         python3 "${WORKSPACE}/train_sft.py" >> "${LOG_FILE}" 2>&1
     SFT_EXIT=$?
@@ -649,6 +663,6 @@ FINAL_STATUS="done_ok"
 log "[DONE] ${FINAL_STATUS} (total ${TOTAL_MIN}m)"
 cat "${DONE_FILE}" | tee -a "${LOG_FILE}"
 
-notify "dalbit chain ${FINAL_STATUS} (${TOTAL_MIN}m) cpt=${HF_REPO_CPT} sft=${HF_REPO_SFT}"
+notify "dalbit chain ${FINAL_STATUS} (${TOTAL_MIN}m) cpt=${HF_REPO_CPT} sft=${HF_REPO_SFT} | wandb: project=${WANDB_PROJECT:-dalbitalba} url=https://wandb.ai/${WANDB_USERNAME:-anonymous}/${WANDB_PROJECT:-dalbitalba}"
 persist_run_artifacts "${FINAL_STATUS}"
 stop_pod "${FINAL_STATUS}"

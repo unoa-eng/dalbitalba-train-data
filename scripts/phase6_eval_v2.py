@@ -296,10 +296,11 @@ def main() -> int:
 
     ai_texts = base.texts_from_rows(ai_rows)
     raw_texts = base.texts_from_rows(raw_rows)
+    base_skipped: frozenset[str] = frozenset({"mauve_score"}) if args.skip_mauve else frozenset()
     base_metrics, base_details = base.compute_metric_bundle(
         ai_texts, raw_texts, include_mauve=not args.skip_mauve
     )
-    base_verdict, base_violations = base.evaluate_gate(base_metrics)
+    base_verdict, base_violations = base.evaluate_gate(base_metrics, skipped_keys=base_skipped)
     sample_violations: list[str] = []
     if len(ai_rows) < args.min_rows:
         sample_violations.append(f"ai_rows={len(ai_rows)} < min_rows={args.min_rows}")

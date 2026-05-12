@@ -9,7 +9,14 @@ from pathlib import Path
 from statistics import median
 
 
-PHONE_RE = re.compile(r"01\d[-\s]?\d{3,4}[-\s]?\d{4}")
+# Extended: truncated Korean + overseas (US/CA) format
+PHONE_RE = re.compile(
+    r"(?<!\d)(?:"
+    r"01\d[-\s]?\d{3,4}[-\s]?\d{4}"   # 정상 한국
+    r"|01[016789]-?\d{3,4}-?\d{1,4}"  # 절단형 한국
+    r"|(?<!\d)\d{3}-\d{3}-\d{4}"      # 해외형 (US/CA)
+    r")(?!\d)"
+)
 URL_RE = re.compile(r"(https?://|open\.kakao|텔레|카톡|라인)", re.IGNORECASE)
 PROMO_KW_RE = re.compile(
     r"(문의|카톡|텔레|라인|지원금|TC|실장|부장|출근문의|픽업|풀상주|면접|당일지급|지명비|이벤트|광고)",

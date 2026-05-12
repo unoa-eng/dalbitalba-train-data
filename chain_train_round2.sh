@@ -223,7 +223,11 @@ persist_run_artifacts() {
   "hf_repo_round2": "${HF_REPO_ROUND2:-}",
   "source_repo": "${GITHUB_REPO}",
   "budget_profile": "${BUDGET_PROFILE:-budget30}",
-  "budget_cap_usd": "${BUDGET_CAP_USD:-25}"
+  "budget_cap_usd": "${BUDGET_CAP_USD:-25}",
+  "wandb_project": "${WANDB_PROJECT:-dalbitalba-round2}",
+  "wandb_run_group": "${WANDB_RUN_GROUP:-}",
+  "wandb_tags": "${WANDB_TAGS:-}",
+  "wandb_username": "${WANDB_USERNAME:-}"
 }
 EOF
 
@@ -530,7 +534,7 @@ PY
         fail_with_logs "preflight_failed" "${PREFLIGHT_LOG}" "${rc}"
     fi
     log "[preflight] OK"
-    notify "dalbit round2 preflight OK - starting training on ${RUNPOD_POD_ID:-unknown}"
+    notify "dalbit round2 preflight OK - starting training on ${RUNPOD_POD_ID:-unknown} | wandb: project=${WANDB_PROJECT:-dalbitalba-round2} group=${WANDB_RUN_GROUP:-} url=https://wandb.ai/${WANDB_USERNAME:-anonymous}/${WANDB_PROJECT:-dalbitalba-round2}"
 }
 
 validate_inputs() {
@@ -568,13 +572,17 @@ phase1_cpt_broad() {
         BASE_MODEL="${BASE_MODEL}" \
         CPT_NUM_EPOCHS="${CPT_NUM_EPOCHS:-1}" \
         CPT_LORA_R="${LORA_R:-64}" \
-        CPT_LORA_ALPHA="${LORA_R:-64}" \
+        CPT_LORA_ALPHA="${LORA_ALPHA:-128}" \
         CPT_USE_DORA="0" \
         CPT_MAX_SEQ_LEN="${SEQ_LEN:-2048}" \
         CPT_OUTPUT_DIR="${out_dir}" \
         CPT_CKPT_DIR="${OUT_DIR}/round2-phase1-cpt-ckpt" \
         CPT_LOG_FILE="${PHASE1_LOG}" \
         WANDB_NAME="${WANDB_NAME:-phase1-cpt-broad}" \
+        TRAIN_REPORT_TO="${TRAIN_REPORT_TO:-none}" \
+        WANDB_PROJECT="${WANDB_PROJECT:-dalbitalba-round2}" \
+        WANDB_RUN_GROUP="${WANDB_RUN_GROUP:-}" \
+        WANDB_RESUME="${WANDB_RESUME:-allow}" \
         HF_HUB_ENABLE_HF_TRANSFER=1 \
         python3 "${SCRIPTS_DIR}/../train_cpt.py" 2>&1 | tee -a "${PHASE1_LOG}" >> "${ROUND2_LOG}"
     local rc=${PIPESTATUS[0]}
@@ -603,6 +611,10 @@ phase2_cpt_clean() {
         CPT_CKPT_DIR="${OUT_DIR}/round2-phase2-cpt-ckpt" \
         CPT_LOG_FILE="${PHASE2_LOG}" \
         WANDB_NAME="${WANDB_NAME:-phase2-cpt-dora}" \
+        TRAIN_REPORT_TO="${TRAIN_REPORT_TO:-none}" \
+        WANDB_PROJECT="${WANDB_PROJECT:-dalbitalba-round2}" \
+        WANDB_RUN_GROUP="${WANDB_RUN_GROUP:-}" \
+        WANDB_RESUME="${WANDB_RESUME:-allow}" \
         HF_HUB_ENABLE_HF_TRANSFER=1 \
         python3 "${SCRIPTS_DIR}/../train_cpt.py" 2>&1 | tee -a "${PHASE2_LOG}" >> "${ROUND2_LOG}"
     local rc=${PIPESTATUS[0]}
@@ -705,7 +717,7 @@ phase3_sft_threaded() {
         BASE_MODEL="${sft_base}" \
         SFT_NUM_EPOCHS="${SFT_NUM_EPOCHS:-2}" \
         SFT_LORA_R="${LORA_R:-128}" \
-        SFT_LORA_ALPHA="${LORA_R:-128}" \
+        SFT_LORA_ALPHA="${LORA_ALPHA:-256}" \
         SFT_MAX_SEQ_LEN="${SEQ_LEN:-2048}" \
         SFT_LOSS_WEIGHT_ARGOT="${SFT_LOSS_WEIGHT_ARGOT:-1.5}" \
         SFT_LOSS_WEIGHT_THRESHOLD="${SFT_LOSS_WEIGHT_THRESHOLD:-2}" \
@@ -713,6 +725,10 @@ phase3_sft_threaded() {
         SFT_CKPT_DIR="${OUT_DIR}/round2-phase3-sft-ckpt" \
         SFT_LOG_FILE="${PHASE3_LOG}" \
         WANDB_NAME="${WANDB_NAME:-phase3-tc-sft}" \
+        TRAIN_REPORT_TO="${TRAIN_REPORT_TO:-none}" \
+        WANDB_PROJECT="${WANDB_PROJECT:-dalbitalba-round2}" \
+        WANDB_RUN_GROUP="${WANDB_RUN_GROUP:-}" \
+        WANDB_RESUME="${WANDB_RESUME:-allow}" \
         HF_HUB_ENABLE_HF_TRANSFER=1 \
         python3 "${SCRIPTS_DIR}/../train_sft.py" 2>&1 | tee -a "${PHASE3_LOG}" >> "${ROUND2_LOG}"
     local rc=${PIPESTATUS[0]}
@@ -784,6 +800,10 @@ phase4_orpo() {
         ORPO_OUTPUT_DIR="${out_dir}" \
         ORPO_MAX_SEQ_LEN="${SEQ_LEN:-2048}" \
         WANDB_NAME="${WANDB_NAME:-phase4-orpo}" \
+        TRAIN_REPORT_TO="${TRAIN_REPORT_TO:-none}" \
+        WANDB_PROJECT="${WANDB_PROJECT:-dalbitalba-round2}" \
+        WANDB_RUN_GROUP="${WANDB_RUN_GROUP:-}" \
+        WANDB_RESUME="${WANDB_RESUME:-allow}" \
         BASE_MODEL="${orpo_base}" \
         python3 "${SCRIPTS_DIR}/../train_orpo.py" 2>&1 | tee -a "${PHASE4_LOG}" >> "${ROUND2_LOG}"
     local rc=${PIPESTATUS[0]}
@@ -994,7 +1014,7 @@ run_main() {
     write_done "${final_status}"
     upload_hf_artifacts || final_status="${final_status}_hf_upload_warn"
     write_done "${final_status}"
-    notify "dalbit round2 ${final_status} repo=${HF_REPO_ROUND2}"
+    notify "dalbit round2 ${final_status} repo=${HF_REPO_ROUND2} | wandb: project=${WANDB_PROJECT:-dalbitalba-round2} group=${WANDB_RUN_GROUP:-} url=https://wandb.ai/${WANDB_USERNAME:-anonymous}/${WANDB_PROJECT:-dalbitalba-round2}"
     persist_run_artifacts "${final_status}"
     stop_pod "${final_status}"
     log "chain_train_round2 cycle-1 END status=${final_status}"
