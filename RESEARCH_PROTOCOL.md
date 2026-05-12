@@ -1,5 +1,7 @@
 # Round-2 Research Protocol
 
+Hypotheses defined in TRAINING_DESIGN_V3.md §0 (H1~H4); this protocol operationalizes H2 (Primary Endpoint) and provides the engineering/research gates referenced by H1, H3, and H4.
+
 Verdict: RunPod launch is allowed only as a research run when this protocol and
 the prelaunch checker pass.
 

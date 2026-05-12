@@ -1,0 +1,39 @@
+name: abandoned-pod-sweeper
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Print stale candidates without stopping (true/false)'
+        required: false
+        default: 'false'
+      max_age_hours:
+        description: 'Age threshold in hours (default: 36)'
+        required: false
+        default: '36'
+
+permissions:
+  contents: read
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run sweeper
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: |
+          ARGS="--max-age-hours ${{ github.event.inputs.max_age_hours || '36' }} --verbose"
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          python3 scripts/abandoned_pod_sweeper.py $ARGS

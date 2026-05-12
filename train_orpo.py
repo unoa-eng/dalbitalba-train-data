@@ -28,6 +28,7 @@ from pathlib import Path
 
 def main() -> int:
     base_model = os.environ.get("BASE_MODEL", "/workspace/out/sft-merged-fp16")
+    base_model_revision = os.environ.get("BASE_MODEL_REVISION", "main")
     orpo_data = os.environ.get("ORPO_DATA", "/workspace/data/orpo_pairs.jsonl")
     out_dir = os.environ.get("ORPO_OUTPUT_DIR", "/workspace/out/orpo-lora")
     epochs = int(os.environ.get("ORPO_NUM_EPOCHS", "1"))
@@ -51,7 +52,7 @@ def main() -> int:
         print(f"[orpo] required deps missing ({exc}); deferring Phase-4 to next cycle")
         return 0
 
-    print(f"[orpo] base_model={base_model} data={orpo_data} epochs={epochs} beta={beta}")
+    print(f"[orpo] base_model={base_model} @ {base_model_revision} data={orpo_data} epochs={epochs} beta={beta}")
 
     rows = []
     with open(orpo_data, encoding="utf-8") as fh:
@@ -78,7 +79,7 @@ def main() -> int:
     tokenizer = AutoTokenizer.from_pretrained(base_model)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-    model = AutoModelForCausalLM.from_pretrained(base_model, torch_dtype="auto")
+    model = AutoModelForCausalLM.from_pretrained(base_model, torch_dtype="auto", revision=base_model_revision)
 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
 

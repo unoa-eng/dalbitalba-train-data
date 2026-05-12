@@ -183,9 +183,30 @@ def main() -> None:
     samples = load_samples(args.samples)
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
-    anthropic_model_primary = os.environ.get("ANTHROPIC_PRIMARY_MODEL", "claude-3-7-sonnet-latest")
-    anthropic_model_secondary = os.environ.get("ANTHROPIC_SECONDARY_MODEL", "claude-3-5-haiku-latest")
-    openai_model = os.environ.get("OPENAI_MODEL", "gpt-4.1")
+    # pin to reproducible dated alias — paper-grade requires fixed judge model
+    anthropic_model_primary = os.environ.get(
+        "PAPER_GRADE_JUDGE_CLAUDE_PRIMARY",
+        os.environ.get(
+            "ANTHROPIC_PRIMARY_MODEL",
+            "claude-3-7-sonnet-20250219",  # verify alias is still served by API
+        ),
+    )
+    # pin to reproducible dated alias — paper-grade requires fixed judge model
+    anthropic_model_secondary = os.environ.get(
+        "PAPER_GRADE_JUDGE_CLAUDE_SECONDARY",
+        os.environ.get(
+            "ANTHROPIC_SECONDARY_MODEL",
+            "claude-3-5-haiku-20241022",
+        ),
+    )
+    # pin to reproducible dated alias — paper-grade requires fixed judge model
+    openai_model = os.environ.get(
+        "PAPER_GRADE_JUDGE_GPT",
+        os.environ.get(
+            "OPENAI_MODEL",
+            "gpt-4o-2024-11-20",  # conservative well-known dated alias; gpt-4.1-2025-04-14 unverified
+        ),
+    )
 
     results: list[dict] = []
 

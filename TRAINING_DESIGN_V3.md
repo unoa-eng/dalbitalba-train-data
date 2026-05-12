@@ -1,11 +1,64 @@
 # 달빛알바 도메인 적응 학습설계 v3
 ## Research-Grade Training Design for Community-Indistinguishable Text Generation
 
+**Version**: v3.1 (2026-05-12, audit close-out)
+
 > **목표**: Qwen3-8B-Base를 LoRA CPT+SFT로 파인튜닝하여, 퀸알바 커뮤니티 원천DB와 **구분 불가능한** 텍스트(게시글/댓글)를 생성하는 것.
 >
 > **하드웨어**: RunPod L40S (48GB), 예산 $30/cycle
 >
 > **데이터**: 게시글 ~11K, 댓글 ~56K, 9개 토픽 클러스터
+
+---
+
+## 0. Hypotheses (H1~H4)
+
+본 학습설계는 paper-grade 검증을 위해 4개의 falsifiable hypothesis를 우선 선언한다. 각 가설은 사전 등록(pre-registration)된 임계값과 reject 조건을 가지며, 최종 보고는 본 절의 메트릭에 직접 매핑되어야 한다.
+
+### H1 — 도메인 적응 (Domain Adaptation)
+
+- **진술**: Qwen3-8B-Base + thread-conditioned SFT(structured CPT v3 + 5-task SFT)가 base 모델 대비 domain MAUVE를 +0.20 이상 향상시킨다.
+- **레퍼런스 ceiling**: paper8b raw-vs-raw MAUVE = 0.0190 (community 원천 분포 self-similarity).
+- **임계값**:
+  - MAUVE(generated, reference) ≥ 0.80 on N≥1,000 held-out 분포.
+  - Bigram JSD ≤ 0.08 (stretch: ≤ 0.05).
+  - Length KL ≤ 0.01 (게시글/댓글 각각).
+- **Reject 조건**: MAUVE < 0.60 또는 JSD > 0.10 시 H1 reject → 데이터 재정제(필터 룰 v3 재튜닝, EntiGraph 합성 비율 재조정) + CPT epoch +1 추가 후 재학습.
+
+### H2 — Turing-style Pass-Rate (Primary Endpoint)
+
+- **진술**: 3-judge majority blind eval에서 AI 식별률이 `RESEARCH_PROTOCOL.md` §Primary Endpoint를 충족한다.
+- **임계값**:
+  - AI 식별률 ≤ 40%.
+  - Wilson 95% CI upper bound < 50%.
+  - 최소 N≥200 paired samples, stratified by `kind` × length bucket × reply depth.
+- **연결**: 본 가설은 `RESEARCH_PROTOCOL.md`의 primary endpoint와 1:1 매핑된다 (see `RESEARCH_PROTOCOL.md` §Primary Endpoint).
+- **Reject 조건**: AI 식별률 > 50% 또는 Wilson upper ≥ 50% 시 H2 reject → ORPO 추가 단계 가동(DNA 1.0 pipeline) + bench v3-real J style classifier로 hard negative mining 후 SFT 재학습.
+
+### H3 — 구조 토큰 효과 (Structure-Token CPT)
+
+- **진술**: `<|post|>`, `<|comment depth=N|>` 등 구조 토큰을 삽입한 structured CPT(v3)가 flat CPT 대비 thread coherence를 의미 있게 개선한다.
+- **임계값**:
+  - reply_depth KL divergence: structured CPT ≤ flat CPT − 0.05 (즉 절대 ≥ 0.05 개선).
+  - Structure-fidelity: ≥ 95% (tag well-formed-ness, depth consistency).
+  - LLM-as-judge thread-coherence: ≥ 0.70 on 0~1 scale (N≥100, 3-judge majority).
+- **로컬 baseline 근거**: `runs/ablation/structure-comparison.md`의 `A1→A2`에서 structure fidelity 0% → 90%, val loss 4.221 → 3.455.
+- **Reject 조건**: reply_depth KL 개선 < 0.02 또는 structure fidelity < 90% 시 H3 reject → 토큰 어휘 재설계(예: depth N을 absolute 대신 relative로 인코딩) + 합성 thread 비중 ↑.
+
+### H4 — Catastrophic Forgetting 방지 (General Capability Retention)
+
+- **진술**: LoRA + Korean replay (DNA 1.0 권고) 적용 시 한국어 일반 능력 회귀가 5% 이내로 억제된다.
+- **임계값**:
+  - KoBEST average score: base 대비 -5% 이하 손실 (absolute drop ≤ 0.05).
+  - HAE-RAE average score: base 대비 -5% 이하.
+  - 영어 코드 스위칭 비율: <2% on Korean-prompted generation.
+- **Reject 조건**: KoBEST 또는 HAE-RAE에서 -5% 초과 손실 시 H4 reject → LoRA rank 감소(64 → 32) + replay 비율 상향(10% → 20%) + 영어 corpus 명시적 제외 후 재학습.
+
+### Pre-registration & Reporting
+
+- 위 4개 가설의 임계값은 학습 개시 전에 본 문서 commit hash로 pin된다.
+- 모든 결과 보고(W&B run, paper draft)는 H1~H4 각각에 대해 (a) 측정값, (b) CI, (c) accept/reject 판정을 포함해야 한다.
+- 부분 reject 시에도 학습 close-out 보고에서 mitigation plan을 명시한다 (사후 cherry-picking 금지).
 
 ---
 
@@ -595,5 +648,39 @@ CPT 코퍼스 구성:
 
 ---
 
+## 8. Threats to Validity
+
+본 학습설계의 결론을 일반화할 때 명시해야 할 위협을 internal/external/construct validity로 분리하여 사전 등록한다.
+
+### Internal Validity
+
+1. **단일 커뮤니티 편향**: cb2_밤문화이야기 단일 보드에서 수집. 다른 한국어 커뮤니티(루리웹, 디시 등)로의 generalize는 별도 검증 필요. *Mitigation*: 보드 외부 generalize 주장 자제.
+2. **2개월 시계열**: 2026-01~02 수집. seasonal drift, slang 변화 미반영. *Mitigation*: 결과 보고 시 수집 기간 명시.
+3. **평가자 수**: human native eval N=2. statistical power 한계. *Mitigation*: 3-judge LLM blind eval로 보완.
+4. **Claude judge 도메인 편향**: bench v3-real에서 Anthropic models FN=1.00 — 도메인 적응된 AI 샘플을 human으로 분류. *Mitigation*: J style classifier v2 (test_AUC=0.9999) + GPT-5 judge 보완.
+5. **Generation 비결정성** (closed in B5a): `phase6_generate.set_seed`로 mitigated. seed 고정 + temperature/top_p pinning은 paper-grade run의 default.
+
+### External Validity
+
+6. **8B 단일 모델 한계**: 더 큰 모델(70B+)에서 catastrophic forgetting 양상이 다를 수 있음. H4의 KoBEST/HAE-RAE 결과는 8B 스케일에 한정해 보고한다.
+7. **데이터 규모 한계**: CPT 48K + SFT 10K — domain-specific 학습엔 충분하나 general capability 회복엔 부족. 한국어 replay 비율(10%)은 본 규모에서의 sweet spot이며, 대규모 코퍼스 시 재튜닝 필요.
+
+### Construct Validity
+
+8. **MAUVE의 한계**: 짧은 텍스트 (avg 48자) 분포에서 MAUVE 신뢰구간이 넓어짐. N=1,139 eval set은 marginal. *Mitigation*: bootstrap CI(≥1,000 resamples)와 함께 보고.
+9. **도메인 은어 ratio**: keyword 기반 메트릭(`하퍼`, `TC`, `밀빵`, `케어` 등 출현율)은 의미 보존을 직접 측정하지 못한다. *Mitigation*: LLM-as-judge thread coherence(H3)와 human pairwise(H2)로 보완.
+
+---
+
+## 9. Revision History
+
+| Version | Date | Notes |
+|---------|------|-------|
+| v3.0 | 2026-04-29 | Initial research-grade design (Ralph iter 3-4): structured CPT + 5-task SFT + 다층 평가. |
+| v3.1 | 2026-05-12 | hypothesis + ToV 추가 (paper-grade close-out). §0 H1~H4 falsifiable hypotheses, §8 Threats to Validity (9개 항목), `RESEARCH_PROTOCOL.md` cross-reference 정합. |
+
+---
+
 *Generated: 2026-04-29 | Ralph iteration 3-4 | dalbitalba-train-data v3 training design*
 *Local experiments: legacy 500-iter probe + 2026-04-29 ablation matrix on Qwen3-0.6B MLX LoRA*
+*v3.1 close-out: 2026-05-12 — hypotheses (H1~H4) + Threats to Validity (9 items)*

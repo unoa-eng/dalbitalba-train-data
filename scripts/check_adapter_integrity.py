@@ -13,6 +13,7 @@ Does NOT load the base model. Does NOT run inference. Pure file integrity.
 Usage:
     python3 scripts/check_adapter_integrity.py --repo UNOA/dalbitalba-qwen3-cpt-<stamp>
     python3 scripts/check_adapter_integrity.py --repo <repo> --json
+    python3 scripts/check_adapter_integrity.py --tokenizer-only
 
 Exit codes:
     0  PASS
@@ -36,6 +37,11 @@ REPO_ROOT = SCRIPT_DIR.parent
 
 MIN_SIZE = 1 * 1024 * 1024          # 1 MiB
 MAX_SIZE = 2 * 1024 * 1024 * 1024   # 2 GiB
+
+# Qwen3-8B-Base constants
+QWEN3_BASE_VOCAB_SIZE = 151_643
+QWEN3_TOTAL_VOCAB_SIZE = 151_908   # base + 265 custom added tokens
+TOKENIZER_DIR = REPO_ROOT / "tokenizer_v4"
 
 
 def load_env() -> None:
@@ -83,14 +89,155 @@ def hf_download(repo_id: str, filename: str, token: str | None, dest: Path) -> P
     ))
 
 
+def verify_tokenizer_added_tokens() -> dict:
+    """
+    Smoke-check tokenizer_v4 added tokens without loading the base model.
+
+    Verifies:
+      - added_tokens.json exists and is valid JSON
+      - Every token_id is within [QWEN3_BASE_VOCAB_SIZE, QWEN3_TOTAL_VOCAB_SIZE)
+      - tokenizer.json added_tokens list is consistent with added_tokens.json count
+      - Total vocab = base vocab + new added tokens (ids >= QWEN3_BASE_VOCAB_SIZE)
+
+    Returns a dict with keys: verdict, passes, failures, findings.
+    """
+    failures: list[str] = []
+    passes: list[str] = []
+    findings: dict = {}
+
+    # ---- 1. Load added_tokens.json ----
+    added_tokens_path = TOKENIZER_DIR / "added_tokens.json"
+    if not added_tokens_path.exists():
+        failures.append(f"added_tokens.json not found at {added_tokens_path}")
+        return {"verdict": "FAIL", "passes": passes, "failures": failures, "findings": findings}
+
+    try:
+        added_tokens: dict[str, int] = json.loads(
+            added_tokens_path.read_text(encoding="utf-8")
+        )
+    except json.JSONDecodeError as exc:
+        failures.append(f"added_tokens.json JSON parse error: {exc}")
+        return {"verdict": "FAIL", "passes": passes, "failures": failures, "findings": findings}
+
+    num_added = len(added_tokens)
+    findings["added_tokens_count"] = num_added
+    passes.append(f"added_tokens.json loaded OK ({num_added} tokens)")
+
+    # ---- 2. Check every token_id is in [BASE_VOCAB, TOTAL_VOCAB) ----
+    out_of_range: list[str] = []
+    for token, token_id in added_tokens.items():
+        if not (QWEN3_BASE_VOCAB_SIZE <= token_id < QWEN3_TOTAL_VOCAB_SIZE):
+            out_of_range.append(f"{token!r}:{token_id}")
+    if out_of_range:
+        failures.append(
+            f"{len(out_of_range)} token(s) have id outside "
+            f"[{QWEN3_BASE_VOCAB_SIZE}, {QWEN3_TOTAL_VOCAB_SIZE}): "
+            + ", ".join(out_of_range[:5])
+        )
+    else:
+        passes.append(
+            f"all {num_added} token ids in [{QWEN3_BASE_VOCAB_SIZE}, {QWEN3_TOTAL_VOCAB_SIZE})"
+        )
+
+    # ---- 3. Cross-check with tokenizer.json added_tokens list ----
+    tokenizer_json_path = TOKENIZER_DIR / "tokenizer.json"
+    if not tokenizer_json_path.exists():
+        failures.append(f"tokenizer.json not found at {tokenizer_json_path}")
+    else:
+        try:
+            tok_data = json.loads(tokenizer_json_path.read_text(encoding="utf-8"))
+            tok_added_list: list[dict] = tok_data.get("added_tokens", [])
+            base_vocab_count = len(tok_data.get("model", {}).get("vocab", {}))
+            findings["base_vocab_count"] = base_vocab_count
+
+            # Count truly new tokens (id >= base vocab)
+            new_tok_in_json = [t for t in tok_added_list if t["id"] >= QWEN3_BASE_VOCAB_SIZE]
+            findings["new_tokens_in_tokenizer_json"] = len(new_tok_in_json)
+
+            # Verify: base_vocab_count matches expected
+            if base_vocab_count != QWEN3_BASE_VOCAB_SIZE:
+                failures.append(
+                    f"tokenizer.json model.vocab size {base_vocab_count} "
+                    f"!= expected {QWEN3_BASE_VOCAB_SIZE}"
+                )
+            else:
+                passes.append(f"tokenizer.json base vocab size OK: {base_vocab_count}")
+
+            # Verify: len(added_tokens.json) == new tokens in tokenizer.json
+            if len(new_tok_in_json) != num_added:
+                failures.append(
+                    f"added_tokens.json count ({num_added}) != "
+                    f"new tokens in tokenizer.json ({len(new_tok_in_json)})"
+                )
+            else:
+                passes.append(
+                    f"added_tokens.json count matches tokenizer.json ({num_added})"
+                )
+
+            # Verify: base_vocab + new_added == TOTAL_VOCAB
+            computed_total = base_vocab_count + num_added
+            findings["computed_total_vocab"] = computed_total
+            if computed_total != QWEN3_TOTAL_VOCAB_SIZE:
+                failures.append(
+                    f"base_vocab({base_vocab_count}) + added({num_added}) = "
+                    f"{computed_total} != expected total {QWEN3_TOTAL_VOCAB_SIZE}"
+                )
+            else:
+                passes.append(
+                    f"vocab size identity OK: {base_vocab_count} + {num_added} = {computed_total}"
+                )
+
+        except (json.JSONDecodeError, KeyError) as exc:
+            failures.append(f"tokenizer.json parse error: {exc}")
+
+    verdict = "PASS" if not failures else "FAIL"
+    return {"verdict": verdict, "passes": passes, "failures": failures, "findings": findings}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo", required=True, help="HF adapter repo (e.g. UNOA/dalbitalba-qwen3-cpt-<stamp>)")
+    parser.add_argument("--repo", help="HF adapter repo (e.g. UNOA/dalbitalba-qwen3-cpt-<stamp>)")
     parser.add_argument("--filename", default="adapter_model.safetensors", help="adapter weights filename")
     parser.add_argument("--config-filename", default="adapter_config.json", help="adapter config filename")
     parser.add_argument("--cache-dir", default=os.environ.get("HF_HOME", str(Path.home() / ".cache" / "huggingface")))
     parser.add_argument("--json", action="store_true", help="emit JSON verdict")
+    parser.add_argument(
+        "--tokenizer-only",
+        action="store_true",
+        help="only verify tokenizer_v4 added tokens (no network, no model required)",
+    )
     args = parser.parse_args()
+
+    # --tokenizer-only mode: run local tokenizer check and exit
+    if args.tokenizer_only:
+        result = verify_tokenizer_added_tokens()
+        verdict = result["verdict"]
+        if args.json:
+            print(json.dumps(result, indent=2, ensure_ascii=False))
+        else:
+            print(f"=== tokenizer added_tokens check — {verdict} ===")
+            f = result["findings"]
+            if "base_vocab_count" in f:
+                print(
+                    f"base_vocab: {f['base_vocab_count']}, "
+                    f"added: {f.get('added_tokens_count', '?')}, "
+                    f"total: {f.get('computed_total_vocab', '?')}"
+                )
+            print()
+            if result["passes"]:
+                print("PASS:")
+                for p in result["passes"]:
+                    print(f"  + {p}")
+            if result["failures"]:
+                print("FAIL:")
+                for fl in result["failures"]:
+                    print(f"  - {fl}")
+            print()
+            print(f"VERDICT: {verdict}")
+        return 0 if verdict == "PASS" else 1
+
+    if not args.repo:
+        parser.error("--repo is required unless --tokenizer-only is set")
 
     load_env()
     hf_token = os.environ.get("HF_TOKEN", "").strip() or None

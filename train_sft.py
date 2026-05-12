@@ -74,6 +74,7 @@ except ImportError as e:
 os.environ.setdefault("WANDB_RESUME", "allow")
 
 BASE_MODEL = os.environ.get("BASE_MODEL", "/workspace/out/cpt-merged-fp16")
+BASE_MODEL_REVISION = os.environ.get("BASE_MODEL_REVISION", "main")
 # Tokenizer path: explicit override > local tokenizer_v4 dir > BASE_MODEL.
 # tokenizer_v4 contains the +210 domain tokens used end-to-end.
 TOKENIZER_PATH = os.environ.get("TOKENIZER_PATH") or (
@@ -486,7 +487,7 @@ def main() -> None:
     start = time.time()
     logger.info("=" * 60)
     logger.info("SFT 시작")
-    logger.info(f"  base          : {BASE_MODEL}")
+    logger.info(f"  base          : {BASE_MODEL} @ {BASE_MODEL_REVISION}")
     logger.info(f"  raw_jsonl     : {SFT_RAW_JSONL}")
     logger.info(f"  pair_jsonl_v3 : {SFT_PAIR_JSONL_V3 or '(unset)'}")
     logger.info(f"  pair_jsonl    : {SFT_PAIR_JSONL}")
@@ -532,6 +533,7 @@ def main() -> None:
         quantization_config=bnb_config,
         trust_remote_code=True,
         torch_dtype=torch.bfloat16,
+        revision=BASE_MODEL_REVISION,
     )
     if FLASH_ATTN:
         mk["attn_implementation"] = FLASH_ATTN

@@ -26,6 +26,36 @@ def utc_stamp() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f")
 
 
+def _resolve_training_python() -> str:
+    """Prefer a venv interpreter with transformers installed.
+
+    macmini control-plane runs with system python3.14 which intentionally
+    does not have transformers; transformers-dependent smoke steps must
+    delegate to .venv. Falls back to sys.executable if no venv has it.
+    """
+    candidates = [
+        REPO_ROOT / ".venv" / "bin" / "python",
+        REPO_ROOT / ".venv-mlx" / "bin" / "python",
+    ]
+    for cand in candidates:
+        if not cand.exists():
+            continue
+        try:
+            r = subprocess.run(
+                [str(cand), "-c", "import transformers"],
+                capture_output=True,
+                timeout=10,
+            )
+            if r.returncode == 0:
+                return str(cand)
+        except Exception:
+            continue
+    return sys.executable
+
+
+TRAINING_PYTHON = _resolve_training_python()
+
+
 def run_check(name: str, cmd: list[str], run_dir: Path) -> dict[str, Any]:
     env = os.environ.copy()
     existing_warnings = env.get("PYTHONWARNINGS", "").strip()
@@ -150,17 +180,18 @@ def main() -> int:
                 "train_orpo.py",
             ],
         ),
+        ("tokenizer_added_tokens", [TRAINING_PYTHON, "scripts/check_adapter_integrity.py", "--tokenizer-only"]),
         ("round2_integrity", [sys.executable, "scripts/round2_integrity_check.py"]),
-        ("prelaunch_research", [sys.executable, "scripts/prelaunch_research_check.py"]),
-        ("sft_format_smoke", [sys.executable, "scripts/sft_format_smoke_test.py"]),
+        ("prelaunch_research", [TRAINING_PYTHON, "scripts/prelaunch_research_check.py"]),
+        ("sft_format_smoke", [TRAINING_PYTHON, "scripts/sft_format_smoke_test.py"]),
         (
             f"local_verification_{args.profile}",
-            [sys.executable, "scripts/local_verification_loop.py", "--strict", "--profile", args.profile],
+            [TRAINING_PYTHON, "scripts/local_verification_loop.py", "--strict", "--profile", args.profile],
         ),
         (
             "train_eval_process_dry_run",
             [
-                sys.executable,
+                TRAINING_PYTHON,
                 "scripts/train_eval_process.py",
                 "--dry-run",
                 "--sample-rows",

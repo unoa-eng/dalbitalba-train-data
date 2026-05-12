@@ -103,3 +103,38 @@ This command compares:
 - raw normalized comments vs `cpt_corpus.jsonl`
 - raw post bodies vs `sft_pairs_v2.jsonl` post outputs
 - raw reply chains vs `sft_pairs_v2.jsonl` comment instruction/output pairs
+
+## Ethics & Legal
+
+> 전체 데이터셋 datasheet는 [`docs/DATA_CARD.md`](docs/DATA_CARD.md) (NeurIPS *Datasheets for Datasets* 7 섹션 + 윤리·편향·SHA256 hash table)를 참조한다.
+
+### Domain context
+이 레포는 한국 성인 커뮤니티 "달빛알바"(공개 게시판 cb2_밤문화이야기)의 텍스트 데이터로 Qwen3-8B-Base를 도메인 적응시키는 연구 파이프라인이다. 학습 대상 텍스트는 사용자가 공개 게시판에 자발적으로 게시한 댓글/게시글이며, 광고/홍보성 콘텐츠는 is_promo_v2 필터로 제거되었다.
+
+### 한국 법률 관계
+- **성매매처벌법 제21조 (광고 알선 처벌)**: 이 프로젝트는 광고 알선 텍스트의 *생성* 또는 *알선*을 목적으로 하지 않는다. 광고 표현은 학습 데이터에서 적극 제거(`is_promo_v2`, `clean_ad_spam.py`)되었고, 모델은 도메인 화법(존댓말/은어/이모지 분포)의 학문적 분석을 위한 것이다.
+- **개인정보보호법**: PII(전화/이메일/URL/주민번호/계좌) 정규식 필터 + B4 패치로 절단형/해외형 전화 패턴까지 검출하여 마스킹(`[REDACTED-PHONE]`). 모든 데이터셋 `phone_like=0` 검증 (paper8b-readiness summary).
+- **저작권**: 게시판 텍스트는 공개 게시 상태이며 비상업적 연구 목적의 fair use 범주로 다룬다. 모델 산출물의 상업적 배포는 별도 라이선스 검토 필요.
+
+### IRB 면제 근거
+- 데이터: 공개 웹 게시판의 비식별 텍스트
+- 식별 가능성: PII 필터 + 마스킹으로 제거
+- 연구 목적: 학술 연구(도메인 적응 LLM 평가)
+- 인간 대상 직접 실험 부재
+- 따라서 IRB 심의 면제(`exempt`) 범주에 해당. 향후 학회 제출 시 면제 신청서를 작성하여 첨부 예정.
+
+### 미성년자 보호
+- 수집 단계 미성년 근접 콘텐츠 필터: `PAPER_GRADE_ANALYSIS_20260507.md §3.1`의 minor-proximity drop 1건 기록
+- 모델 출력 시 미성년 관련 prompt에 대한 fallback 정책은 별도 시스템 프롬프트(서비스 적용 시)에서 처리
+
+### 콘텐츠 정책 정합
+- Anthropic Acceptable Use Policy: 본 프로젝트의 *연구 분석* 목적은 AUP 위반이 아니다. 다만 Claude judge가 도메인 콘텐츠를 human/AI 분류할 때 Anthropic models는 FN=1.00 편향이 관측됨(`docs/PAPER_GRADE_ANALYSIS_20260507.md §5.1`). 평가는 J classifier v2 + GPT 보완.
+- OpenAI usage policy: GPT-4 judge 호출은 데이터 분석/평가 목적이며 콘텐츠 생성 목적이 아니다.
+
+### Data lineage
+- 수집: queenalba-crawler/crawled-data-v2 (Windows local), 2026-01~02
+- 필터: is_promo_v2, AD_RE, dedup_minhash, PII regex(v2+ extended), val/train leak removal v3
+- 데이터 카드 상세: [`docs/DATA_CARD.md`](docs/DATA_CARD.md)
+
+### Reporting
+PII / 윤리 / 콘텐츠 정책 위반 발견 시 mapdrawer2@gmail.com 또는 GitHub issue로 보고 바람.

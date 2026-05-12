@@ -58,6 +58,7 @@ except ImportError as e:
 os.environ.setdefault("WANDB_RESUME", "allow")
 
 BASE_MODEL = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base")
+BASE_MODEL_REVISION = os.environ.get("BASE_MODEL_REVISION", "main")
 # Tokenizer path: explicit override > local tokenizer_v4 dir > BASE_MODEL.
 # tokenizer_v4 contains the +210 domain tokens used end-to-end.
 TOKENIZER_PATH = os.environ.get("TOKENIZER_PATH") or (
@@ -154,7 +155,7 @@ def main() -> None:
     start = time.time()
     logger.info("=" * 60)
     logger.info("CPT v2 시작")
-    logger.info(f"  base         : {BASE_MODEL}")
+    logger.info(f"  base         : {BASE_MODEL} @ {BASE_MODEL_REVISION}")
     logger.info(f"  input        : {INPUT_JSONL}")
     logger.info(f"  val          : {VAL_JSONL}")
     logger.info(f"  output       : {OUTPUT_DIR}")
@@ -203,6 +204,7 @@ def main() -> None:
         quantization_config=bnb_config,
         trust_remote_code=True,
         torch_dtype=torch.bfloat16,
+        revision=BASE_MODEL_REVISION,
     )
     if FLASH_ATTN:
         model_kwargs["attn_implementation"] = FLASH_ATTN

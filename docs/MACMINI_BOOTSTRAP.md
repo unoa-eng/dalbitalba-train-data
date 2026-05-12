@@ -338,4 +338,20 @@ gh issue create --title "dalbitalba paper8b cycle 1 partial — eval failed" \
 
 **우회 가능한 모든 항목은 `FORCE_*=1` 환경변수로만 가능 — 즉, 운영자가 "지금 우회한다"는 명시적 의도를 표명해야 함. 모든 default 는 fail-closed.**
 
+## 17. Abandoned Pod Sweeper
+
+`abandoned-pod-sweeper`는 GitHub Actions cron(6시간마다)으로 자동 실행되며, 36시간 초과 RUNNING 상태 pod 중 `.state/train_pod_state.json`에 등록되지 않은 것을 stop한다. `NTFY_TOPIC` 시크릿이 설정되어 있으면 stale pod 발견 시 ntfy 알림도 전송된다.
+
+수동 실행:
+
+```bash
+# 후보 확인만 (실제 stop 없음)
+python3 scripts/abandoned_pod_sweeper.py --dry-run
+
+# 24시간 기준으로 즉시 stop
+python3 scripts/abandoned_pod_sweeper.py --max-age-hours 24 --verbose
+```
+
+GitHub Actions에서 수동 트리거(workflow_dispatch)로 `dry_run=true` / `max_age_hours` 값을 지정해 실행할 수도 있다. `RUNPOD_API_KEY` secret이 없으면 즉시 에러로 종료(exit 2).
+
 **우회 시도 자체도 paid spend 0 인 단계 (verifier, promotion, integrity) 에서만 가능** — 우회 후 launch 해도 GPU 시간은 chain_train.sh / run_eval.sh 의 timeout 에 또 막힌다.

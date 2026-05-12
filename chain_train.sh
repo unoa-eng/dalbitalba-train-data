@@ -237,6 +237,22 @@ persist_run_artifacts() {
     [ -f "${MERGE_PY_LOG}" ] && cp "${MERGE_PY_LOG}" "${run_dir}/merge_cpt.log"
     [ -f "${PREFLIGHT_LOG}" ] && cp "${PREFLIGHT_LOG}" "${run_dir}/preflight.log"
 
+    # A05: collect extended metadata for manifest
+    local _git_commit _git_branch _py_ver _torch_ver _transformers_ver _peft_ver _bnb_ver
+    local _cpt_sha _sft_sha _val_sha
+    _git_commit="$(git -C "${REPO_CLONE_DIR}" rev-parse HEAD 2>/dev/null || echo 'unknown')"
+    _git_branch="$(git -C "${REPO_CLONE_DIR}" rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'unknown')"
+    _py_ver="$(python3 -c "import sys; print(sys.version.split()[0])" 2>/dev/null || echo 'unknown')"
+    _torch_ver="$(python3 -c "import torch; print(torch.__version__)" 2>/dev/null || echo 'missing')"
+    _transformers_ver="$(python3 -c "import transformers; print(transformers.__version__)" 2>/dev/null || echo 'missing')"
+    _peft_ver="$(python3 -c "import peft; print(peft.__version__)" 2>/dev/null || echo 'missing')"
+    _bnb_ver="$(python3 -c "import bitsandbytes; print(bitsandbytes.__version__)" 2>/dev/null || echo 'missing')"
+    # sha256sum on Linux; shasum -a 256 on macOS — try both, fall back to "unknown"
+    _sha256() { local f="$1"; if [ -f "${f}" ]; then (sha256sum "${f}" 2>/dev/null || shasum -a 256 "${f}" 2>/dev/null) | head -1 | cut -d' ' -f1; else echo "missing"; fi; }
+    _cpt_sha="$(_sha256 "${TRAIN_CPT_JSONL}")"
+    _sft_sha="$(_sha256 "${TRAIN_SFT_PAIR_JSONL}")"
+    _val_sha="$(_sha256 "${TRAIN_VAL_JSONL}")"
+
     cat > "${run_dir}/manifest.json" <<EOF
 {
   "timestamp": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')",
@@ -251,7 +267,21 @@ persist_run_artifacts() {
   "wandb_project": "${WANDB_PROJECT:-dalbitalba}",
   "wandb_run_group": "${WANDB_RUN_GROUP:-}",
   "wandb_tags": "${WANDB_TAGS:-}",
-  "wandb_username": "${WANDB_USERNAME:-}"
+  "wandb_username": "${WANDB_USERNAME:-}",
+  "git_commit": "${_git_commit}",
+  "git_branch": "${_git_branch}",
+  "python_version": "${_py_ver}",
+  "torch_version": "${_torch_ver}",
+  "transformers_version": "${_transformers_ver}",
+  "peft_version": "${_peft_ver}",
+  "bitsandbytes_version": "${_bnb_ver}",
+  "docker_image": "${CONTAINER_IMAGE:-unknown}",
+  "base_model_revision": "${BASE_MODEL_REVISION:-main}",
+  "data_sha256": {
+    "cpt": "${_cpt_sha}",
+    "sft": "${_sft_sha}",
+    "val": "${_val_sha}"
+  }
 }
 EOF
 
@@ -263,7 +293,21 @@ EOF
   "status": "${final_status}",
   "hf_repo_cpt": "${HF_REPO_CPT:-}",
   "hf_repo_sft": "${HF_REPO_SFT:-}",
-  "timestamp": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+  "timestamp": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')",
+  "git_commit": "${_git_commit}",
+  "git_branch": "${_git_branch}",
+  "python_version": "${_py_ver}",
+  "torch_version": "${_torch_ver}",
+  "transformers_version": "${_transformers_ver}",
+  "peft_version": "${_peft_ver}",
+  "bitsandbytes_version": "${_bnb_ver}",
+  "docker_image": "${CONTAINER_IMAGE:-unknown}",
+  "base_model_revision": "${BASE_MODEL_REVISION:-main}",
+  "data_sha256": {
+    "cpt": "${_cpt_sha}",
+    "sft": "${_sft_sha}",
+    "val": "${_val_sha}"
+  }
 }
 EOF
     cp "${latest_tmp}" "${REPO_CLONE_DIR}/runs/latest-train.json"

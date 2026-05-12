@@ -477,6 +477,7 @@ def main() -> None:
         "GENERATION_MAX_NEW_TOKENS",
         "ORPO_NUM_EPOCHS",
         "ORPO_BETA",
+        "BASE_MODEL_REVISION",
     ):
         value = os.environ.get(optional_key, "").strip()
         if value:

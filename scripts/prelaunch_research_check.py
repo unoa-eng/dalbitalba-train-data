@@ -128,6 +128,23 @@ def check_phase6_generate_alignment(failures: list[str]) -> None:
         ok("phase6_generate.py no longer appears to use first-40-char seed eval")
 
 
+def check_base_model_revision(failures: list[str]) -> None:
+    """Warn when BASE_MODEL_REVISION is unset or 'main' (not pinned to a commit SHA)."""
+    revision = os.environ.get("BASE_MODEL_REVISION", "").strip()
+    if not revision:
+        print(
+            "[WARN] BASE_MODEL_REVISION is not set; defaulting to 'main'. "
+            "Pin to a commit SHA for reproducibility."
+        )
+    elif revision == "main":
+        print(
+            "[WARN] BASE_MODEL_REVISION='main' (floating ref). "
+            "Pin to a commit SHA for a fully reproducible paper-grade run."
+        )
+    else:
+        ok(f"BASE_MODEL_REVISION pinned: {revision}")
+
+
 def check_runtime_wandb(failures: list[str]) -> None:
     # Paper-grade gate: WANDB_API_KEY is mandatory at launch time.
     # No env-var bypass is permitted — the gate cannot be silently waived in CI/RunPod.
@@ -141,6 +158,7 @@ def main() -> int:
     failures: list[str] = []
     check_docs(failures)
     check_recipe(failures)
+    check_base_model_revision(failures)
     check_tokenizer(failures)
     check_required_artifacts(failures)
     check_phase6_generate_alignment(failures)

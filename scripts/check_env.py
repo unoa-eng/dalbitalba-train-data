@@ -40,6 +40,7 @@ OPTIONAL_KEYS = {
         "WANDB_TAGS",
         "WANDB_NOTES",
         "WANDB_USERNAME",
+        "BASE_MODEL_REVISION",
     ],
     "eval": [
         "HF_TOKEN",

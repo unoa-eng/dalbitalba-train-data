@@ -214,6 +214,26 @@ persist_run_artifacts() {
     copy_if_file "${OUT_DIR}/phase5-eval-v2.json" "${run_dir}/phase5-eval-v2.json"
     copy_if_file "${OUT_DIR}/phase5-ai-generated.jsonl" "${run_dir}/phase5-ai-generated.jsonl"
 
+    # A05: collect extended metadata for manifest
+    local _git_commit _git_branch _py_ver _torch_ver _transformers_ver _peft_ver _bnb_ver
+    local _cpt1_sha _cpt2_sha _sft_sha _val_sha _orpo_sha
+    _git_commit="$(git -C "${REPO_CLONE_DIR}" rev-parse HEAD 2>/dev/null || echo 'unknown')"
+    _git_branch="$(git -C "${REPO_CLONE_DIR}" rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'unknown')"
+    _py_ver="$(python3 -c "import sys; print(sys.version.split()[0])" 2>/dev/null || echo 'unknown')"
+    _torch_ver="$(python3 -c "import torch; print(torch.__version__)" 2>/dev/null || echo 'missing')"
+    _transformers_ver="$(python3 -c "import transformers; print(transformers.__version__)" 2>/dev/null || echo 'missing')"
+    _peft_ver="$(python3 -c "import peft; print(peft.__version__)" 2>/dev/null || echo 'missing')"
+    _bnb_ver="$(python3 -c "import bitsandbytes; print(bitsandbytes.__version__)" 2>/dev/null || echo 'missing')"
+    # sha256sum on Linux; shasum -a 256 on macOS — try both, fall back to "missing"
+    _sha256() { local f="$1"; if [ -f "${f}" ]; then (sha256sum "${f}" 2>/dev/null || shasum -a 256 "${f}" 2>/dev/null) | head -1 | cut -d' ' -f1; else echo "missing"; fi; }
+    _cpt1_sha="$(_sha256 "${DATA_DIR}/${CPT_PHASE_1_DATA:-}")"
+    _cpt2_sha="$(_sha256 "${DATA_DIR}/${CPT_PHASE_2_DATA:-}")"
+    _sft_sha="$(_sha256 "${DATA_DIR}/${SFT_DATA:-}")"
+    _val_sha="$(_sha256 "${DATA_DIR}/val_set.v2.jsonl")"
+    _orpo_sha="$(_sha256 "${DATA_DIR}/${ORPO_DATA:-}")"
+    local _docker_image
+    _docker_image="${CONTAINER_IMAGE:-$(cat /etc/runpod-release 2>/dev/null | head -1 || echo 'unknown')}"
+
     cat > "${run_dir}/manifest.json" <<EOF
 {
   "timestamp": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')",
@@ -227,7 +247,23 @@ persist_run_artifacts() {
   "wandb_project": "${WANDB_PROJECT:-dalbitalba-round2}",
   "wandb_run_group": "${WANDB_RUN_GROUP:-}",
   "wandb_tags": "${WANDB_TAGS:-}",
-  "wandb_username": "${WANDB_USERNAME:-}"
+  "wandb_username": "${WANDB_USERNAME:-}",
+  "git_commit": "${_git_commit}",
+  "git_branch": "${_git_branch}",
+  "python_version": "${_py_ver}",
+  "torch_version": "${_torch_ver}",
+  "transformers_version": "${_transformers_ver}",
+  "peft_version": "${_peft_ver}",
+  "bitsandbytes_version": "${_bnb_ver}",
+  "docker_image": "${_docker_image}",
+  "base_model_revision": "${BASE_MODEL_REVISION:-main}",
+  "data_sha256": {
+    "cpt_phase1": "${_cpt1_sha}",
+    "cpt_phase2": "${_cpt2_sha}",
+    "sft": "${_sft_sha}",
+    "val": "${_val_sha}",
+    "orpo": "${_orpo_sha}"
+  }
 }
 EOF
 
@@ -237,7 +273,23 @@ EOF
   "branch": "${branch}",
   "status": "${final_status}",
   "hf_repo_round2": "${HF_REPO_ROUND2:-}",
-  "timestamp": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+  "timestamp": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')",
+  "git_commit": "${_git_commit}",
+  "git_branch": "${_git_branch}",
+  "python_version": "${_py_ver}",
+  "torch_version": "${_torch_ver}",
+  "transformers_version": "${_transformers_ver}",
+  "peft_version": "${_peft_ver}",
+  "bitsandbytes_version": "${_bnb_ver}",
+  "docker_image": "${_docker_image}",
+  "base_model_revision": "${BASE_MODEL_REVISION:-main}",
+  "data_sha256": {
+    "cpt_phase1": "${_cpt1_sha}",
+    "cpt_phase2": "${_cpt2_sha}",
+    "sft": "${_sft_sha}",
+    "val": "${_val_sha}",
+    "orpo": "${_orpo_sha}"
+  }
 }
 EOF
     cp "${latest_tmp}" "${REPO_CLONE_DIR}/runs/latest-round2-train.json"
@@ -587,6 +639,7 @@ phase1_cpt_broad() {
         python3 "${SCRIPTS_DIR}/../train_cpt.py" 2>&1 | tee -a "${PHASE1_LOG}" >> "${ROUND2_LOG}"
     local rc=${PIPESTATUS[0]}
     log "phase1 exit=${rc}"
+    [ "${rc}" = "0" ] && upload_phase_adapter "phase1-cpt-broad" "${OUT_DIR}/round2-phase1-cpt-lora" "${HF_USERNAME:-unoa}/dalbitalba-qwen3-round2-${TIMESTAMP}-phase1"
     return ${rc}
 }
 
@@ -619,6 +672,7 @@ phase2_cpt_clean() {
         python3 "${SCRIPTS_DIR}/../train_cpt.py" 2>&1 | tee -a "${PHASE2_LOG}" >> "${ROUND2_LOG}"
     local rc=${PIPESTATUS[0]}
     log "phase2 exit=${rc}"
+    [ "${rc}" = "0" ] && upload_phase_adapter "phase2-cpt-clean" "${OUT_DIR}/round2-phase2-cpt-lora" "${HF_USERNAME:-unoa}/dalbitalba-qwen3-round2-${TIMESTAMP}-phase2"
     return ${rc}
 }
 
@@ -733,6 +787,7 @@ phase3_sft_threaded() {
         python3 "${SCRIPTS_DIR}/../train_sft.py" 2>&1 | tee -a "${PHASE3_LOG}" >> "${ROUND2_LOG}"
     local rc=${PIPESTATUS[0]}
     log "phase3 exit=${rc} (base=${sft_base})"
+    [ "${rc}" = "0" ] && upload_phase_adapter "phase3-tc-sft" "${OUT_DIR}/round2-phase3-sft-lora" "${HF_USERNAME:-unoa}/dalbitalba-qwen3-round2-${TIMESTAMP}-phase3"
     return ${rc}
 }
 
@@ -882,6 +937,31 @@ phase5_eval_gate() {
         cat "${PHASE5_LOG}" >> "${ROUND2_LOG}"
     fi
     return ${rc}
+}
+
+upload_phase_adapter() {
+    local phase_label="$1"      # e.g. phase1-cpt-broad
+    local adapter_dir="$2"      # e.g. ${OUT_DIR}/round2-phase1-cpt-lora
+    local hf_repo="$3"          # e.g. ${HF_USERNAME}/dalbitalba-qwen3-round2-${TIMESTAMP}-${phase_label}
+    if [ ! -d "${adapter_dir}" ] || [ -z "${HF_TOKEN:-}" ]; then
+        log "[hf-incremental] skip ${phase_label}: dir or token missing"
+        return 0
+    fi
+    log "[hf-incremental] uploading ${phase_label} → ${hf_repo}"
+    # KEEP || true: incremental upload is best-effort. Final phase5 push remains authoritative.
+    run_timeout "${HF_UPLOAD_TIMEOUT_HOURS:-1}" python3 -c "
+import os, sys
+from huggingface_hub import HfApi
+api = HfApi(token=os.environ['HF_TOKEN'])
+repo = '${hf_repo}'
+try:
+    api.create_repo(repo, repo_type='model', private=True, exist_ok=True)
+    api.upload_folder(folder_path='${adapter_dir}', repo_id=repo, repo_type='model', commit_message='incremental: ${phase_label}')
+    print('[hf-incremental] uploaded ${phase_label}')
+except Exception as e:
+    print(f'[hf-incremental] WARN {e}', file=sys.stderr)
+    sys.exit(1)
+" >> "${ROUND2_LOG}" 2>&1 || notify "WARN: HF incremental ${phase_label} upload failed (chain continues)"
 }
 
 upload_hf_artifacts() {
