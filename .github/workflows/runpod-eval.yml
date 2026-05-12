@@ -41,6 +41,8 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           BASE_MODEL: Qwen/Qwen3-8B-Base
+          EVAL_INPUT_DATA: sft_thread_conditioned.eval.jsonl
+          EVAL_PERSONA_LIST: runs/round2-obsidian-synthesis/persona-30-extracted.json
           GPU_TYPE: NVIDIA L40S,NVIDIA A100 80GB PCIe,NVIDIA RTX 6000 Ada Generation
           CONTAINER_IMAGE: runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
         run: |

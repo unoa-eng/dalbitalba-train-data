@@ -1,6 +1,6 @@
 # Mac mini Bootstrap
 
-이 문서는 Windows/WSL 환경에서 codex/budget30-macmini-loop 브랜치 작업이 끝난 뒤, Mac mini로 옮겨서 paid-GPU 직전까지의 모든 검증을 다시 한 번 수행하기 위한 단계입니다.
+이 문서는 Mac mini에서 paid-GPU 직전까지의 검증과 RunPod launch 절차를 재현하기 위한 단계입니다.
 
 ## 0. 사전 조건 + Mac mini 의 역할 명시
 
@@ -35,7 +35,7 @@ gh auth login   # PAT 또는 device flow
 mkdir -p ~/projects && cd ~/projects
 git clone https://github.com/unoa-eng/dalbitalba-train-data.git
 cd dalbitalba-train-data
-git checkout codex/budget30-macmini-loop
+git checkout main
 git pull
 ```
 
@@ -102,7 +102,18 @@ python scripts/local_verification_loop.py --strict
 
 기대 결과:
 - `Severe: 0`
-- 5건의 WARN (duplication, short rows, $30 budget exceed) — 정상
+- 허용 WARN 은 리포트에서 명시적으로 확인한다. 현재 round2/budget30 기준 정상 WARN 은 `cpt_corpus.v3.jsonl: many very short rows` 1건이다.
+- local smoke 포함: `tokenizer_v4` 기준 SFT 포맷/마스킹 smoke PASS
+
+이 local smoke 는 tokenizer-only control-plane 검증이다.
+- 8B base model 로드 안 함
+- 로컬 학습 안 함
+- RunPod paid smoke 대체 아님
+
+Obsidian 범위 정책은 `docs/OBSIDIAN_SCOPE_POLICY.md` 를 따른다. 로컬 verifier 는
+`research/obsidian-ref`, `research/obsidian-export`,
+`runs/round2-obsidian-synthesis/persona-30-extracted.json` 의 존재와 persona-30
+coverage 를 함께 확인한다.
 
 ```bash
 # 추가 — 기존 0618 HF artifact 검증 (release-worthy 아님 확정)
@@ -134,6 +145,10 @@ python scripts/launch_train_pod.py --dry-run | jq '.imageName, .env.SKIP_SFT, .e
 
 `docs/LOCAL_VERIFICATION_LOOP.md` 의 Promotion Rule 통과 후에만:
 
+실제 RunPod launch 는 선택한 Git ref 를 클론한다. `scripts/launch_train_pod.py`
+와 `scripts/launch_eval_pod.py` 는 런타임 중요 파일이 로컬에서 dirty 이면
+실 launch 를 거부한다. 로컬 검증이 통과한 변경은 먼저 commit/push 후 실행한다.
+
 ```bash
 set -a; source recipes/smoke.env; set +a
 python scripts/launch_train_pod.py
@@ -142,21 +157,21 @@ python scripts/launch_train_pod.py
 ```
 
 smoke 가 끝나면 `runs/train-run-<stamp>/` 브랜치에 `DONE.txt`, `manifest.json`,
-`*.log` 가 푸시되고 `runs/latest-train.json` 포인터가 업데이트된다.
+`*.log` 가 푸시된다. round2 chain 은 `runs/latest-round2-train.json`, classic chain 은
+`runs/latest-train.json` 포인터를 업데이트한다.
 
 ## 8.5. PROMOTION 게이트 (smoke → budget30 진입 전 필수)
 
 ```bash
 git fetch origin
-git checkout origin/main -- runs/latest-train.json
+git checkout origin/main -- runs/latest-train.json runs/latest-round2-train.json
 python3 scripts/check_smoke_promotion.py --require-sft
 # 종료코드 0 = PROMOTE, 1 = HOLD, 2 = USAGE
 ```
 
 기대:
-- `latest-train status=done_ok`
-- `hf_cpt adapter present at UNOA/dalbitalba-qwen3-cpt-<stamp>`
-- `hf_sft adapter present at UNOA/dalbitalba-qwen3-sft-<stamp>`
+- classic chain: `latest-train status=done_ok`, `hf_cpt`, `hf_sft`
+- round2 chain: `latest-round2-train status=done_ok`, `hf_repo_round2`, `eval/phase5-eval-v2.json`
 - `DONE.txt = done_ok`, `manifest.json present`
 
 `HOLD` 가 떨어지면 budget30 절대 launch 금지. 실패 사유 모두 해결 후 재시도.
@@ -241,7 +256,7 @@ for p in json.loads(r.read()):
 - [ ] PROMOTION 게이트 PROMOTE (`check_smoke_promotion.py --require-sft`)
 - [ ] adapter 무결성 OK (`check_adapter_integrity.py`)
 - [ ] budget30 run DONE.txt + HF adapter 확인
-- [ ] eval pod metrics.json 생성
+- [ ] eval pod `eval/phase5-eval-v2.json` 또는 classic `metrics.json` 생성
 - [ ] 5-metric gate PASS (jsd ≤0.15, length_kl ≤0.10, digit/eng delta, mauve ≥0.80)
 - [ ] PR 생성 (`scripts/create_final_pr.sh`)
 - [ ] 비활성 pod 정리 (위 12번 스크립트)

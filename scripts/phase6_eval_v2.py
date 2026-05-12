@@ -76,6 +76,28 @@ GATE_V2 = {
 }
 
 
+def normalize_persona_tokens(value: object) -> set[object]:
+    raw = str(value or "").strip()
+    if not raw:
+        return set()
+    tokens: set[object] = {raw}
+    lowered = raw.lower()
+    if lowered.startswith("p-"):
+        suffix = raw[2:]
+        if suffix:
+            tokens.add(suffix)
+            tokens.add(suffix.lstrip("0") or "0")
+            try:
+                tokens.add(int(suffix))
+            except ValueError:
+                pass
+    try:
+        tokens.add(int(raw))
+    except ValueError:
+        pass
+    return tokens
+
+
 def load_full_rows(path: str) -> list[dict]:
     rows: list[dict] = []
     with open(path, "r", encoding="utf-8") as handle:
@@ -194,20 +216,33 @@ def persona_consistency(ai_rows: list[dict], persona_list_path: Path | None) -> 
     accepted = payload.get("personas") or []
     accepted_ids = {p.get("id") for p in accepted}
     accepted_names = {p.get("name") for p in accepted if p.get("name")}
+    accepted_tokens: set[object] = set()
+    for pid in accepted_ids:
+        accepted_tokens.update(normalize_persona_tokens(pid))
     matched = 0
     declared = 0
+    total = len(ai_rows)
     for r in ai_rows:
         pid = r.get("persona_id") if isinstance(r, dict) else None
         pname = r.get("persona") if isinstance(r, dict) else None
         if pid is None and not pname:
             continue
         declared += 1
-        if pid in accepted_ids or pname in accepted_names:
+        if normalize_persona_tokens(pid) & accepted_tokens or pname in accepted_names:
             matched += 1
+    if not total:
+        return 0.0, {"error": "no generated rows"}
     if not declared:
         return 0.0, {"error": "no persona-tagged rows"}
-    score = matched / declared
-    return score, {"declared": declared, "matched": matched, "score": score}
+    score = matched / total
+    return score, {
+        "total_rows": total,
+        "declared": declared,
+        "missing": total - declared,
+        "matched": matched,
+        "score": score,
+        "accepted_ids": sorted(str(v) for v in accepted_ids if v is not None),
+    }
 
 
 def cross_machine_agreement(ai_rows: list[dict], secondary_rows: list[dict]) -> tuple[float, dict]:
@@ -244,6 +279,12 @@ def main() -> int:
     ap.add_argument("--persona-list", help="persona-30-extracted.json")
     ap.add_argument("--out", help="Write JSON report to this path")
     ap.add_argument("--skip-mauve", action="store_true")
+    ap.add_argument(
+        "--min-rows",
+        type=int,
+        default=20,
+        help="Minimum AI/raw rows required for a stable gate (default: 20)",
+    )
     args = ap.parse_args()
 
     ai_rows = load_full_rows(args.ai)
@@ -259,6 +300,13 @@ def main() -> int:
         ai_texts, raw_texts, include_mauve=not args.skip_mauve
     )
     base_verdict, base_violations = base.evaluate_gate(base_metrics)
+    sample_violations: list[str] = []
+    if len(ai_rows) < args.min_rows:
+        sample_violations.append(f"ai_rows={len(ai_rows)} < min_rows={args.min_rows}")
+    if len(raw_rows) < args.min_rows:
+        sample_violations.append(f"raw_rows={len(raw_rows)} < min_rows={args.min_rows}")
+    if len(ai_rows) != len(raw_rows):
+        sample_violations.append(f"row_count_mismatch ai={len(ai_rows)} raw={len(raw_rows)}")
 
     # New v2 metrics
     p_ratio_max, p_ratio_detail = punct_ratio_match(ai_rows, raw_rows)
@@ -278,7 +326,7 @@ def main() -> int:
     }
     v2_verdict, v2_violations = evaluate_v2_gate(v2_metrics)
 
-    overall_violations = list(base_violations) + list(v2_violations)
+    overall_violations = list(sample_violations) + list(base_violations) + list(v2_violations)
     overall_verdict = "PASS" if not overall_violations else "FAIL"
 
     report = {
@@ -287,6 +335,13 @@ def main() -> int:
             "metrics": base_metrics,
             "details": base_details,
             "gate": {"verdict": base_verdict, "violations": base_violations},
+        },
+        "sample": {
+            "ai_rows": len(ai_rows),
+            "raw_rows": len(raw_rows),
+            "secondary_rows": len(secondary_rows),
+            "min_rows": args.min_rows,
+            "violations": sample_violations,
         },
         "v2": {
             "metrics": v2_metrics,

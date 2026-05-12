@@ -1,15 +1,15 @@
 {
-  "samples_used": 1000,
+  "samples_used": 300,
   "chars_per_token": {
-    "p50": 1.2432432432432432,
-    "p10": 1.0985915492957747,
-    "p90": 1.4042553191489362,
-    "mean": 1.2514248714793925
+    "p50": 1.2352941176470589,
+    "p10": 1.1071428571428572,
+    "p90": 1.4,
+    "mean": 1.2505948292445925
   },
   "tokens_per_sample": {
-    "p50": 34,
-    "p99": 283,
-    "max": 772
+    "p50": 29,
+    "p99": 225,
+    "max": 319
   },
   "slang_breakdown": [
     {
@@ -282,8 +282,8 @@
   },
   "meta": {
     "model": "Qwen/Qwen3-8B-Base",
-    "samples_jsonl": "/tmp/dalbitalba-train-data/val_set.v2.jsonl",
+    "samples_jsonl": "/Users/unoa/dalbitalba-train-data/val_set.v2.jsonl",
     "field": "text",
-    "limit": 1000
+    "limit": 300
   }
 }

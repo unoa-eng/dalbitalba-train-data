@@ -2,11 +2,11 @@
 """
 Smoke -> budget30 promotion gate.
 
-Reads runs/latest-train.json (written by chain_train.sh persist_run_artifacts),
-verifies the HF CPT adapter exists, and prints PROMOTE or HOLD with reasons.
+Reads the latest train pointer written by the active chain, verifies the
+required HF artifacts exist, and prints PROMOTE or HOLD with reasons.
 
 Usage:
-    python3 scripts/check_smoke_promotion.py             # default: read latest-train.json
+    python3 scripts/check_smoke_promotion.py             # auto-detect classic/round2 pointer
     python3 scripts/check_smoke_promotion.py --json      # machine-readable
 
 Exit codes:
@@ -28,16 +28,40 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
-LATEST_TRAIN = REPO_ROOT / "runs" / "latest-train.json"
+LATEST_CLASSIC = REPO_ROOT / "runs" / "latest-train.json"
+LATEST_ROUND2 = REPO_ROOT / "runs" / "latest-round2-train.json"
 
-REQUIRED_HF_FILES = (
+CLASSIC_REQUIRED_HF_FILES = (
     "cpt-lora/adapter_model.safetensors",
     "adapter_model.safetensors",
 )
 
-TRAINER_STATE_CANDIDATES = (
+CLASSIC_TRAINER_STATE_CANDIDATES = (
     "trainer_state.json",
     "cpt-lora/trainer_state.json",
+)
+
+ROUND2_CPT_REQUIRED_HF_FILES = (
+    "round2-phase1-cpt-lora/adapter_model.safetensors",
+    "round2-phase2-cpt-lora/adapter_model.safetensors",
+)
+
+ROUND2_SFT_REQUIRED_HF_FILES = (
+    "round2-phase3-sft-lora/adapter_model.safetensors",
+)
+
+ROUND2_CPT_TRAINER_STATE_FILES = (
+    "round2-phase1-cpt-lora/trainer_state.json",
+    "round2-phase2-cpt-lora/trainer_state.json",
+)
+
+ROUND2_SFT_TRAINER_STATE_FILES = (
+    "round2-phase3-sft-lora/trainer_state.json",
+)
+
+ROUND2_EVAL_FILES = (
+    "eval/phase5-eval-v2.json",
+    "DONE.txt",
 )
 
 
@@ -85,22 +109,84 @@ def hf_fetch_json(repo_id: str, filename: str, token: str | None) -> dict | None
         return None
 
 
+def any_path_contains(files: list[str], needles: tuple[str, ...]) -> bool:
+    return any(needle in path for path in files for needle in needles)
+
+
+def missing_exact(files: list[str], required: tuple[str, ...]) -> list[str]:
+    available = set(files)
+    return [path for path in required if path not in available]
+
+
+def validate_trainer_state(
+    repo_id: str,
+    path: str,
+    token: str | None,
+) -> tuple[bool, str]:
+    trainer_state = hf_fetch_json(repo_id, path, token)
+    if trainer_state is None:
+        return False, f"{repo_id} missing trainer_state.json at {path}"
+    try:
+        global_step = int(trainer_state.get("global_step") or 0)
+        max_steps = int(trainer_state.get("max_steps") or 0)
+    except (TypeError, ValueError):
+        return False, f"trainer_state.json @ {path}: invalid global_step/max_steps"
+    epoch = trainer_state.get("epoch", 0)
+    if max_steps <= 0:
+        return False, f"trainer_state.json @ {path}: max_steps={max_steps} (cannot verify completion)"
+    if global_step < max_steps:
+        return (
+            False,
+            f"trainer_state.json @ {path}: global_step={global_step} < max_steps={max_steps} "
+            f"(only {global_step / max_steps:.1%} complete)",
+        )
+    return True, f"trainer_state.json @ {path}: global_step={global_step}, max_steps={max_steps}, epoch={epoch}"
+
+
+def resolve_default_latest(mode: str) -> Path:
+    if mode == "classic":
+        return LATEST_CLASSIC
+    if mode == "round2":
+        return LATEST_ROUND2
+    candidates = [path for path in (LATEST_ROUND2, LATEST_CLASSIC) if path.exists()]
+    if not candidates:
+        # Prefer the active round2 pointer in the error path. Returning the
+        # classic path here makes a missing-smoke failure look like the wrong
+        # training chain was selected.
+        return LATEST_ROUND2
+    return max(candidates, key=lambda path: path.stat().st_mtime)
+
+
+def infer_mode(latest_path: Path, latest_payload: dict[str, object], requested_mode: str) -> str:
+    if requested_mode in {"classic", "round2"}:
+        return requested_mode
+    if latest_path.name == "latest-round2-train.json" or "hf_repo_round2" in latest_payload:
+        return "round2"
+    return "classic"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--latest-train",
-        default=str(LATEST_TRAIN),
-        help="Path to runs/latest-train.json (default: %(default)s)",
+        default="",
+        help="Path to latest train pointer (default: auto-detect classic/round2)",
     )
     parser.add_argument(
         "--hf-cpt-repo",
         default="",
-        help="Override HF CPT repo (else read from latest-train.json)",
+        help="Override HF primary repo (classic: CPT repo, round2: round2 repo)",
+    )
+    parser.add_argument(
+        "--mode",
+        choices=("auto", "classic", "round2"),
+        default="auto",
+        help="Promotion gate mode (default: auto-detect from latest pointer)",
     )
     parser.add_argument(
         "--require-sft",
         action="store_true",
-        help="Also require a non-empty hf_repo_sft (smoke profile uses SFT; budget30 does not)",
+        help="Also require SFT artifacts (classic: hf_repo_sft, round2: phase3 SFT adapter)",
     )
     parser.add_argument("--json", action="store_true", help="Emit JSON verdict")
     args = parser.parse_args()
@@ -111,10 +197,15 @@ def main() -> int:
     reasons: list[str] = []
     ok_checks: list[str] = []
 
-    latest_path = Path(args.latest_train)
+    latest_path = Path(args.latest_train) if args.latest_train else resolve_default_latest(args.mode)
     if not latest_path.exists():
         print(f"[FATAL] latest-train pointer not found: {latest_path}", file=sys.stderr)
-        print("  -> run a training pod first; the pointer is created by chain_train.sh", file=sys.stderr)
+        if not args.latest_train and args.mode == "auto":
+            print(
+                f"  -> checked: {LATEST_ROUND2} and {LATEST_CLASSIC}",
+                file=sys.stderr,
+            )
+        print("  -> run a training pod first; the pointer is created by the active chain script", file=sys.stderr)
         return 2
 
     try:
@@ -123,78 +214,93 @@ def main() -> int:
         print(f"[FATAL] cannot parse {latest_path}: {exc}", file=sys.stderr)
         return 2
 
+    mode = infer_mode(latest_path, latest, args.mode)
     branch = latest.get("branch", "") or ""
     status = latest.get("status", "") or ""
-    hf_cpt = (args.hf_cpt_repo or latest.get("hf_repo_cpt", "") or "").strip()
-    hf_sft = (latest.get("hf_repo_sft", "") or "").strip()
+    if mode == "round2":
+        hf_primary = (args.hf_cpt_repo or latest.get("hf_repo_round2", "") or "").strip()
+        hf_secondary = ""
+        required_hf_files = ROUND2_CPT_REQUIRED_HF_FILES + (
+            ROUND2_SFT_REQUIRED_HF_FILES if args.require_sft else ()
+        ) + ROUND2_EVAL_FILES
+        required_trainer_state_files = ROUND2_CPT_TRAINER_STATE_FILES + (
+            ROUND2_SFT_TRAINER_STATE_FILES if args.require_sft else ()
+        )
+    else:
+        hf_primary = (args.hf_cpt_repo or latest.get("hf_repo_cpt", "") or "").strip()
+        hf_secondary = (latest.get("hf_repo_sft", "") or "").strip()
+        required_hf_files = CLASSIC_REQUIRED_HF_FILES
+        required_trainer_state_files = ()
     timestamp = latest.get("timestamp", "")
 
     # Check 1: status must be done_ok
     if status == "done_ok":
-        ok_checks.append(f"latest-train status=done_ok ({branch})")
+        ok_checks.append(f"{mode} latest-train status=done_ok ({branch})")
     else:
-        reasons.append(f"latest-train status='{status}' (expected done_ok); branch={branch}")
+        reasons.append(f"{mode} latest-train status='{status}' (expected done_ok); branch={branch}")
 
-    # Check 2: HF CPT adapter must exist
-    if not hf_cpt:
-        reasons.append("hf_repo_cpt missing in latest-train.json — supply --hf-cpt-repo to override")
+    # Check 2: primary HF repo must exist and contain adapters.
+    if not hf_primary:
+        missing_key = "hf_repo_round2" if mode == "round2" else "hf_repo_cpt"
+        reasons.append(f"{missing_key} missing in {latest_path.name} — supply --hf-cpt-repo to override")
     else:
-        files = hf_list_files(hf_cpt, hf_token)
+        files = hf_list_files(hf_primary, hf_token)
         if not files:
-            reasons.append(f"hf_repo_cpt={hf_cpt} -> file list empty (auth or 404). check HF_TOKEN")
+            reasons.append(f"primary repo {hf_primary} -> file list empty (auth or 404). check HF_TOKEN")
         else:
-            adapter_present = any(needle in path for path in files for needle in REQUIRED_HF_FILES)
-            if adapter_present:
-                ok_checks.append(f"hf_cpt adapter present at {hf_cpt}")
+            if mode == "round2":
+                missing = missing_exact(files, required_hf_files)
             else:
-                reasons.append(f"hf_cpt={hf_cpt} has {len(files)} files but no adapter_model.safetensors")
+                missing = [] if any_path_contains(files, required_hf_files) else ["/".join(required_hf_files)]
+            if not missing:
+                ok_checks.append(f"{mode} required artifacts present at {hf_primary}")
+            else:
+                reasons.append(f"{hf_primary} missing required {mode} artifacts: {missing}")
 
     # Check 2.5: trainer_state.json must show global_step >= max_steps
     # This is the mechanical defense against the 0618 partial-CPT trap (step 2700/5775
     # promoted as if it were complete).
-    if hf_cpt:
-        trainer_state = None
-        resolved_trainer = None
-        for cand in TRAINER_STATE_CANDIDATES:
-            trainer_state = hf_fetch_json(hf_cpt, cand, hf_token)
-            if trainer_state is not None:
-                resolved_trainer = cand
-                break
-        if trainer_state is None:
-            reasons.append(
-                f"hf_cpt={hf_cpt} has no trainer_state.json — cannot verify training completed"
-            )
+    if hf_primary:
+        if mode == "round2":
+            for path in required_trainer_state_files:
+                ok_state, message = validate_trainer_state(hf_primary, path, hf_token)
+                if ok_state:
+                    ok_checks.append(message)
+                else:
+                    reasons.append(message)
         else:
-            global_step = trainer_state.get("global_step", 0)
-            max_steps = trainer_state.get("max_steps", 0)
-            epoch = trainer_state.get("epoch", 0)
-            if max_steps > 0 and global_step < max_steps:
+            trainer_state = None
+            resolved_trainer = None
+            for cand in CLASSIC_TRAINER_STATE_CANDIDATES:
+                trainer_state = hf_fetch_json(hf_primary, cand, hf_token)
+                if trainer_state is not None:
+                    resolved_trainer = cand
+                    break
+            if trainer_state is None:
                 reasons.append(
-                    f"trainer_state.json @ {resolved_trainer}: global_step={global_step} "
-                    f"< max_steps={max_steps} (only {global_step / max_steps:.1%} complete) — "
-                    f"refuse to promote partial training"
+                    f"{hf_primary} has no expected trainer_state.json for {mode} — cannot verify training completed"
                 )
-            elif global_step <= 0:
-                reasons.append(f"trainer_state.json: global_step={global_step} (training never started)")
             else:
-                ok_checks.append(
-                    f"trainer_state.json: global_step={global_step}, max_steps={max_steps}, epoch={epoch:.2f}"
-                )
+                ok_state, message = validate_trainer_state(hf_primary, resolved_trainer or "", hf_token)
+                if ok_state:
+                    ok_checks.append(message)
+                else:
+                    reasons.append(message)
 
-    # Check 3 (optional): SFT adapter must exist for smoke
-    if args.require_sft:
-        if not hf_sft:
+    # Check 3 (classic only): separate SFT adapter must exist for smoke
+    if args.require_sft and mode == "classic":
+        if not hf_secondary:
             reasons.append("hf_repo_sft empty — smoke profile must produce an SFT adapter")
         else:
-            sft_files = hf_list_files(hf_sft, hf_token)
+            sft_files = hf_list_files(hf_secondary, hf_token)
             if not sft_files:
-                reasons.append(f"hf_repo_sft={hf_sft} -> file list empty (auth or 404)")
+                reasons.append(f"hf_repo_sft={hf_secondary} -> file list empty (auth or 404)")
             else:
                 sft_adapter = any("adapter_model.safetensors" in p for p in sft_files)
                 if sft_adapter:
-                    ok_checks.append(f"hf_sft adapter present at {hf_sft}")
+                    ok_checks.append(f"hf_sft adapter present at {hf_secondary}")
                 else:
-                    reasons.append(f"hf_sft={hf_sft} has {len(sft_files)} files but no adapter_model.safetensors")
+                    reasons.append(f"hf_repo_sft={hf_secondary} has {len(sft_files)} files but no adapter_model.safetensors")
 
     # Check 4: branch artifacts (DONE.txt + manifest)
     branch_dir = REPO_ROOT / "runs" / branch
@@ -226,10 +332,12 @@ def main() -> int:
         print(json.dumps(
             {
                 "verdict": verdict,
+                "mode": mode,
+                "latest_pointer": str(latest_path),
                 "branch": branch,
                 "status": status,
-                "hf_cpt": hf_cpt,
-                "hf_sft": hf_sft,
+                "hf_primary": hf_primary,
+                "hf_secondary": hf_secondary,
                 "timestamp": timestamp,
                 "checks_passed": ok_checks,
                 "checks_failed": reasons,
@@ -239,10 +347,15 @@ def main() -> int:
         ))
     else:
         print(f"=== smoke promotion check — {verdict} ===")
+        print(f"mode      : {mode}")
+        print(f"latest    : {latest_path}")
         print(f"branch    : {branch}")
         print(f"status    : {status}")
-        print(f"hf_cpt    : {hf_cpt or '(none)'}")
-        print(f"hf_sft    : {hf_sft or '(none)'}")
+        if mode == "round2":
+            print(f"hf_round2 : {hf_primary or '(none)'}")
+        else:
+            print(f"hf_cpt    : {hf_primary or '(none)'}")
+            print(f"hf_sft    : {hf_secondary or '(none)'}")
         print(f"timestamp : {timestamp}")
         print()
         if ok_checks:

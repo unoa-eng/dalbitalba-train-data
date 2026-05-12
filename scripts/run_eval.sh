@@ -190,7 +190,10 @@ else
   if [[ -z "${SFT_ADAPTER_REPO:-}" && -n "${HF_ADAPTER_REPO:-}" ]]; then
     export SFT_ADAPTER_REPO="${HF_ADAPTER_REPO}"
   fi
-  require_env "SFT_ADAPTER_REPO"
+  if [[ -z "${SFT_ADAPTER_REPO:-}" && -z "${CPT_MERGED_REPO:-}" && -z "${CPT_MERGED_PATH:-}" ]]; then
+    log "[FATAL] phase6 requires SFT_ADAPTER_REPO or CPT_MERGED_REPO/CPT_MERGED_PATH"
+    exit 2
+  fi
 fi
 
 if [[ ! -d "${REPO_DIR}/.git" ]]; then
@@ -275,32 +278,64 @@ if [[ "${EVAL_MODE:-phase6}" = "legacy" ]]; then
     >> "${LOG_FILE}" 2>&1
 else
   log "[2/5] generate ai samples (phase6 deterministic gate)"
-  mkdir -p /workspace/data eval
-  cp val_set.v2.jsonl /workspace/data/val_set.v2.jsonl
+  phase6_input="${EVAL_INPUT_DATA:-sft_thread_conditioned.eval.jsonl}"
+  if [[ "${phase6_input}" = /* ]]; then
+    phase6_input_path="${phase6_input}"
+  else
+    phase6_input_path="${REPO_DIR}/${phase6_input}"
+  fi
+  if [[ ! -f "${phase6_input_path}" ]]; then
+    log "[ERROR] phase6 input missing: ${phase6_input_path}"
+    exit 1
+  fi
+
+  phase6_persona_path=""
+  if [[ -n "${EVAL_PERSONA_LIST:-}" ]]; then
+    if [[ "${EVAL_PERSONA_LIST}" = /* ]]; then
+      phase6_persona_path="${EVAL_PERSONA_LIST}"
+    else
+      phase6_persona_path="${REPO_DIR}/${EVAL_PERSONA_LIST}"
+    fi
+  fi
+
+  phase6_secondary_path=""
+  if [[ -n "${EVAL_SECONDARY_AI:-}" ]]; then
+    if [[ "${EVAL_SECONDARY_AI}" = /* ]]; then
+      phase6_secondary_path="${EVAL_SECONDARY_AI}"
+    else
+      phase6_secondary_path="${REPO_DIR}/${EVAL_SECONDARY_AI}"
+    fi
+  fi
+
+  mkdir -p eval
   BASE_MODEL="${BASE_MODEL:-Qwen/Qwen3-8B-Base}" \
   SFT_ADAPTER_REPO="${SFT_ADAPTER_REPO}" \
+  EVAL_INPUT_JSONL="${phase6_input_path}" \
   HF_TOKEN="${HF_TOKEN:-}" \
+  TEMPERATURE="${TEMPERATURE:-${GENERATION_TEMP:-1.1}}" \
+  TOP_P="${TOP_P:-${GENERATION_TOP_P:-0.9}}" \
+  MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-${GENERATION_MAX_NEW_TOKENS:-200}}" \
     run_timeout "${EVAL_GENERATE_TIMEOUT_HOURS}" "phase6:generate" \
     ${PY} scripts/phase6_generate.py >> "${LOG_FILE}" 2>&1
   cp /workspace/ai_generated.jsonl ai_generated.jsonl
 
   log "[3/5] run phase6 metric gate"
-  if [[ "${RUN_MAUVE:-0}" != "1" ]]; then
-    run_timeout "${EVAL_METRIC_TIMEOUT_HOURS}" "phase6:eval-no-mauve" \
-      ${PY} scripts/phase6_eval.py \
-      --ai ai_generated.jsonl \
-      --raw val_set.v2.jsonl \
-      --out eval/metrics.json \
-      --skip-mauve \
-      >> "${LOG_FILE}" 2>&1 || PHASE6_RC=$?
-  else
-    run_timeout "${EVAL_METRIC_TIMEOUT_HOURS}" "phase6:eval-mauve" \
-      ${PY} scripts/phase6_eval.py \
-      --ai ai_generated.jsonl \
-      --raw val_set.v2.jsonl \
-      --out eval/metrics.json \
-      >> "${LOG_FILE}" 2>&1 || PHASE6_RC=$?
+  phase6_args=(--ai ai_generated.jsonl --raw "${phase6_input_path}" --out eval/metrics.json)
+  if [[ -n "${phase6_persona_path}" ]]; then
+    phase6_args+=(--persona-list "${phase6_persona_path}")
   fi
+  if [[ -n "${phase6_secondary_path}" ]]; then
+    phase6_args+=(--secondary-ai "${phase6_secondary_path}")
+  fi
+  phase6_mauve_args=()
+  if [[ "${MAUVE_DISABLED:-0}" = "1" || "${RUN_MAUVE:-1}" = "0" ]]; then
+    phase6_mauve_args+=(--skip-mauve)
+  fi
+  run_timeout "${EVAL_METRIC_TIMEOUT_HOURS}" "phase6:eval-v2" \
+    ${PY} scripts/phase6_eval_v2.py \
+    "${phase6_args[@]}" \
+    "${phase6_mauve_args[@]}" \
+    >> "${LOG_FILE}" 2>&1 || PHASE6_RC=$?
   PHASE6_RC="${PHASE6_RC:-0}"
   log "[4/5] phase6 gate exit=${PHASE6_RC}"
   if [ "${PHASE6_RC}" != "0" ]; then

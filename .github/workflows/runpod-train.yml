@@ -28,12 +28,23 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install local verifier dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+            "transformers>=4.51.3,<5" \
+            "tokenizers>=0.21,<0.22" \
+            "sentencepiece" \
+            "tiktoken>=0.7.0" \
+            "protobuf"
+
       - name: Launch training pod
         env:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_USERNAME: ${{ secrets.HF_USERNAME }}
           GITHUB_TOKEN: ${{ secrets.TRAIN_REPO_PUSH_TOKEN }}
+          WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
           GITHUB_REPO: unoa-eng/dalbitalba-train-data
           TRAIN_GITHUB_REF: ${{ github.ref_name }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
@@ -49,6 +60,10 @@ jobs:
             set -a
             . recipes/budget30.env
             set +a
+          fi
+          python scripts/local_verification_loop.py --strict --profile "${BUDGET_PROFILE:-default}"
+          if [ "${{ github.event.inputs.profile }}" = "budget30" ] && [ "${{ github.event.inputs.dry_run }}" != "true" ]; then
+            python scripts/check_smoke_promotion.py --require-sft
           fi
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
             python scripts/launch_train_pod.py --dry-run

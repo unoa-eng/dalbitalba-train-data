@@ -26,12 +26,28 @@ STATE_DIR = REPO_ROOT / ".state"
 STATE_FILE = STATE_DIR / "train_pod_state.json"
 RUNPOD_REST = "https://rest.runpod.io/v1/pods"
 LOCAL_VERIFICATION_LATEST = REPO_ROOT / "runs" / "latest-local-verification.json"
+LAUNCH_CRITICAL_PREFIXES = (
+    ".github/workflows/",
+    "recipes/",
+    "scripts/",
+    "tokenizer_v4/",
+    "runs/round2-obsidian-synthesis/",
+)
+LAUNCH_CRITICAL_FILES = {
+    "chain_train.sh",
+    "chain_train_round2.sh",
+    "train_cpt.py",
+    "train_sft.py",
+    "train_orpo.py",
+}
 
 
 def assert_verifier_pass_for_budget30() -> None:
-    """Refuse to launch under BUDGET_PROFILE=budget30 unless the latest local
-    verification produced verdict=PASS. This is the mechanical defense against
-    re-running on data we already know is bad (the 0618 dup_rate=0.396 trap).
+    """Refuse budget30 when the latest verifier has severe findings.
+
+    WARN is allowed because this repo has accepted non-blocking warnings such
+    as short community snippets. Severe findings include budget overrun and
+    duplicate-rate escalation, so those still block launch.
 
     Override with FORCE_LAUNCH=1 only for explicit experiments.
     """
@@ -52,14 +68,21 @@ def assert_verifier_pass_for_budget30() -> None:
     except json.JSONDecodeError as exc:
         raise SystemExit(f"[FATAL] cannot parse {LOCAL_VERIFICATION_LATEST}: {exc}")
     verdict = report.get("verdict", "")
-    if verdict != "PASS":
+    severe_count = int(report.get("severe_count") or 0)
+    profile = report.get("profile")
+    if severe_count or verdict == "FAIL":
         raise SystemExit(
-            f"[FATAL] latest local verification verdict={verdict!r} (expected PASS).\n"
-            f"        Refuse to launch budget30 with non-PASS verifier output.\n"
+            f"[FATAL] latest local verification verdict={verdict!r} severe_count={severe_count}.\n"
+            f"        Refuse to launch budget30 with severe verifier output.\n"
             f"        Inspect: {report.get('report', LOCAL_VERIFICATION_LATEST)}\n"
             f"        Override only with FORCE_LAUNCH=1 for explicit experiments."
         )
-    print(f"[gate] verifier PASS @ {report.get('timestamp', '?')}")
+    if profile and profile != "budget30":
+        raise SystemExit(
+            f"[FATAL] latest local verification profile={profile!r} (expected 'budget30').\n"
+            f"        Run: python3 scripts/local_verification_loop.py --strict --profile budget30"
+        )
+    print(f"[gate] verifier {verdict} severe_count=0 @ {report.get('timestamp', '?')}")
 
 
 def load_env() -> None:
@@ -91,6 +114,48 @@ def require_or_placeholder(key: str, dry_run: bool) -> str:
     if dry_run:
         return f"__DRY_RUN_{key}__"
     raise SystemExit(f"[ERROR] missing env: {key}")
+
+
+def git_dirty_launch_files() -> list[str]:
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except Exception:
+        return []
+    dirty: list[str] = []
+    for line in result.stdout.splitlines():
+        if not line:
+            continue
+        path = line[3:].strip()
+        if " -> " in path:
+            path = path.rsplit(" -> ", 1)[-1].strip()
+        if (
+            path in LAUNCH_CRITICAL_FILES
+            or path.endswith(".jsonl")
+            or any(path.startswith(prefix) for prefix in LAUNCH_CRITICAL_PREFIXES)
+        ):
+            dirty.append(line)
+    return dirty
+
+
+def assert_launch_ref_clean(dry_run: bool) -> None:
+    if dry_run or os.environ.get("ALLOW_DIRTY_LAUNCH", "0") == "1":
+        return
+    dirty = git_dirty_launch_files()
+    if dirty:
+        sample = "\n".join(f"        {line}" for line in dirty[:30])
+        extra = "" if len(dirty) <= 30 else f"\n        ... {len(dirty) - 30} more"
+        raise SystemExit(
+            "[FATAL] launch-critical local changes are not committed/pushed.\n"
+            "        RunPod clones the selected Git ref, so these local files would not run in the pod.\n"
+            f"{sample}{extra}\n"
+            "        Commit and push the intended ref, or set ALLOW_DIRTY_LAUNCH=1 for an explicit experiment."
+        )
 
 
 def runpod_request(api_key: str, payload: dict) -> dict:
@@ -252,6 +317,7 @@ def main() -> None:
     # Mechanical defense — refuse budget30 launch without a fresh PASS verifier
     # report. Bypassable only with FORCE_LAUNCH=1.
     assert_verifier_pass_for_budget30()
+    assert_launch_ref_clean(args.dry_run)
 
     api_key = require_or_placeholder("RUNPOD_API_KEY", args.dry_run)
     hf_token = require_or_placeholder("HF_TOKEN", args.dry_run)
@@ -311,6 +377,8 @@ def main() -> None:
         "(cp /workspace/repo/recipes/*.env /workspace/recipes/ 2>/dev/null || true) && "
         "mkdir -p /workspace/runs && "
         "(cp -a /workspace/repo/runs/round2-obsidian-synthesis /workspace/runs/ 2>/dev/null || true) && "
+        "(cp -a /workspace/repo/tokenizer_v4 /workspace/ 2>/dev/null || true) && "
+        "(cp -a /workspace/repo/source_db_cache /workspace/data/ 2>/dev/null || true) && "
         "(cp /workspace/repo/train_*.py /workspace/ 2>/dev/null || true) && "
         "mkdir -p /workspace/scripts && "
         "(cp /workspace/repo/scripts/*.py /workspace/scripts/ 2>/dev/null || true) && "

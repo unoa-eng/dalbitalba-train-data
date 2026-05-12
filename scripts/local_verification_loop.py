@@ -15,6 +15,7 @@ import os
 import py_compile
 import re
 import statistics
+import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -26,21 +27,41 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNS_DIR = REPO_ROOT / "runs"
+ACTIVE_CPT_PATH = (
+    REPO_ROOT / "cpt_corpus.v3.jsonl"
+    if (REPO_ROOT / "cpt_corpus.v3.jsonl").exists()
+    else REPO_ROOT / "cpt_corpus.v2.jsonl"
+)
+ACTIVE_SFT_PATH = (
+    REPO_ROOT / "sft_thread_conditioned.jsonl"
+    if (REPO_ROOT / "sft_thread_conditioned.jsonl").exists()
+    else REPO_ROOT / "sft_pairs.v2.jsonl"
+)
+ACTIVE_EVAL_PATH = (
+    REPO_ROOT / "sft_thread_conditioned.eval.jsonl"
+    if (REPO_ROOT / "sft_thread_conditioned.eval.jsonl").exists()
+    else REPO_ROOT / "val_set.v2.jsonl"
+)
+OBSIDIAN_REF_DIR = REPO_ROOT / "research" / "obsidian-ref"
+OBSIDIAN_EXPORT_DIR = REPO_ROOT / "research" / "obsidian-export"
+OBSIDIAN_PERSONA_PATH = REPO_ROOT / "runs" / "round2-obsidian-synthesis" / "persona-30-extracted.json"
 
 DEFAULT_FILES = {
-    "cpt": REPO_ROOT / "cpt_corpus.v2.jsonl",
-    "sft": REPO_ROOT / "sft_pairs.v2.jsonl",
-    "val": REPO_ROOT / "val_set.v2.jsonl",
+    "cpt": ACTIVE_CPT_PATH,
+    "sft": ACTIVE_SFT_PATH,
+    "eval": ACTIVE_EVAL_PATH,
     "cai": REPO_ROOT / "cai_pairs.filtered.jsonl",
 }
 
 PYTHON_SCRIPTS = [
     "train_cpt.py",
     "train_sft.py",
+    "scripts/sft_format_smoke_test.py",
     "scripts/launch_train_pod.py",
     "scripts/launch_eval_pod.py",
     "scripts/phase6_generate.py",
     "scripts/phase6_eval.py",
+    "scripts/phase6_eval_v2.py",
     "scripts/poll_pod.py",
     "scripts/recipe_mutator.py",
     "scripts/cycle_report.py",
@@ -48,9 +69,12 @@ PYTHON_SCRIPTS = [
 
 REQUIRED_SHELL = [
     "chain_train.sh",
+    "chain_train_round2.sh",
     "scripts/run_eval.sh",
     "scripts/autonomous_loop.sh",
 ]
+
+LOCAL_SMOKE_SCRIPT = "scripts/sft_format_smoke_test.py"
 
 PHONE_RE = re.compile(r"\b(?:\+?82[- ]?)?(?:0\d{1,2})[- .]?\d{3,4}[- .]?\d{4}\b")
 EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b")
@@ -198,9 +222,20 @@ def minor_sexual_proximity(text: str, window: int = 60) -> bool:
 
 
 def text_for_row(kind: str, row: dict[str, Any]) -> str:
-    if kind in {"cpt", "val"}:
+    if kind == "cpt":
         return str(row.get("text") or "")
     if kind == "sft":
+        if row.get("instruction") is not None or row.get("output") is not None:
+            return "\n".join(
+                part
+                for part in [
+                    str(row.get("instruction") or ""),
+                    str(row.get("input") or ""),
+                    str(row.get("output") or ""),
+                    str(row.get("persona_id") or ""),
+                ]
+                if part
+            )
         return "\n".join(
             part
             for part in [
@@ -212,6 +247,19 @@ def text_for_row(kind: str, row: dict[str, Any]) -> str:
             ]
             if part
         )
+    if kind == "eval":
+        if row.get("instruction") is not None or row.get("output") is not None:
+            return "\n".join(
+                part
+                for part in [
+                    str(row.get("instruction") or ""),
+                    str(row.get("input") or ""),
+                    str(row.get("output") or ""),
+                    str(row.get("persona_id") or ""),
+                ]
+                if part
+            )
+        return str(row.get("text") or "")
     return "\n".join(str(v) for v in row.values() if isinstance(v, str))
 
 
@@ -221,10 +269,20 @@ def validate_dataset(kind: str, path: Path) -> dict[str, Any]:
     nonempty_texts = [text for text in texts if text]
     lengths = [len(text) for text in nonempty_texts]
 
-    if kind in {"cpt", "val"}:
+    if kind == "cpt":
         required = {"text", "kind", "source_id", "source_field", "length_bucket"}
     elif kind == "sft":
-        required = {"post", "comment", "thread_key", "source_id", "length_bucket"}
+        has_thread_schema = bool(rows and (rows[0].get("instruction") is not None or rows[0].get("output") is not None))
+        if has_thread_schema:
+            required = {"instruction", "input", "output", "persona_id", "loss_weight"}
+        else:
+            required = {"post", "comment", "thread_key", "source_id", "length_bucket"}
+    elif kind == "eval":
+        has_thread_schema = bool(rows and (rows[0].get("instruction") is not None or rows[0].get("output") is not None))
+        if has_thread_schema:
+            required = {"instruction", "input", "output", "persona_id"}
+        else:
+            required = {"text"}
     else:
         required = set()
 
@@ -342,30 +400,235 @@ def read_file(rel: str) -> str:
 def verify_contract() -> dict[str, Any]:
     severe: list[str] = []
     warnings: list[str] = []
-    chain = read_file("chain_train.sh")
+    chain = read_file("chain_train_round2.sh")
     run_eval = read_file("scripts/run_eval.sh")
     launch_eval = read_file("scripts/launch_eval_pod.py")
+    launch_train = read_file("scripts/launch_train_pod.py")
+    phase6_v2 = read_file("scripts/phase6_eval_v2.py")
+    phase6_generate = read_file("scripts/phase6_generate.py")
+    workflow_train = read_file(".github/workflows/runpod-train.yml")
 
     required_markers = [
-        "cpt_corpus.v2.jsonl",
-        "sft_pairs.v2.jsonl",
-        "val_set.v2.jsonl",
-        "CPT_HUB_MODEL_ID",
-        "SFT_HUB_MODEL_ID",
+        "cpt_corpus.v3.jsonl",
+        "SFT_DATA",
+        "phase6_eval_v2.py",
         "persist_run_artifacts",
     ]
     for marker in required_markers:
         if marker not in chain:
-            severe.append(f"chain_train.sh missing marker: {marker}")
+            severe.append(f"chain_train_round2.sh missing marker: {marker}")
 
-    if "phase6_eval.py" not in run_eval:
-        severe.append("scripts/run_eval.sh does not persist deterministic phase6 metrics")
+    if "phase6_eval_v2.py" not in run_eval:
+        severe.append("scripts/run_eval.sh does not execute phase6_eval_v2.py for phase6 mode")
+    if "EVAL_INPUT_DATA" not in run_eval:
+        severe.append("scripts/run_eval.sh does not wire EVAL_INPUT_DATA into phase6 evaluation")
+    if "CPT_MERGED_REPO" not in run_eval or "CPT_MERGED_REPO" not in launch_eval:
+        severe.append("eval launch/run scripts do not support CPT-only evaluation")
+    if "CPT_MERGED_REPO" not in phase6_generate:
+        severe.append("phase6_generate.py does not support CPT-only generation")
+    if "min_rows" not in phase6_v2 or "row_count_mismatch" not in phase6_v2:
+        severe.append("phase6_eval_v2.py does not enforce minimum sample/cardinality gates")
+    if "total_rows" not in phase6_v2 or "missing" not in phase6_v2:
+        severe.append("phase6_eval_v2.py does not count missing persona tags as failures")
     if "SFT_ADAPTER_REPO" not in launch_eval:
         warnings.append("launch_eval_pod.py does not expose SFT_ADAPTER_REPO explicitly")
+    if "ALLOW_DIRTY_LAUNCH" not in launch_eval or "eval launch-critical local changes" not in launch_eval:
+        severe.append("launch_eval_pod.py does not block dirty eval launch-critical local changes")
+    if "tokenizer_v4" not in launch_train:
+        severe.append("launch_train_pod.py does not copy tokenizer_v4 into the pod workspace")
+    if "ALLOW_DIRTY_LAUNCH" not in launch_train or "launch-critical local changes" not in launch_train:
+        severe.append("launch_train_pod.py does not block dirty launch-critical local changes")
+    if "WANDB_API_KEY" not in workflow_train:
+        severe.append(".github/workflows/runpod-train.yml does not pass WANDB_API_KEY")
     if "metrics.json" not in run_eval:
         severe.append("scripts/run_eval.sh does not copy metrics.json into run artifacts")
 
     return {"severe": severe, "warnings": warnings}
+
+
+def verify_obsidian_scope() -> dict[str, Any]:
+    """Verify Obsidian-derived reference data is present and wired as metadata.
+
+    The accepted design keeps raw Obsidian markdown out of direct training and
+    uses the curated persona/list artifacts as explicit metadata inputs. This
+    gate makes that scope mechanical so a fresh clone cannot silently drop it.
+    """
+    severe: list[str] = []
+    warnings: list[str] = []
+    notes: list[str] = []
+    ref_files = sorted(OBSIDIAN_REF_DIR.rglob("*.md")) if OBSIDIAN_REF_DIR.exists() else []
+    export_files = sorted(OBSIDIAN_EXPORT_DIR.rglob("*.md")) if OBSIDIAN_EXPORT_DIR.exists() else []
+
+    if len(ref_files) < 10:
+        severe.append(
+            f"Obsidian reference scope too small: {len(ref_files)} markdown files under research/obsidian-ref"
+        )
+    if len(export_files) < 100:
+        severe.append(
+            f"Obsidian export scope too small: {len(export_files)} markdown files under research/obsidian-export"
+        )
+
+    persona_count = 0
+    placeholder_count = 0
+    persona_sources: Counter[str] = Counter()
+    accepted_count: int | None = None
+    if not OBSIDIAN_PERSONA_PATH.exists():
+        severe.append(f"Obsidian persona list missing: {OBSIDIAN_PERSONA_PATH.relative_to(REPO_ROOT)}")
+    else:
+        try:
+            payload = json.loads(OBSIDIAN_PERSONA_PATH.read_text(encoding="utf-8"))
+            personas = payload.get("personas") or []
+            if not isinstance(personas, list):
+                raise ValueError("personas is not a list")
+            persona_count = len(personas)
+            accepted_count_raw = payload.get("personas_accepted_count")
+            accepted_count = int(accepted_count_raw) if accepted_count_raw is not None else None
+            for persona in personas:
+                if not isinstance(persona, dict):
+                    continue
+                source = str(persona.get("source") or "unknown")
+                persona_sources[source] += 1
+                if "placeholder" in source or "placeholder" in str(persona.get("trait") or ""):
+                    placeholder_count += 1
+                for key in ("id", "name", "tone", "mood", "trait"):
+                    if persona.get(key) in (None, ""):
+                        severe.append(f"Obsidian persona row missing {key}: {persona}")
+                        break
+            if persona_count < 30:
+                severe.append(f"Obsidian persona coverage below 30: {persona_count}")
+            if accepted_count is not None and accepted_count < 30:
+                severe.append(f"Obsidian personas_accepted_count below 30: {accepted_count}")
+            if placeholder_count:
+                notes.append(
+                    f"Obsidian persona list contains {placeholder_count} synthesized placeholders; cycle-2 should replace from source persona JSON"
+                )
+        except Exception as exc:
+            severe.append(f"Obsidian persona list unreadable: {type(exc).__name__}: {exc}")
+
+    recipe = read_file("recipes/round2-cycle1.env")
+    chain = read_file("chain_train_round2.sh")
+    run_eval = read_file("scripts/run_eval.sh")
+    launch_eval = read_file("scripts/launch_eval_pod.py")
+    required_refs = [
+        "runs/round2-obsidian-synthesis/persona-30-extracted.json",
+        "SFT_PERSONA_LIST",
+        "EVAL_PERSONA_LIST",
+    ]
+    for marker in required_refs:
+        if marker not in recipe and marker not in chain and marker not in run_eval and marker not in launch_eval:
+            severe.append(f"Obsidian/persona wiring missing marker: {marker}")
+
+    return {
+        "paths": {
+            "ref_dir": str(OBSIDIAN_REF_DIR.relative_to(REPO_ROOT)),
+            "export_dir": str(OBSIDIAN_EXPORT_DIR.relative_to(REPO_ROOT)),
+            "persona_list": str(OBSIDIAN_PERSONA_PATH.relative_to(REPO_ROOT)),
+        },
+        "ref_markdown_files": len(ref_files),
+        "export_markdown_files": len(export_files),
+        "persona_count": persona_count,
+        "personas_accepted_count": accepted_count,
+        "persona_sources": dict(persona_sources.most_common()),
+        "placeholder_count": placeholder_count,
+        "severe": severe,
+        "warnings": warnings,
+        "notes": notes,
+    }
+
+
+def python_can_import(python_exe: str, module: str) -> tuple[bool, str]:
+    proc = subprocess.run(
+        [python_exe, "-c", f"import {module}"],
+        cwd=REPO_ROOT,
+        text=True,
+        capture_output=True,
+    )
+    return proc.returncode == 0, proc.stderr[-1000:]
+
+
+def resolve_smoke_python() -> tuple[str | None, list[dict[str, Any]], list[str]]:
+    candidates: list[str] = []
+    for candidate in [sys.executable, str(REPO_ROOT / ".venv" / "bin" / "python")]:
+        if candidate not in candidates and Path(candidate).exists():
+            candidates.append(candidate)
+
+    probes: list[dict[str, Any]] = []
+    warnings: list[str] = []
+    for candidate in candidates:
+        ok, stderr_tail = python_can_import(candidate, "transformers")
+        probes.append(
+            {
+                "python": candidate,
+                "module": "transformers",
+                "ok": ok,
+                "stderr_tail": stderr_tail,
+            }
+        )
+        if ok:
+            if candidate != sys.executable:
+                warnings.append(
+                    f"local smoke used fallback interpreter {candidate} because current interpreter lacks transformers"
+                )
+            return candidate, probes, warnings
+    return None, probes, warnings
+
+
+def run_local_smoke() -> dict[str, Any]:
+    severe: list[str] = []
+    warnings: list[str] = []
+    runner, probes, probe_warnings = resolve_smoke_python()
+    warnings.extend(probe_warnings)
+    results: list[dict[str, Any]] = []
+
+    if not Path(REPO_ROOT / LOCAL_SMOKE_SCRIPT).exists():
+        severe.append(f"missing smoke script: {LOCAL_SMOKE_SCRIPT}")
+        return {
+            "results": results,
+            "probes": probes,
+            "severe": severe,
+            "warnings": warnings,
+        }
+
+    if runner is None:
+        severe.append(
+            "no python interpreter with transformers available for local smoke; install deps in the repo venv"
+        )
+        return {
+            "results": results,
+            "probes": probes,
+            "severe": severe,
+            "warnings": warnings,
+        }
+
+    cmd = [runner, LOCAL_SMOKE_SCRIPT]
+    tokenizer_path = REPO_ROOT / "tokenizer_v4"
+    if tokenizer_path.is_dir():
+        cmd.extend(["--tokenizer", str(tokenizer_path)])
+    proc = subprocess.run(
+        cmd,
+        cwd=REPO_ROOT,
+        text=True,
+        capture_output=True,
+    )
+    results.append(
+        {
+            "name": "sft_format_smoke",
+            "python": runner,
+            "cmd": cmd,
+            "returncode": proc.returncode,
+            "ok": proc.returncode == 0,
+            "stdout_tail": proc.stdout[-2000:],
+            "stderr_tail": proc.stderr[-2000:],
+        }
+    )
+    if proc.returncode != 0:
+        severe.append("local smoke failed: scripts/sft_format_smoke_test.py")
+    return {
+        "results": results,
+        "probes": probes,
+        "severe": severe,
+        "warnings": warnings,
+    }
 
 
 def hf_get_json(path: str, token: str | None) -> Any:
@@ -470,19 +733,33 @@ def estimate_training_cost(
     cpt_epochs: int = 1,
     sft_epochs: int = 2,
     sft_raw_ratio: float = 0.8,
+    cpt_max_steps: int = 0,
+    sft_max_steps: int = 0,
 ) -> dict[str, Any]:
     cpt_steps = math.ceil(cpt_rows / batch) * cpt_epochs
-    if sft_raw_ratio <= 0:
+    if cpt_max_steps > 0:
+        cpt_steps = min(cpt_steps, cpt_max_steps)
+    if sft_epochs <= 0:
+        sft_pair_take = 0
+        sft_rows = 0
+        sft_steps = 0
+    elif sft_raw_ratio <= 0:
         sft_pair_take = sft_pair_rows
+        sft_rows = sft_pair_take
+        sft_steps = math.ceil(sft_rows / batch) * sft_epochs
     elif sft_raw_ratio >= 1:
         sft_pair_take = 0
+        sft_rows = sft_raw_rows + sft_pair_take
+        sft_steps = math.ceil(sft_rows / batch) * sft_epochs
     else:
         sft_pair_take = min(
             sft_pair_rows,
             int(round(sft_raw_rows * (1 - sft_raw_ratio) / max(sft_raw_ratio, 1e-6))),
         )
-    sft_rows = sft_raw_rows + sft_pair_take
-    sft_steps = math.ceil(sft_rows / batch) * sft_epochs
+        sft_rows = sft_raw_rows + sft_pair_take
+        sft_steps = math.ceil(sft_rows / batch) * sft_epochs
+    if sft_max_steps > 0:
+        sft_steps = min(sft_steps, sft_max_steps)
     cpt_hours = cpt_steps * sec_per_step / 3600
     sft_hours = sft_steps * sec_per_step / 3600
     return {
@@ -502,6 +779,42 @@ def estimate_training_cost(
     }
 
 
+def parse_recipe_env(path: Path) -> dict[str, str]:
+    if not path.exists():
+        return {}
+    env: dict[str, str] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        env[key.strip()] = value.strip().strip('"').strip("'")
+    return env
+
+
+def int_env(env: dict[str, str], key: str, default: int = 0) -> int:
+    try:
+        return int(env.get(key, str(default)) or default)
+    except ValueError:
+        return default
+
+
+def float_env(env: dict[str, str], key: str, default: float) -> float:
+    try:
+        return float(env.get(key, str(default)) or default)
+    except ValueError:
+        return default
+
+
+def pick_recipe_path(profile: str) -> Path:
+    mapping = {
+        "default": REPO_ROOT / "recipes" / "round2-cycle1.env",
+        "budget30": REPO_ROOT / "recipes" / "budget30.env",
+        "smoke": REPO_ROOT / "recipes" / "smoke.env",
+    }
+    return mapping.get(profile, mapping["default"])
+
+
 def write_reports(payload: dict[str, Any], run_dir: Path) -> None:
     run_dir.mkdir(parents=True, exist_ok=True)
     (run_dir / "report.json").write_text(
@@ -514,6 +827,8 @@ def write_reports(payload: dict[str, Any], run_dir: Path) -> None:
         "verdict": payload["verdict"],
         "severe_count": len(payload["severe"]),
         "warning_count": len(payload["warnings"]),
+        "profile": (payload.get("recipe") or {}).get("profile"),
+        "recipe": (payload.get("recipe") or {}).get("path"),
     }
     (RUNS_DIR / "latest-local-verification.json").write_text(
         json.dumps(latest, indent=2, ensure_ascii=False), encoding="utf-8"
@@ -528,13 +843,32 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- Verdict: `{payload['verdict']}`",
         f"- Severe: `{len(payload['severe'])}`",
         f"- Warnings: `{len(payload['warnings'])}`",
+    ]
+    if payload.get("recipe"):
+        lines.append(f"- Recipe: `{payload['recipe']['path']}` (`{payload['recipe']['profile']}`)")
+    lines.extend([
         "",
         "## Severe Findings",
         "",
-    ]
+    ])
     lines.extend(f"- {item}" for item in payload["severe"] or ["None"])
     lines.extend(["", "## Warnings", ""])
     lines.extend(f"- {item}" for item in payload["warnings"] or ["None"])
+    if payload.get("smoke"):
+        lines.extend(["", "## Local Smoke", ""])
+        for result in payload["smoke"].get("results", []):
+            status = "PASS" if result.get("ok") else "FAIL"
+            lines.append(f"- {result['name']}: `{status}` via `{result['python']}`")
+        for probe in payload["smoke"].get("probes", []):
+            status = "ok" if probe.get("ok") else "missing"
+            lines.append(f"- Probe `{probe['python']}` import `{probe['module']}`: `{status}`")
+    if payload.get("obsidian"):
+        obsidian = payload["obsidian"]
+        lines.extend(["", "## Obsidian Scope", ""])
+        lines.append(f"- Reference markdown files: `{obsidian.get('ref_markdown_files')}`")
+        lines.append(f"- Export markdown files: `{obsidian.get('export_markdown_files')}`")
+        lines.append(f"- Persona count: `{obsidian.get('persona_count')}`")
+        lines.append(f"- Placeholder personas: `{obsidian.get('placeholder_count')}`")
     lines.extend(["", "## Datasets", ""])
     lines.append("| Name | Rows | JSON Errors | Dup Rate | Hangul % | Avg Chars | P95 Chars | PII Signals |")
     lines.append("| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |")
@@ -599,6 +933,11 @@ def main() -> int:
     datasets = {name: validate_dataset(name, path) for name, path in DEFAULT_FILES.items()}
     compile_report = compile_scripts()
     contract = verify_contract()
+    obsidian = verify_obsidian_scope()
+    smoke = run_local_smoke()
+
+    recipe_path = pick_recipe_path(args.profile)
+    recipe_env = parse_recipe_env(recipe_path)
 
     severe: list[str] = []
     warnings: list[str] = []
@@ -607,23 +946,53 @@ def main() -> int:
         warnings.extend(item["warnings"])
     severe.extend(compile_report["severe"])
     severe.extend(contract["severe"])
+    severe.extend(obsidian["severe"])
+    severe.extend(smoke["severe"])
     warnings.extend(contract["warnings"])
+    warnings.extend(obsidian["warnings"])
+    warnings.extend(smoke["warnings"])
 
     cpt_rows = datasets["cpt"]["rows"]
     sft_rows = datasets["sft"]["rows"]
-    val_rows = datasets["val"]["rows"]
+    eval_rows = datasets["eval"]["rows"]
+    default_sft_raw_ratio = 0.0 if ACTIVE_SFT_PATH.name == "sft_thread_conditioned.jsonl" else 0.8
+    cpt_rows_for_cost = min(
+        cpt_rows,
+        int_env(recipe_env, "CPT_LIMIT_ROWS", cpt_rows) or cpt_rows,
+    )
+    sft_raw_rows_for_cost = min(
+        cpt_rows,
+        int_env(recipe_env, "SFT_RAW_LIMIT_ROWS", cpt_rows) or cpt_rows,
+    )
+    sft_pair_rows_for_cost = min(
+        sft_rows,
+        int_env(recipe_env, "SFT_PAIR_LIMIT_ROWS", sft_rows) or sft_rows,
+    )
+    cpt_epochs = int_env(recipe_env, "CPT_NUM_EPOCHS", 1)
+    sft_epochs = int_env(recipe_env, "SFT_NUM_EPOCHS", 2)
+    if recipe_env.get("SKIP_SFT") == "1":
+        sft_epochs = 0
     cost = estimate_training_cost(
-        cpt_rows=cpt_rows,
-        sft_raw_rows=cpt_rows,
-        sft_pair_rows=sft_rows,
+        cpt_rows=cpt_rows_for_cost,
+        sft_raw_rows=sft_raw_rows_for_cost,
+        sft_pair_rows=sft_pair_rows_for_cost,
         sec_per_step=args.sec_per_step,
         hourly_usd=args.hourly_usd,
+        cpt_epochs=cpt_epochs,
+        sft_epochs=sft_epochs,
+        sft_raw_ratio=float_env(recipe_env, "SFT_RAW_RATIO", default_sft_raw_ratio),
+        cpt_max_steps=int_env(recipe_env, "CPT_MAX_STEPS", 0),
+        sft_max_steps=int_env(recipe_env, "SFT_MAX_STEPS", 0),
     )
     # Profile-aware budget gating.
     # default: full CPT+SFT vs budget (warn only, since the operator may pick a sub-profile).
     # budget30: CPT-only — overrun is SEVERE (a paid run under this profile must fit $30).
     # smoke: budget bound is much smaller; overrun is SEVERE.
     profile = args.profile
+    if profile == "budget30":
+        duplicate_warnings = [item for item in warnings if "high duplicate rate" in item]
+        if duplicate_warnings:
+            severe.extend(f"[budget30] {item}" for item in duplicate_warnings)
     if profile == "budget30":
         cpt_cost = cost["cpt_usd"]
         if cpt_cost > args.budget_usd:
@@ -648,7 +1017,7 @@ def main() -> int:
             warnings.append(
                 f"estimated train cost ${cost['total_train_usd']} is close to budget ${args.budget_usd}"
             )
-    if val_rows < 500:
+    if eval_rows < 500:
         warnings.append("validation set is small for stable generation metrics")
 
     hf: dict[str, Any] = {}
@@ -671,11 +1040,18 @@ def main() -> int:
         "datasets": datasets,
         "scripts": compile_report,
         "contract": contract,
+        "obsidian": obsidian,
+        "smoke": smoke,
+        "recipe": {
+            "path": str(recipe_path.relative_to(REPO_ROOT)),
+            "profile": args.profile,
+            "env": recipe_env,
+        },
         "cost_estimate": cost,
         "hf": hf,
     }
 
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f")
     run_dir = RUNS_DIR / f"local-verification-{stamp}"
     write_reports(payload, run_dir)
 

@@ -18,11 +18,25 @@ Expected result before spending GPU money:
 - JSONL parse errors: `0`
 - direct PII signals: `0`
 - all Python training/eval scripts compile
+- local SFT format smoke passes against `tokenizer_v4`
 - `scripts/run_eval.sh` persists `metrics.json`
+- Obsidian scope is present: `research/obsidian-ref`, `research/obsidian-export`,
+  and `runs/round2-obsidian-synthesis/persona-30-extracted.json`
+
+The verifier now also runs a local tokenizer-only smoke for SFT masking and
+ChatML formatting. This remains a control-plane check only; it does not load
+the 8B base model and does not replace the paid RunPod smoke.
+
+The verifier also checks Obsidian-derived reference coverage mechanically. Raw
+Obsidian markdown remains reference/export material; the training/eval path uses
+the curated persona metadata list and treats synthesized placeholder personas as
+non-blocking metadata until the cycle-2 source persona JSON is imported.
 
 Warnings are allowed only when they are explicitly accepted in the run notes.
-Current expected warnings are high duplication from weighted oversampling, short
-community snippets, and the full-run estimate exceeding the `$30` ceiling.
+For the active round2/budget30 path, the expected non-blocking warning is
+`cpt_corpus.v3.jsonl: many very short rows`. Duplicate-rate escalation, JSONL
+parse errors, PII signals, launch-contract failures, and budget overruns remain
+blocking severe findings.
 
 ## 2. Existing HF artifact gate
 
@@ -52,10 +66,11 @@ CPT-only profile and intentionally skips SFT via `SKIP_SFT=1`.
 
 ## 4. Promotion rule
 
-Do not promote to a final Hugging Face model repo until all of these hold:
+Do not promote from smoke to budget30, or to a final Hugging Face model repo,
+until all of these hold:
 
 - CPT `trainer_state.json` has `global_step >= max_steps`.
-- SFT repo contains `adapter_model.safetensors`.
+- Smoke SFT repo or round2 phase3 path contains `adapter_model.safetensors`.
 - `runs/train-run-*` has `DONE.txt`, `manifest.json`, and component logs.
-- `runs/eval-run-*` has `metrics.json`.
+- Round2 eval artifact exists at `eval/phase5-eval-v2.json`, or classic eval has `metrics.json`.
 - The phase6 gate result is available and reviewed.

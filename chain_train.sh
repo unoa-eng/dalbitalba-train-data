@@ -20,6 +20,17 @@
 
 set -uo pipefail
 
+log() {
+    local msg="$1"
+    local ts
+    ts="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+    if [ -n "${LOG_FILE:-}" ] && mkdir -p "$(dirname "${LOG_FILE}")" 2>/dev/null; then
+        echo "${ts} ${msg}" | tee -a "${LOG_FILE}"
+    else
+        echo "${ts} ${msg}"
+    fi
+}
+
 WORKSPACE="/workspace"
 LOG_DIR="${WORKSPACE}/logs"
 LOG_FILE="${LOG_DIR}/chain.log"
@@ -95,13 +106,6 @@ export TOKENIZERS_PARALLELISM=false
 export HF_REPO_SFT HF_REPO_CPT
 
 mkdir -p "${LOG_DIR}" "${OUT_DIR}" "${DATA_DIR}" "${HF_CACHE_DIR}"
-
-log() {
-    local msg="$1"
-    local ts
-    ts="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
-    echo "${ts} ${msg}" | tee -a "${LOG_FILE}"
-}
 
 notify() {
     local msg="$1"

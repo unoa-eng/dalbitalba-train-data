@@ -119,11 +119,61 @@ def check_persona_gate_fixture(failures: list[str]) -> None:
             ok("phase6_eval_v2 rejects missing persona tags when persona-list is required")
 
 
+def check_persona_identity_pass(failures: list[str]) -> None:
+    src = ROOT / "sft_thread_conditioned.eval.jsonl"
+    persona = ROOT / "runs" / "round2-obsidian-synthesis" / "persona-30-extracted.json"
+    if not src.exists() or not persona.exists():
+        fail("persona identity fixture inputs missing", failures)
+        return
+    rows = load_jsonl(src)[:64]
+    if not rows:
+        fail("persona identity fixture has no rows", failures)
+        return
+    with tempfile.TemporaryDirectory() as tmp:
+        td = Path(tmp)
+        sample = td / "sample.jsonl"
+        out = td / "out.json"
+        sample.write_text(
+            "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows),
+            encoding="utf-8",
+        )
+        proc = subprocess.run(
+            [
+                sys.executable,
+                "scripts/phase6_eval_v2.py",
+                "--ai",
+                str(sample),
+                "--raw",
+                str(sample),
+                "--persona-list",
+                str(persona),
+                "--out",
+                str(out),
+                "--skip-mauve",
+            ],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+        )
+        if proc.returncode != 0:
+            fail(f"phase6_eval_v2 identity/persona fixture failed rc={proc.returncode}", failures)
+            return
+        report = json.loads(out.read_text(encoding="utf-8"))
+        if report.get("overall", {}).get("verdict") != "PASS":
+            fail(
+                f"phase6_eval_v2 identity/persona fixture verdict={report.get('overall', {}).get('verdict')}",
+                failures,
+            )
+        else:
+            ok("phase6_eval_v2 passes identity/persona fixture on thread-conditioned eval rows")
+
+
 def main() -> int:
     failures: list[str] = []
     check_tc_sft(failures)
     check_orpo_leak(failures)
     check_persona_gate_fixture(failures)
+    check_persona_identity_pass(failures)
     print(json.dumps({"verdict": "PASS" if not failures else "FAIL", "failures": failures}, ensure_ascii=False))
     return 0 if not failures else 2
 

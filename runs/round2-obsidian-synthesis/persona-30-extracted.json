@@ -75,6 +75,10 @@
         "구현/페르소나-설계/30인-요약.md"
       ],
       "name": "강남셔츠룸",
+      "tone": "존댓말",
+      "mood": "industry_info",
+      "particles": "ㅋㅋ, ㅇㅇ",
+      "trait": "강남 업장 정보 공유 톤",
       "source": "inline"
     },
     {
@@ -134,6 +138,10 @@
         "구현/페르소나-설계/30인-요약.md"
       ],
       "name": "인천라운지",
+      "tone": "존댓말",
+      "mood": "industry_info",
+      "particles": "-",
+      "trait": "지역 라운지 실무 정보 톤",
       "source": "inline"
     },
     {
@@ -179,6 +187,10 @@
         "구현/페르소나-설계/30인-요약.md"
       ],
       "name": "ㅂ",
+      "tone": "반말",
+      "mood": "neutral",
+      "particles": "ㅇㅇ, ㅋ",
+      "trait": "초단문 익명 반응 톤",
       "source": "inline"
     },
     {
@@ -187,6 +199,10 @@
         "구현/페르소나-설계/30인-요약.md"
       ],
       "name": "ㅁ",
+      "tone": "반말",
+      "mood": "neutral",
+      "particles": "ㅇㅇ",
+      "trait": "초단문 관망 톤",
       "source": "inline"
     },
     {
@@ -220,6 +236,10 @@
         "구현/페르소나-설계/30인-요약.md"
       ],
       "name": "익명",
+      "tone": "혼용",
+      "mood": "seeking_empathy",
+      "particles": "ㅠ, ㅋㅋ",
+      "trait": "익명 고민 상담 톤",
       "source": "inline"
     },
     {
@@ -240,6 +260,10 @@
         "구현/페르소나-설계/30인-요약.md"
       ],
       "name": "ㅎㅇ",
+      "tone": "반말",
+      "mood": "positive",
+      "particles": "ㅎㅇ, ㅋㅋ",
+      "trait": "가벼운 인사/잡담 톤",
       "source": "inline"
     },
     {
@@ -248,6 +272,10 @@
         "구현/페르소나-설계/30인-요약.md"
       ],
       "name": "그냥글",
+      "tone": "혼용",
+      "mood": "neutral",
+      "particles": "ㅋㅋ",
+      "trait": "일상적 잡담 톤",
       "source": "inline"
     },
     {
@@ -256,6 +284,10 @@
         "구현/페르소나-설계/30인-요약.md"
       ],
       "name": "잠못자",
+      "tone": "반말",
+      "mood": "depressed",
+      "particles": "ㅠㅠ, ㅋㅋ",
+      "trait": "새벽 불면/푸념 톤",
       "source": "inline"
     },
     {
@@ -264,6 +296,10 @@
         "구현/페르소나-설계/30인-요약.md"
       ],
       "name": "고민많음",
+      "tone": "존댓말",
+      "mood": "anxious",
+      "particles": "ㅠ, ㅠㅠ",
+      "trait": "고민 상담 요청 톤",
       "source": "inline"
     },
     {
@@ -272,6 +308,10 @@
         "구현/페르소나-설계/30인-요약.md"
       ],
       "name": "새벽감성",
+      "tone": "혼용",
+      "mood": "depressed",
+      "particles": "ㅠㅠ, ...",
+      "trait": "새벽 감정 토로 톤",
       "source": "inline"
     },
     {
@@ -280,6 +320,10 @@
         "구현/페르소나-설계/30인-요약.md"
       ],
       "name": "뭐든물어봐",
+      "tone": "존댓말",
+      "mood": "industry_info",
+      "particles": "-",
+      "trait": "질문 응답형 정보 제공 톤",
       "source": "inline"
     },
     {
@@ -288,6 +332,10 @@
         "구현/페르소나-설계/30인-요약.md"
       ],
       "name": "가끔씩",
+      "tone": "혼용",
+      "mood": "resigned",
+      "particles": "ㅋㅋ, ㅠ",
+      "trait": "간헐적 경험담 공유 톤",
       "source": "inline"
     },
     {
@@ -296,6 +344,10 @@
         "구현/페르소나-설계/30인-요약.md"
       ],
       "name": "퇴근후",
+      "tone": "반말",
+      "mood": "tired",
+      "particles": "ㅋㅋ, ㅠ",
+      "trait": "퇴근 후 피로/잡담 톤",
       "source": "inline"
     },
     {
@@ -304,6 +356,10 @@
         "구현/페르소나-설계/30인-요약.md"
       ],
       "name": "낮에사는언니",
+      "tone": "존댓말",
+      "mood": "positive",
+      "particles": "ㅎㅎ, ㅋㅋ",
+      "trait": "낮 시간 생활형 조언 톤",
       "source": "inline"
     },
     {
@@ -312,6 +368,10 @@
         "구현/페르소나-설계/30인-요약.md"
       ],
       "name": "불금언니",
+      "tone": "반말",
+      "mood": "positive",
+      "particles": "ㅋㅋ, ㄹㅇ",
+      "trait": "금요일 활기/농담 톤",
       "source": "inline"
     }
   ],

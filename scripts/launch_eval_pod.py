@@ -21,6 +21,17 @@ REPO_ROOT = SCRIPT_DIR.parent
 STATE_DIR = REPO_ROOT / ".state"
 STATE_FILE = STATE_DIR / "eval_pod_state.json"
 RUNPOD_REST = "https://rest.runpod.io/v1/pods"
+EVAL_LAUNCH_CRITICAL_PREFIXES = (
+    ".github/workflows/",
+    "recipes/",
+    "scripts/",
+    "tokenizer_v4/",
+    "runs/round2-obsidian-synthesis/",
+)
+EVAL_LAUNCH_CRITICAL_FILES = {
+    "chain_train_round2.sh",
+    "train_sft.py",
+}
 
 
 def load_env() -> None:
@@ -43,6 +54,80 @@ def require_env(key: str) -> str:
     if not value:
         raise SystemExit(f"[ERROR] missing env: {key}")
     return value
+
+
+def git_dirty_launch_files() -> list[str]:
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except Exception:
+        return []
+    dirty: list[str] = []
+    for line in result.stdout.splitlines():
+        if not line:
+            continue
+        path = line[3:].strip()
+        if " -> " in path:
+            path = path.rsplit(" -> ", 1)[-1].strip()
+        if (
+            path in EVAL_LAUNCH_CRITICAL_FILES
+            or path.endswith(".jsonl")
+            or any(path.startswith(prefix) for prefix in EVAL_LAUNCH_CRITICAL_PREFIXES)
+        ):
+            dirty.append(line)
+    return dirty
+
+
+def assert_launch_ref_clean(dry_run: bool) -> None:
+    if dry_run or os.environ.get("ALLOW_DIRTY_LAUNCH", "0") == "1":
+        return
+    dirty = git_dirty_launch_files()
+    if dirty:
+        sample = "\n".join(f"        {line}" for line in dirty[:30])
+        extra = "" if len(dirty) <= 30 else f"\n        ... {len(dirty) - 30} more"
+        raise SystemExit(
+            "[FATAL] eval launch-critical local changes are not committed/pushed.\n"
+            "        RunPod clones the selected Git ref, so these local files would not run in the pod.\n"
+            f"{sample}{extra}\n"
+            "        Commit and push the intended ref, or set ALLOW_DIRTY_LAUNCH=1 for an explicit experiment."
+        )
+
+
+def assert_remote_eval_inputs_exist(
+    ref: str,
+    eval_input_data: str,
+    eval_persona_list: str,
+    dry_run: bool,
+) -> None:
+    if dry_run or os.environ.get("ALLOW_MISSING_REMOTE_EVAL_INPUTS", "0") == "1":
+        return
+    subprocess.run(["git", "fetch", "--quiet", "origin", ref], cwd=REPO_ROOT, check=False)
+    remote_ref = f"origin/{ref}"
+    required = [eval_input_data]
+    if eval_persona_list:
+        required.append(eval_persona_list)
+    missing: list[str] = []
+    for rel in required:
+        if not rel or rel.startswith("/"):
+            continue
+        result = subprocess.run(
+            ["git", "cat-file", "-e", f"{remote_ref}:{rel}"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            missing.append(rel)
+    if missing:
+        raise SystemExit(
+            f"[FATAL] selected Git ref {ref!r} is missing eval input files: {missing}\n"
+            "        Commit/push the eval inputs or set explicit remote-valid EVAL_INPUT_DATA/EVAL_PERSONA_LIST."
+        )
 
 
 def runpod_request(api_key: str, payload: dict) -> dict:
@@ -161,6 +246,7 @@ def main() -> None:
         ),
     )
     args = parser.parse_args()
+    assert_launch_ref_clean(args.dry_run)
 
     api_key = require_env("RUNPOD_API_KEY")
     github_token = require_env("GITHUB_TOKEN")
@@ -169,13 +255,29 @@ def main() -> None:
     eval_mode = os.environ.get("EVAL_MODE", "phase6").strip() or "phase6"
     hf_adapter_repo = os.environ.get("HF_ADAPTER_REPO", "").strip()
     sft_adapter_repo = os.environ.get("SFT_ADAPTER_REPO", "").strip() or hf_adapter_repo
+    cpt_merged_repo = os.environ.get("CPT_MERGED_REPO", "").strip()
+    cpt_merged_path = os.environ.get("CPT_MERGED_PATH", "").strip()
+    default_eval_input = (
+        "sft_thread_conditioned.eval.jsonl"
+        if (REPO_ROOT / "sft_thread_conditioned.eval.jsonl").exists()
+        else "val_set.v2.jsonl"
+    )
+    default_persona_list = (
+        "runs/round2-obsidian-synthesis/persona-30-extracted.json"
+        if (REPO_ROOT / "runs" / "round2-obsidian-synthesis" / "persona-30-extracted.json").exists()
+        else ""
+    )
+    eval_input_data = os.environ.get("EVAL_INPUT_DATA", default_eval_input).strip()
+    eval_persona_list = os.environ.get("EVAL_PERSONA_LIST", default_persona_list).strip()
+    eval_secondary_ai = os.environ.get("EVAL_SECONDARY_AI", "").strip()
+    assert_remote_eval_inputs_exist(github_ref, eval_input_data, eval_persona_list, args.dry_run)
     if eval_mode == "legacy":
         if not hf_adapter_repo:
             raise SystemExit("[ERROR] missing env: HF_ADAPTER_REPO")
         anthropic_api_key = require_env("ANTHROPIC_API_KEY")
     else:
-        if not sft_adapter_repo:
-            raise SystemExit("[ERROR] missing env: SFT_ADAPTER_REPO")
+        if not sft_adapter_repo and not (cpt_merged_repo or cpt_merged_path):
+            raise SystemExit("[ERROR] missing env: SFT_ADAPTER_REPO or CPT_MERGED_REPO/CPT_MERGED_PATH")
         anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     hf_token = os.environ.get("HF_TOKEN", "").strip()
     openai_api_key = os.environ.get("OPENAI_API_KEY", "").strip()
@@ -214,12 +316,21 @@ def main() -> None:
         env["OPENAI_API_KEY"] = openai_api_key
     if ntfy_topic:
         env["NTFY_TOPIC"] = ntfy_topic
+    if eval_input_data:
+        env["EVAL_INPUT_DATA"] = eval_input_data
+    if eval_persona_list:
+        env["EVAL_PERSONA_LIST"] = eval_persona_list
+    if eval_secondary_ai:
+        env["EVAL_SECONDARY_AI"] = eval_secondary_ai
+    if cpt_merged_repo:
+        env["CPT_MERGED_REPO"] = cpt_merged_repo
+    if cpt_merged_path:
+        env["CPT_MERGED_PATH"] = cpt_merged_path
     # Forward recipe-driven optional keys so smoke/budget30 envs reach run_eval.sh.
     for optional_key in (
         "RUN_MAUVE",
+        "MAUVE_DISABLED",
         "EVAL_MAX_ROWS",
-        "CPT_MERGED_REPO",
-        "CPT_MERGED_PATH",
         "WANDB_API_KEY",
         "WANDB_PROJECT",
     ):

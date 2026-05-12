@@ -97,6 +97,7 @@ def check_required_artifacts(failures: list[str]) -> None:
         "sft_thread_conditioned.eval.jsonl",
         "orpo_pairs.jsonl",
         "val_set.v2.jsonl",
+        "tokenizer_v4/tokenizer.json",
         "scripts/round2_integrity_check.py",
         "scripts/phase6_eval_v2.py",
     ]

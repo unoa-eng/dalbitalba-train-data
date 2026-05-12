@@ -152,10 +152,16 @@ def index_raw(raw_dir: Path) -> dict[str, dict[str, Any]]:
 
 def assign_persona(personas: list[dict[str, Any]], length: int, has_argot: bool) -> dict[str, str]:
     if not personas:
-        return {"persona_id": "p-019", "tone": "혼용", "mood": "seeking_empathy"}
+        return {
+            "persona_id": "p-019",
+            "persona": "default",
+            "tone": "혼용",
+            "mood": "seeking_empathy",
+        }
     p = random.choice(personas)
     return {
         "persona_id": f"p-{p.get('id'):03d}" if isinstance(p.get("id"), int) else "p-019",
+        "persona": str(p.get("name") or "default"),
         "tone": p.get("tone") or ("반말" if has_argot else "혼용"),
         "mood": p.get("mood") or "seeking_empathy",
     }
@@ -213,6 +219,7 @@ def build_row(post: dict[str, Any], comment_key: str, raw: dict[str, Any],
         "root_id": post.get("source_id"),
         "parent_id": f"{post.get('source_id')}:[{target.get('parent_key') or 'root'}]",
         "persona_id": persona["persona_id"],
+        "persona": persona["persona"],
         "loss_weight": loss_weight,
     }
 

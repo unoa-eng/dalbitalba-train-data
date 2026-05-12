@@ -31,6 +31,7 @@ REQUIRED_DATA = (
     "val_set.v2.jsonl",
     "recipes/round2-cycle1.env",
     "runs/round2-obsidian-synthesis/persona-30-extracted.json",
+    "tokenizer_v4/tokenizer.json",
     "chain_train_round2.sh",
 )
 REQUIRED_REMOTE_FILES = REQUIRED_DATA + (
@@ -47,10 +48,43 @@ REQUIRED_REMOTE_FILES = REQUIRED_DATA + (
     "train_sft.py",
     "train_orpo.py",
 )
+ACTIVE_EVAL_SOURCE = (
+    REPO_ROOT / "sft_thread_conditioned.eval.jsonl"
+    if (REPO_ROOT / "sft_thread_conditioned.eval.jsonl").exists()
+    else REPO_ROOT / "val_set.v2.jsonl"
+)
+ACTIVE_PERSONA_LIST = REPO_ROOT / "runs" / "round2-obsidian-synthesis" / "persona-30-extracted.json"
+LAUNCH_CRITICAL_PREFIXES = (
+    ".github/workflows/",
+    "recipes/",
+    "scripts/",
+    "tokenizer_v4/",
+    "runs/round2-obsidian-synthesis/",
+)
+LAUNCH_CRITICAL_FILES = {
+    "chain_train.sh",
+    "chain_train_round2.sh",
+    "train_cpt.py",
+    "train_sft.py",
+    "train_orpo.py",
+}
+
+
+def parse_env_file(path: Path) -> dict[str, str]:
+    env: dict[str, str] = {}
+    if not path.exists():
+        return env
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        env[key.strip()] = value.strip().strip('"').strip("'")
+    return env
 
 
 def utc_stamp() -> str:
-    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
 
 
 def run(
@@ -86,6 +120,14 @@ def run(
     return result
 
 
+def parse_json_text(text: str) -> dict[str, Any] | None:
+    try:
+        value = json.loads(text)
+    except json.JSONDecodeError:
+        return None
+    return value if isinstance(value, dict) else None
+
+
 def line_count(path: Path) -> int | None:
     if not path.exists() or not path.is_file():
         return None
@@ -110,12 +152,15 @@ def inspect_inputs() -> dict[str, Any]:
 
 
 def launch_env_status() -> dict[str, Any]:
-    keys = {key: bool(os.environ.get(key)) for key in REQUIRED_LAUNCH_ENV}
+    launch_recipe = parse_env_file(REPO_ROOT / "recipes" / "budget30.env")
+    merged = {**launch_recipe, **os.environ}
+    keys = {key: bool(merged.get(key)) for key in REQUIRED_LAUNCH_ENV}
     return {
         "required": keys,
         "ready": all(keys.values()),
-        "github_repo": os.environ.get("GITHUB_REPO", "unoa-eng/dalbitalba-train-data"),
-        "train_github_ref": os.environ.get("TRAIN_GITHUB_REF") or os.environ.get("GITHUB_REF_NAME") or "current branch",
+        "github_repo": merged.get("GITHUB_REPO", "unoa-eng/dalbitalba-train-data"),
+        "train_github_ref": merged.get("TRAIN_GITHUB_REF") or merged.get("GITHUB_REF_NAME") or "current branch",
+        "launch_recipe": "recipes/budget30.env",
     }
 
 
@@ -142,6 +187,18 @@ def inspect_remote_ref_files(ref: str) -> dict[str, Any]:
             existing.add(rel)
     missing = [rel for rel in REQUIRED_REMOTE_FILES if rel not in existing]
     status = run(["git", "status", "--short"])
+    dirty_lines = [line for line in status["stdout"].splitlines() if line.strip()]
+    launch_critical_dirty: list[str] = []
+    for line in dirty_lines:
+        path = line[3:].strip()
+        if " -> " in path:
+            path = path.rsplit(" -> ", 1)[-1].strip()
+        if (
+            path in LAUNCH_CRITICAL_FILES
+            or path.endswith(".jsonl")
+            or any(path.startswith(prefix) for prefix in LAUNCH_CRITICAL_PREFIXES)
+        ):
+            launch_critical_dirty.append(line)
     return {
         "ref": ref,
         "resolved_ref": remote_ref,
@@ -149,7 +206,8 @@ def inspect_remote_ref_files(ref: str) -> dict[str, Any]:
         "missing": missing,
         "fetch_returncode": fetch["returncode"],
         "fetch_stderr_tail": fetch["stderr"][-1000:],
-        "dirty_worktree": bool(status["stdout"].strip()),
+        "dirty_worktree": bool(dirty_lines),
+        "launch_critical_dirty": launch_critical_dirty,
     }
 
 
@@ -173,22 +231,21 @@ def write_jsonl_sample(src: Path, dst: Path, limit: int) -> None:
 def run_eval_smoke(run_dir: Path, sample_rows: int) -> dict[str, Any]:
     sample = run_dir / "phase6_smoke_same.jsonl"
     report = run_dir / "phase6_v2_smoke.json"
-    write_jsonl_sample(REPO_ROOT / "val_set.v2.jsonl", sample, sample_rows)
-    result = run(
-        [
-            sys.executable,
-            "scripts/phase6_eval_v2.py",
-            "--ai",
-            str(sample),
-            "--raw",
-            str(sample),
-            "--out",
-            str(report),
-            "--skip-mauve",
-        ],
-        log_dir=run_dir,
-        label="phase6_eval_v2_smoke",
-    )
+    write_jsonl_sample(ACTIVE_EVAL_SOURCE, sample, sample_rows)
+    cmd = [
+        sys.executable,
+        "scripts/phase6_eval_v2.py",
+        "--ai",
+        str(sample),
+        "--raw",
+        str(sample),
+        "--out",
+        str(report),
+        "--skip-mauve",
+    ]
+    if ACTIVE_PERSONA_LIST.exists() and ACTIVE_EVAL_SOURCE.name == "sft_thread_conditioned.eval.jsonl":
+        cmd.extend(["--persona-list", str(ACTIVE_PERSONA_LIST)])
+    result = run(cmd, log_dir=run_dir, label="phase6_eval_v2_smoke")
     payload = None
     if report.exists():
         payload = json.loads(report.read_text(encoding="utf-8"))
@@ -199,6 +256,25 @@ def run_eval_smoke(run_dir: Path, sample_rows: int) -> dict[str, Any]:
         "overall": (payload or {}).get("overall"),
         "stderr_tail": result["stderr"][-2000:],
     }
+
+
+def load_preflight_details(stdout: str) -> dict[str, Any] | None:
+    meta = parse_json_text(stdout.strip())
+    if not meta:
+        return None
+    report_ref = meta.get("report")
+    if not isinstance(report_ref, str):
+        return meta
+    report_path = Path(report_ref)
+    if not report_path.is_absolute():
+        report_path = REPO_ROOT / report_ref
+    report_json = report_path.with_name("report.json")
+    if report_json.exists():
+        payload = parse_json_text(report_json.read_text(encoding="utf-8"))
+        if payload:
+            meta["report_json"] = str(report_json.relative_to(REPO_ROOT))
+            meta["details"] = payload
+    return meta
 
 
 def main() -> int:
@@ -227,6 +303,7 @@ def main() -> int:
                 "scripts/phase6_eval_v2.py",
                 "scripts/phase6_generate.py",
                 "scripts/round2_integrity_check.py",
+                "scripts/sft_format_smoke_test.py",
                 "scripts/prelaunch_research_check.py",
                 "scripts/clean_round2_launch_data.py",
                 "scripts/split_round2_sft_eval.py",
@@ -256,10 +333,15 @@ def main() -> int:
         log_dir=run_dir,
         label="local_verification_loop",
     )
+    preflight_details = load_preflight_details(preflight["stdout"])
     inputs = inspect_inputs()
     env_status = launch_env_status()
+    launch_recipe_env = parse_env_file(REPO_ROOT / "recipes" / "budget30.env")
     remote_files = inspect_remote_ref_files(resolve_launch_ref())
     eval_smoke = run_eval_smoke(run_dir, args.sample_rows) if static_ok and not inputs["missing"] else None
+    preflight_ok = preflight["returncode"] == 0
+    inputs_ok = not inputs["missing"]
+    eval_smoke_ok = eval_smoke is not None and eval_smoke["returncode"] == 0
 
     launch_result: dict[str, Any] | None = None
     if args.launch or args.dry_run:
@@ -269,6 +351,24 @@ def main() -> int:
                 "blocked": "static checks failed",
                 "failed": [k for k, v in static_checks.items() if v["returncode"] != 0],
             }
+        elif not preflight_ok:
+            launch_result = {
+                "returncode": preflight["returncode"],
+                "blocked": "local verification preflight failed",
+                "report": (preflight_details or {}).get("report"),
+            }
+        elif not inputs_ok:
+            launch_result = {
+                "returncode": 3,
+                "blocked": "required inputs are missing",
+                "missing": inputs["missing"],
+            }
+        elif not eval_smoke_ok:
+            launch_result = {
+                "returncode": (eval_smoke or {}).get("returncode", 3),
+                "blocked": "phase6 identity eval smoke failed or did not run",
+                "eval_smoke": eval_smoke,
+            }
         elif not remote_files["ready"]:
             launch_result = {
                 "returncode": 4,
@@ -276,11 +376,17 @@ def main() -> int:
                 "ref": remote_files["ref"],
                 "missing": remote_files["missing"],
             }
+        elif args.launch and remote_files["launch_critical_dirty"]:
+            launch_result = {
+                "returncode": 5,
+                "blocked": "launch-critical local changes are not committed/pushed",
+                "dirty": remote_files["launch_critical_dirty"],
+            }
         elif env_status["ready"] or args.dry_run:
             cmd = [sys.executable, "scripts/launch_train_pod.py", "--chain", "round2"]
             if args.dry_run:
                 cmd.append("--dry-run")
-            launch_result = run(cmd, log_dir=run_dir, label="launch_train_pod")
+            launch_result = run(cmd, env=launch_recipe_env, log_dir=run_dir, label="launch_train_pod")
         else:
             launch_result = {
                 "returncode": 2,
@@ -305,6 +411,7 @@ def main() -> int:
             "stderr_tail": preflight["stderr"][-2000:],
             "stdout_log": preflight.get("stdout_log"),
             "stderr_log": preflight.get("stderr_log"),
+            "details": preflight_details,
         },
         "inputs": inputs,
         "remote_files": remote_files,
@@ -329,6 +436,8 @@ def main() -> int:
         return 3
     if not remote_files["ready"]:
         return 4
+    if args.launch and remote_files["launch_critical_dirty"]:
+        return 5
     if eval_smoke and eval_smoke["returncode"] != 0:
         return eval_smoke["returncode"]
     if launch_result and launch_result.get("returncode", 0) != 0:

@@ -7,6 +7,8 @@ import sys
 
 
 BASE_MODEL = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base")
+CPT_MERGED_REPO = os.environ.get("CPT_MERGED_REPO", "").strip()
+CPT_MERGED_PATH = os.environ.get("CPT_MERGED_PATH", "").strip()
 # Tokenizer path: explicit override > local tokenizer_v4 dir > BASE_MODEL.
 # tokenizer_v4 contains the +210 domain tokens used end-to-end.
 TOKENIZER_PATH = os.environ.get("TOKENIZER_PATH") or (
@@ -109,31 +111,35 @@ def main() -> int:
     import torch
     import transformers
 
-    if not SFT_ADAPTER_REPO:
-        print("[error] SFT_ADAPTER_REPO is required", file=sys.stderr)
+    generation_base = CPT_MERGED_PATH or CPT_MERGED_REPO or BASE_MODEL
+    if not SFT_ADAPTER_REPO and not (CPT_MERGED_PATH or CPT_MERGED_REPO):
+        print("[error] SFT_ADAPTER_REPO or CPT_MERGED_REPO/CPT_MERGED_PATH is required", file=sys.stderr)
         return 1
 
     model = transformers.AutoModelForCausalLM.from_pretrained(
-        BASE_MODEL,
+        generation_base,
         torch_dtype=torch.bfloat16,
         device_map="auto",
         token=HF_TOKEN,
         trust_remote_code=True,
     )
-    adapter_kwargs = {"token": HF_TOKEN}
-    if SFT_ADAPTER_SUBFOLDER:
-        adapter_kwargs["subfolder"] = SFT_ADAPTER_SUBFOLDER
-    try:
-        model = peft.PeftModel.from_pretrained(model, SFT_ADAPTER_REPO, **adapter_kwargs)
-    except Exception:
+    if SFT_ADAPTER_REPO:
+        adapter_kwargs = {"token": HF_TOKEN}
         if SFT_ADAPTER_SUBFOLDER:
-            raise
-        model = peft.PeftModel.from_pretrained(
-            model,
-            SFT_ADAPTER_REPO,
-            subfolder="sft-lora",
-            token=HF_TOKEN,
-        )
+            adapter_kwargs["subfolder"] = SFT_ADAPTER_SUBFOLDER
+        try:
+            model = peft.PeftModel.from_pretrained(model, SFT_ADAPTER_REPO, **adapter_kwargs)
+        except Exception:
+            if SFT_ADAPTER_SUBFOLDER:
+                raise
+            model = peft.PeftModel.from_pretrained(
+                model,
+                SFT_ADAPTER_REPO,
+                subfolder="sft-lora",
+                token=HF_TOKEN,
+            )
+    else:
+        print(f"[phase6] CPT-only generation base: {generation_base}")
     print(f"[phase6] loading tokenizer from: {TOKENIZER_PATH}")
     tokenizer = transformers.AutoTokenizer.from_pretrained(
         TOKENIZER_PATH,

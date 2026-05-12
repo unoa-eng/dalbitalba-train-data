@@ -606,12 +606,23 @@ phase3_sft_threaded() {
     # R3 BLOCKER: manifest-hash check. SFT_LOSS_WEIGHT_* env vars and dedup
     # toggle change which rows get loss_weight escalation, so a stale
     # ${sft_data} from a previous run with different env must be rebuilt.
-    # We persist the env footprint to ${sft_data}.manifest and rebuild
-    # whenever the file is missing OR the manifest differs.
+    # We persist the env footprint to ${sft_data}.manifest and rebuild when
+    # the SFT data is missing or an existing manifest differs. Fresh clones may
+    # have committed SFT data without the sidecar; that path is reused and a
+    # run-local sidecar is written instead of forcing a source_db_cache rebuild.
     local _SFT_MANIFEST="weight=${SFT_LOSS_WEIGHT_ARGOT:-1.5}_thresh=${SFT_LOSS_WEIGHT_THRESHOLD:-2}_terms=${SFT_LOSSWEIGHT_TERMS_FOOTPRINT:-${SFT_LOSS_WEIGHT_TERMS:-default}}_dedup=${SFT_APPLY_DEDUP:-1}"
     local _SFT_MANIFEST_FILE="${sft_data}.manifest"
     local _STORED_MANIFEST=""
     [ -f "${_SFT_MANIFEST_FILE}" ] && _STORED_MANIFEST="$(cat "${_SFT_MANIFEST_FILE}" 2>/dev/null || true)"
+    if [ -f "${sft_data}" ] && [ -z "${_STORED_MANIFEST}" ]; then
+        if [ "${SFT_STRICT_MANIFEST:-0}" = "1" ]; then
+            log "[FATAL] ${_SFT_MANIFEST_FILE} missing and SFT_STRICT_MANIFEST=1"
+            return 2
+        fi
+        log "[WARN] ${_SFT_MANIFEST_FILE} missing; reusing committed ${SFT_DATA} and writing run-local manifest"
+        echo "${_SFT_MANIFEST}" > "${_SFT_MANIFEST_FILE}"
+        _STORED_MANIFEST="${_SFT_MANIFEST}"
+    fi
     if [ ! -f "${sft_data}" ] || [ "${_SFT_MANIFEST}" != "${_STORED_MANIFEST}" ]; then
         if [ ! -f "${sft_data}" ]; then
             log "[INFO] ${SFT_DATA} missing; building from cpt_context_stream"
@@ -619,12 +630,21 @@ phase3_sft_threaded() {
             log "[INFO] Rebuilding SFT data (manifest changed: stored='${_STORED_MANIFEST}' vs current='${_SFT_MANIFEST}')"
         fi
         local _DEDUP_FLAG="--apply-dedup"
+        local _RAW_SOURCE_DIR="${DATA_DIR}/source_db_cache"
         if [ "${SFT_APPLY_DEDUP:-1}" = "0" ]; then
-            _DEDUP_FLAG="--no-dedup"
+            _DEDUP_FLAG="--no-apply-dedup"
+        fi
+        if [ ! -d "${_RAW_SOURCE_DIR}" ]; then
+            log "[FATAL] tc-sft rebuild requested but raw source dir missing: ${_RAW_SOURCE_DIR}"
+            return 2
+        fi
+        if [ ! -f "${DATA_DIR}/cpt_context_stream.jsonl" ]; then
+            log "[FATAL] tc-sft rebuild requested but context stream missing: ${DATA_DIR}/cpt_context_stream.jsonl"
+            return 2
         fi
         python3 "${SCRIPTS_DIR}/round2_build_tc_sft.py" \
             --context-stream "${DATA_DIR}/cpt_context_stream.jsonl" \
-            --raw-source-dir "${DATA_DIR}/source_db_cache" \
+            --raw-source-dir "${_RAW_SOURCE_DIR}" \
             --persona-list "${persona_list}" \
             ${_DEDUP_FLAG} \
             --out "${sft_data}" 2>&1 | tee -a "${PHASE3_LOG}" >> "${ROUND2_LOG}"
@@ -645,6 +665,7 @@ phase3_sft_threaded() {
         SFT_PAIR_JSONL="${sft_data}" \
         SFT_RAW_JSONL="${DATA_DIR}/${CPT_PHASE_2_DATA}" \
         SFT_VAL_JSONL="${DATA_DIR}/val_set.v2.jsonl" \
+        SFT_RAW_RATIO="${SFT_RAW_RATIO:-0.0}" \
         BASE_MODEL="${sft_base}" \
         SFT_NUM_EPOCHS="${SFT_NUM_EPOCHS:-2}" \
         SFT_LORA_R="${LORA_R:-128}" \
