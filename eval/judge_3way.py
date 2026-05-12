@@ -183,7 +183,7 @@ def main() -> None:
     samples = load_samples(args.samples)
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
-    # pin to reproducible dated alias — paper-grade requires fixed judge model
+    # pin to reproducible dated aliases — paper-grade requires fixed judge models
     anthropic_model_primary = os.environ.get(
         "PAPER_GRADE_JUDGE_CLAUDE_PRIMARY",
         os.environ.get(
@@ -191,7 +191,6 @@ def main() -> None:
             "claude-3-7-sonnet-20250219",  # verify alias is still served by API
         ),
     )
-    # pin to reproducible dated alias — paper-grade requires fixed judge model
     anthropic_model_secondary = os.environ.get(
         "PAPER_GRADE_JUDGE_CLAUDE_SECONDARY",
         os.environ.get(
@@ -199,7 +198,6 @@ def main() -> None:
             "claude-3-5-haiku-20241022",
         ),
     )
-    # pin to reproducible dated alias — paper-grade requires fixed judge model
     openai_model = os.environ.get(
         "PAPER_GRADE_JUDGE_GPT",
         os.environ.get(
