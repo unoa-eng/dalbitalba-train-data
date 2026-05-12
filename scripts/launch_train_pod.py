@@ -329,7 +329,16 @@ def main() -> None:
         default=os.environ.get("TRAIN_CHAIN", "round2").strip() or "round2",
         help="Training chain to execute inside RunPod",
     )
+    parser.add_argument(
+        "--profile",
+        default=os.environ.get("BUDGET_PROFILE", "").strip() or None,
+        help="Budget profile (paper8b/budget30/smoke). Sets BUDGET_PROFILE env for downstream gates.",
+    )
     args = parser.parse_args()
+
+    # F11: sync --profile → BUDGET_PROFILE env BEFORE any gate reads it
+    if args.profile:
+        os.environ["BUDGET_PROFILE"] = args.profile
 
     # B2 — GPU lock: paper8b/budget30 must not slip to A100/RTX-6000-Ada
     _enforce_gpu_lock(os.environ.get("BUDGET_PROFILE", "").strip(), args.gpu_type)
@@ -353,12 +362,12 @@ def main() -> None:
         ("cpt_corpus.v3.jsonl", "cpt_corpus.v2.jsonl"),
     )
     train_sft_pair_jsonl = resolve_workspace_data_path(
-        ("TRAIN_SFT_PAIR_JSONL", "SFT_PAIR_JSONL"),
-        ("sft_pairs.v2.jsonl",),
+        ("TRAIN_SFT_PAIR_JSONL", "SFT_PAIR_JSONL", "SFT_DATA"),
+        ("sft_thread_conditioned.jsonl", "sft_pairs.v3.jsonl", "sft_pairs.v2.jsonl"),
     )
     train_val_jsonl = resolve_workspace_data_path(
-        ("TRAIN_VAL_JSONL", "CPT_VAL_JSONL"),
-        ("val_set.v2.jsonl",),
+        ("TRAIN_VAL_JSONL", "CPT_VAL_JSONL", "SFT_EVAL_DATA"),
+        ("sft_thread_conditioned.eval.jsonl", "val_set.v3.jsonl"),
     )
     cpt_num_epochs = os.environ.get("CPT_NUM_EPOCHS", "1").strip() or "1"
     sft_num_epochs = os.environ.get("SFT_NUM_EPOCHS", "2").strip() or "2"
@@ -457,6 +466,9 @@ def main() -> None:
         "HF_UPLOAD_TIMEOUT_HOURS",
         "ORPO_TIMEOUT_HOURS",
         "EVAL_TIMEOUT_HOURS",
+        "SFT_DATA",
+        "SFT_EVAL_DATA",
+        "EVAL_INPUT_DATA",
         "ROUND2_RECIPE",
         "ROUND2_STOP_POD",
         "ROUND2_SKIP_HF_UPLOAD",

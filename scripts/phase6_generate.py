@@ -7,6 +7,7 @@ import sys
 
 
 BASE_MODEL = os.environ.get("BASE_MODEL", "Qwen/Qwen3-8B-Base")
+BASE_MODEL_REVISION = os.environ.get("BASE_MODEL_REVISION", "main")
 CPT_MERGED_REPO = os.environ.get("CPT_MERGED_REPO", "").strip()
 CPT_MERGED_PATH = os.environ.get("CPT_MERGED_PATH", "").strip()
 # Tokenizer path: explicit override > local tokenizer_v4 dir > BASE_MODEL.
@@ -17,7 +18,7 @@ TOKENIZER_PATH = os.environ.get("TOKENIZER_PATH") or (
 SFT_ADAPTER_REPO = os.environ.get("SFT_ADAPTER_REPO", "").strip()
 SFT_ADAPTER_SUBFOLDER = os.environ.get("SFT_ADAPTER_SUBFOLDER", "").strip()
 HF_TOKEN = os.environ.get("HF_TOKEN", "").strip() or None
-INPUT_PATH = os.environ.get("EVAL_INPUT_JSONL", "/workspace/data/val_set.v2.jsonl")
+INPUT_PATH = os.environ.get("EVAL_INPUT_JSONL", "/workspace/data/sft_thread_conditioned.eval.jsonl")
 OUTPUT_PATH = os.environ.get("EVAL_OUTPUT_JSONL", "/workspace/ai_generated.jsonl")
 MAX_ROWS = int(os.environ.get("EVAL_MAX_ROWS", "500"))
 MAX_NEW_TOKENS = int(os.environ.get("MAX_NEW_TOKENS", "200"))
@@ -135,8 +136,13 @@ def main() -> int:
         print("[error] SFT_ADAPTER_REPO or CPT_MERGED_REPO/CPT_MERGED_PATH is required", file=sys.stderr)
         return 1
 
+    # revision은 BASE_MODEL을 직접 로드하는 CPT-only fallback path에서만 적용.
+    # merged local path나 HF repo를 쓰는 경우 revision 불필요.
+    _is_base_model_direct = generation_base == BASE_MODEL
+    _load_revision = BASE_MODEL_REVISION if _is_base_model_direct else None
     model = transformers.AutoModelForCausalLM.from_pretrained(
         generation_base,
+        revision=_load_revision,
         torch_dtype=torch.bfloat16,
         device_map="auto",
         token=HF_TOKEN,

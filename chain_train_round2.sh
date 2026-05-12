@@ -229,7 +229,7 @@ persist_run_artifacts() {
     _cpt1_sha="$(_sha256 "${DATA_DIR}/${CPT_PHASE_1_DATA:-}")"
     _cpt2_sha="$(_sha256 "${DATA_DIR}/${CPT_PHASE_2_DATA:-}")"
     _sft_sha="$(_sha256 "${DATA_DIR}/${SFT_DATA:-}")"
-    _val_sha="$(_sha256 "${DATA_DIR}/val_set.v2.jsonl")"
+    _val_sha="$(_sha256 "${DATA_DIR}/${SFT_EVAL_DATA:-sft_thread_conditioned.eval.jsonl}")"
     _orpo_sha="$(_sha256 "${DATA_DIR}/${ORPO_DATA:-}")"
     local _docker_image
     _docker_image="${CONTAINER_IMAGE:-$(cat /etc/runpod-release 2>/dev/null | head -1 || echo 'unknown')}"
@@ -594,12 +594,13 @@ validate_inputs() {
     require CPT_PHASE_1_DATA || return 2
     require CPT_PHASE_2_DATA || return 2
     require SFT_DATA || return 2
+    require SFT_EVAL_DATA || return 2
     require ORPO_DATA || return 2
     [ -z "${HF_TOKEN:-}" ] && { log "[ERROR] HF_TOKEN unset"; return 2; }
     [ -z "${HF_USERNAME:-}" ] && { log "[ERROR] HF_USERNAME unset"; return 2; }
 
     local missing=0
-    for f in "${DATA_DIR}/${CPT_PHASE_1_DATA}" "${DATA_DIR}/${CPT_PHASE_2_DATA}" "${DATA_DIR}/val_set.v2.jsonl"; do
+    for f in "${DATA_DIR}/${CPT_PHASE_1_DATA}" "${DATA_DIR}/${CPT_PHASE_2_DATA}" "${DATA_DIR}/${SFT_DATA}" "${DATA_DIR}/${SFT_EVAL_DATA:-sft_thread_conditioned.eval.jsonl}"; do
         if [ ! -f "${f}" ]; then
             log "[ERROR] required data file missing: ${f}"
             missing=1
@@ -766,7 +767,7 @@ phase3_sft_threaded() {
     run_timeout "${SFT_TIMEOUT_HOURS:-96}" env \
         SFT_PAIR_JSONL="${sft_data}" \
         SFT_RAW_JSONL="${DATA_DIR}/${CPT_PHASE_2_DATA}" \
-        SFT_VAL_JSONL="${DATA_DIR}/val_set.v2.jsonl" \
+        SFT_VAL_JSONL="${DATA_DIR}/${SFT_EVAL_DATA:-sft_thread_conditioned.eval.jsonl}" \
         SFT_RAW_RATIO="${SFT_RAW_RATIO:-0.0}" \
         BASE_MODEL="${sft_base}" \
         SFT_NUM_EPOCHS="${SFT_NUM_EPOCHS:-2}" \
@@ -825,7 +826,7 @@ phase4_orpo() {
         log "[INFO] ${ORPO_DATA} missing; building from runs/refinement-*"
         python3 "${SCRIPTS_DIR}/round2_build_orpo_pairs.py" \
             --runs-glob "${REPO_CLONE_DIR}/runs/refinement-2026042*" \
-            --val-set "${DATA_DIR}/val_set.v2.jsonl" \
+            --val-set "${DATA_DIR}/${SFT_EVAL_DATA:-sft_thread_conditioned.eval.jsonl}" \
             --cpt-corpus "${DATA_DIR}/${CPT_PHASE_2_DATA:-cpt_corpus.v3.jsonl}" \
             --out "${orpo_data}" 2>&1 | tee -a "${PHASE4_LOG}" >> "${ROUND2_LOG}"
         local build_rc=${PIPESTATUS[0]}
@@ -898,7 +899,7 @@ phase5_eval_gate() {
             BASE_MODEL="${eval_base}" \
             SFT_ADAPTER_REPO="${eval_adapter}" \
             CPT_MERGED_PATH="${eval_cpt_merged}" \
-            EVAL_INPUT_JSONL="${DATA_DIR}/${EVAL_INPUT_DATA:-val_set.v2.jsonl}" \
+            EVAL_INPUT_JSONL="${DATA_DIR}/${EVAL_INPUT_DATA:-${SFT_EVAL_DATA:-sft_thread_conditioned.eval.jsonl}}" \
             EVAL_MAX_ROWS="${EVAL_MAX_ROWS:-500}" \
             MAX_NEW_TOKENS="${GENERATION_MAX_NEW_TOKENS:-400}" \
             TEMPERATURE="${GENERATION_TEMP:-0.6}" \
@@ -922,7 +923,7 @@ phase5_eval_gate() {
     fi
     python3 "${SCRIPTS_DIR}/phase6_eval_v2.py" \
         --ai "${ai}" \
-        --raw "${DATA_DIR}/${EVAL_INPUT_DATA:-val_set.v2.jsonl}" \
+        --raw "${DATA_DIR}/${EVAL_INPUT_DATA:-${SFT_EVAL_DATA:-sft_thread_conditioned.eval.jsonl}}" \
         --persona-list "${persona_list}" \
         --out "${OUT_DIR}/phase5-eval-v2.json" \
         "${mauve_flag[@]}" 2>&1 | tee -a "${PHASE5_LOG}" >> "${ROUND2_LOG}"

@@ -40,7 +40,7 @@ ACTIVE_SFT_PATH = (
 ACTIVE_EVAL_PATH = (
     REPO_ROOT / "sft_thread_conditioned.eval.jsonl"
     if (REPO_ROOT / "sft_thread_conditioned.eval.jsonl").exists()
-    else REPO_ROOT / "val_set.v2.jsonl"
+    else REPO_ROOT / "val_set.v3.jsonl"
 )
 OBSIDIAN_REF_DIR = REPO_ROOT / "research" / "obsidian-ref"
 OBSIDIAN_EXPORT_DIR = REPO_ROOT / "research" / "obsidian-export"

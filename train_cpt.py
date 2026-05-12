@@ -10,7 +10,7 @@ Recipe (2026-04, fixed from 9-voice research consensus):
   - batch:   1 x grad_accum 16 (eff 16)
   - bf16 + gradient_checkpointing (use_reentrant=False) + flash-attn 2
   - Data:    cpt_corpus.v2.jsonl (raw continuation text, no template)
-  - Val:     val_set.v2.jsonl (5% held-out, time-split)
+  - Val:     sft_thread_conditioned.eval.jsonl (default; was val_set.v2.jsonl)
   - Seed:    full deterministic path
   - Hub:     push every 50 steps to last-checkpoint (pod-death resume)
 
@@ -65,7 +65,7 @@ TOKENIZER_PATH = os.environ.get("TOKENIZER_PATH") or (
     "tokenizer_v4" if os.path.isdir("tokenizer_v4") else BASE_MODEL
 )
 INPUT_JSONL = os.environ.get("INPUT_JSONL", "/workspace/data/cpt_corpus.v2.jsonl")
-VAL_JSONL = os.environ.get("CPT_VAL_JSONL", "/workspace/data/val_set.v2.jsonl")
+VAL_JSONL = os.environ.get("CPT_VAL_JSONL", "/workspace/data/sft_thread_conditioned.eval.jsonl")
 OUTPUT_DIR = os.environ.get("CPT_OUTPUT_DIR", "/workspace/out/cpt-lora")
 CKPT_DIR = os.environ.get("CPT_CKPT_DIR", "/workspace/out/cpt-ckpt")
 LOG_FILE = os.environ.get("CPT_LOG_FILE", "/workspace/train_cpt.log")

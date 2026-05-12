@@ -28,7 +28,6 @@ REQUIRED_DATA = (
     "sft_thread_conditioned.jsonl",
     "sft_thread_conditioned.eval.jsonl",
     "orpo_pairs.jsonl",
-    "val_set.v2.jsonl",
     "recipes/round2-cycle1.env",
     "runs/round2-obsidian-synthesis/persona-30-extracted.json",
     "tokenizer_v4/tokenizer.json",
@@ -51,7 +50,7 @@ REQUIRED_REMOTE_FILES = REQUIRED_DATA + (
 ACTIVE_EVAL_SOURCE = (
     REPO_ROOT / "sft_thread_conditioned.eval.jsonl"
     if (REPO_ROOT / "sft_thread_conditioned.eval.jsonl").exists()
-    else REPO_ROOT / "val_set.v2.jsonl"
+    else REPO_ROOT / "val_set.v3.jsonl"
 )
 ACTIVE_PERSONA_LIST = REPO_ROOT / "runs" / "round2-obsidian-synthesis" / "persona-30-extracted.json"
 LOCAL_PYTHONWARNINGS = "ignore:urllib3 v2 only supports OpenSSL 1.1.1+"

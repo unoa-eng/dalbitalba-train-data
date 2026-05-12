@@ -11,7 +11,15 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RECIPE = ROOT / "recipes" / "round2-cycle1.env"
+
+# Profile → recipe mapping.  budget30 uses its own env file.
+_RECIPE_MAP: dict[str, Path] = {
+    "paper8b": ROOT / "recipes" / "round2-cycle1.env",
+    "budget30": ROOT / "recipes" / "budget30.env",
+}
+_profile_hint = os.environ.get("BUDGET_PROFILE", "paper8b").strip().lower()
+RECIPE = _RECIPE_MAP.get(_profile_hint, ROOT / "recipes" / "round2-cycle1.env")
+
 SELECTED_BASE = "Qwen/Qwen3-8B-Base"
 REQUIRED_DOCS = ("MODEL_SELECTION.md", "RESEARCH_PROTOCOL.md")
 REQUIRED_WANDB_KEYS = ("WANDB_PROJECT", "WANDB_RUN_GROUP", "WANDB_TAGS")
@@ -67,12 +75,23 @@ def check_recipe(failures: list[str]) -> dict[str, str]:
         fail(f"BASE_MODEL must be {SELECTED_BASE}, got {env.get('BASE_MODEL')}", failures)
     else:
         ok(f"BASE_MODEL selected: {SELECTED_BASE}")
-    for key in REQUIRED_WANDB_KEYS:
-        if not env.get(key):
-            fail(f"recipe missing W&B key: {key}", failures)
-        else:
-            ok(f"recipe W&B key present: {key}={env[key]}")
-    if env.get("BUDGET_PROFILE") == "budget30":
+    # WANDB keys: required for paper8b (full-chain); optional for budget30 (CPT-only probe).
+    if _profile_hint == "paper8b":
+        for key in REQUIRED_WANDB_KEYS:
+            if not env.get(key):
+                fail(f"recipe missing W&B key: {key}", failures)
+            else:
+                ok(f"recipe W&B key present: {key}={env[key]}")
+    else:
+        # budget30: WANDB keys are optional — SKIP_SFT=1 CPT-only runs may omit them.
+        for key in REQUIRED_WANDB_KEYS:
+            if env.get(key):
+                ok(f"recipe W&B key present (optional for budget30): {key}={env[key]}")
+            else:
+                print(f"[WARN] recipe missing optional W&B key for budget30: {key}")
+    # Guard: paper8b recipe must not claim budget30 profile (mis-labeling guard).
+    # budget30 recipe is expected to declare BUDGET_PROFILE=budget30, so no error.
+    if _profile_hint == "paper8b" and env.get("BUDGET_PROFILE") == "budget30":
         fail("paper-grade recipe must not claim budget30 after selecting 8B full-chain", failures)
     return env
 
@@ -99,7 +118,7 @@ def check_required_artifacts(failures: list[str]) -> None:
         "sft_thread_conditioned.jsonl",
         "sft_thread_conditioned.eval.jsonl",
         "orpo_pairs.jsonl",
-        "val_set.v2.jsonl",
+        "val_set.v3.jsonl",
         "tokenizer_v4/tokenizer.json",
         "scripts/round2_integrity_check.py",
         "scripts/phase6_eval_v2.py",

@@ -28,6 +28,7 @@ except ImportError as e:
 
 def main() -> None:
     base_model = os.environ.get("BASE_MODEL", "/workspace/out/cpt-merged-fp16")
+    base_model_revision = os.environ.get("BASE_MODEL_REVISION", "main")
     adapter_dir = os.environ.get("SFT_LORA_DIR", "/workspace/out/sft-lora")
     merged_dir = os.environ.get("SFT_MERGED_DIR", "/workspace/out/sft-merged-fp16")
     # Tokenizer path: explicit override > local tokenizer_v4 dir > base_model.
@@ -42,6 +43,7 @@ def main() -> None:
         sys.exit(2)
 
     print(f"[merge-sft] base       : {base_model}")
+    print(f"[merge-sft] revision   : {base_model_revision}")
     print(f"[merge-sft] lora       : {adapter_dir}")
     print(f"[merge-sft] tokenizer  : {tokenizer_path}")
     print(f"[merge-sft] out        : {merged_dir}")
@@ -49,6 +51,7 @@ def main() -> None:
     dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
     base = AutoModelForCausalLM.from_pretrained(
         base_model,
+        revision=base_model_revision,
         torch_dtype=dtype,
         trust_remote_code=True,
         low_cpu_mem_usage=True,

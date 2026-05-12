@@ -260,7 +260,7 @@ def main() -> None:
     default_eval_input = (
         "sft_thread_conditioned.eval.jsonl"
         if (REPO_ROOT / "sft_thread_conditioned.eval.jsonl").exists()
-        else "val_set.v2.jsonl"
+        else "val_set.v3.jsonl"
     )
     default_persona_list = (
         "runs/round2-obsidian-synthesis/persona-30-extracted.json"

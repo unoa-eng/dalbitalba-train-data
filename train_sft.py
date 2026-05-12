@@ -25,7 +25,7 @@ Env:
   SFT_RAW_JSONL         : /workspace/data/cpt_corpus.v2.jsonl
   SFT_PAIR_JSONL        : /workspace/data/sft_pairs.v2.jsonl   (v2 schema)
   SFT_PAIR_JSONL_V3     : (opt) /workspace/data/sft_pairs.v3.jsonl  (v3 schema)
-  SFT_VAL_JSONL         : /workspace/data/val_set.v2.jsonl
+  SFT_VAL_JSONL         : /workspace/data/sft_thread_conditioned.eval.jsonl
   SFT_OUTPUT_DIR        : /workspace/out/sft-lora
   SFT_CKPT_DIR          : /workspace/out/sft-ckpt
   SFT_HUB_MODEL_ID      : (optional) HF repo to push
@@ -84,7 +84,7 @@ SFT_RAW_JSONL = os.environ.get("SFT_RAW_JSONL", "/workspace/data/cpt_corpus.v2.j
 SFT_PAIR_JSONL = os.environ.get("SFT_PAIR_JSONL", "/workspace/data/sft_pairs.v2.jsonl")
 # from PR #5 — v3 loader opt-in (empty string disables)
 SFT_PAIR_JSONL_V3 = os.environ.get("SFT_PAIR_JSONL_V3", "").strip() or None
-SFT_VAL_JSONL = os.environ.get("SFT_VAL_JSONL", "/workspace/data/val_set.v2.jsonl")
+SFT_VAL_JSONL = os.environ.get("SFT_VAL_JSONL", "/workspace/data/sft_thread_conditioned.eval.jsonl")
 OUTPUT_DIR = os.environ.get("SFT_OUTPUT_DIR", "/workspace/out/sft-lora")
 CKPT_DIR = os.environ.get("SFT_CKPT_DIR", "/workspace/out/sft-ckpt")
 LOG_FILE = os.environ.get("SFT_LOG_FILE", "/workspace/train_sft.log")

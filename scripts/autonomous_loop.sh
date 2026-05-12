@@ -252,7 +252,7 @@ print(d.get('gate', {}).get('verdict', 'UNKNOWN'))
                     break
                 }
             fi
-            git add cpt_corpus.v2.jsonl sft_pairs.v2.jsonl val_set.v2.jsonl \
+            git add cpt_corpus.v2.jsonl sft_pairs.v2.jsonl \
                 .planning/calibration/phase1_summary.json 2>/dev/null
             git commit -m "data: R8 regen cycle $(date -u +%Y%m%d-%H%M)" >> "${LOG}" 2>&1 || true
         fi

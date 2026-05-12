@@ -200,6 +200,16 @@ def main() -> int:
                 args.profile,
             ],
         ),
+        (
+            "check_data_paths",
+            [
+                sys.executable,
+                "scripts/check_data_paths.py",
+                "--profile",
+                args.profile,
+                "--strict",
+            ],
+        ),
     ]
 
     results = [run_check(name, cmd, run_dir) for name, cmd in checks]
