@@ -1,0 +1,30 @@
+shell env: WANDB_ENTITY=dalbit-ai WANDB_PROJECT=dalbitalba-round2
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in runs/cycle6-proof/wandb-offline/wandb/offline-run-20260513_133846-mj8hpj8z
+wandb: WARNING URL not available in offline run
+wandb: WARNING The `quiet` argument to `wandb.run.finish()` is deprecated, use `wandb.Settings(quiet=...)` to set this instead.
+wandb: 
+wandb: Run history:
+wandb: loss ▁
+wandb:   lr ▁
+wandb: step ▁
+wandb: 
+wandb: Run summary:
+wandb: loss 5.642
+wandb:   lr 0.0001
+wandb: step 1
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync runs/cycle6-proof/wandb-offline/wandb/offline-run-20260513_133846-mj8hpj8z
+wandb: Find logs at: runs/cycle6-proof/wandb-offline/wandb/offline-run-20260513_133846-mj8hpj8z/logs
+sdk env honor: WANDB_ENTITY = 'dalbit-ai'
+--- wandb run object ---
+  entity:  'dalbit-ai'
+  project: 'dalbitalba-round2'
+  name:    'cycle6-proof-offline'
+  id:      'mj8hpj8z'
+  url:     None
+  dir:     'runs/cycle6-proof/wandb-offline/wandb/offline-run-20260513_133846-mj8hpj8z/files'
+  config.cpt_lr           = 0.0001
+  config.cpt_warmup_ratio = 0.08
