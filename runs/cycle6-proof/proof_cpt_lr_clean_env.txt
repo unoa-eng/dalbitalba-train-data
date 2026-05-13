@@ -1,0 +1,18 @@
+[clean env after recipe] CPT_LR=1e-4 WANDB_ENTITY=dalbit-ai
+--- phase1 env block (POST-FIX, clean shell) ---
+=== stub:phase1_POST_FIX_clean_shell ===
+  ENV[CPT_LR] = 1e-4
+  ENV[CPT_WARMUP_RATIO] = 0.08
+  ENV[CPT_NUM_EPOCHS] = 1
+  ENV[CPT_USE_DORA] = 0
+  ENV[CPT_LORA_R] = 128
+  ENV[CPT_LORA_ALPHA] = 128
+  ENV[CPT_MAX_SEQ_LEN] = 2048
+  ENV[BASE_MODEL] = Qwen/Qwen3-8B-Base
+  ENV[BASE_MODEL_REVISION] = 49e3418fbbbca6ecbdf9608b4d22e5a407081db4
+  ENV[INPUT_JSONL] = cpt_enriched.jsonl
+  ENV[TRAIN_REPORT_TO] = wandb
+  ENV[WANDB_ENTITY] = dalbit-ai
+  ENV[WANDB_PROJECT] = dalbitalba-round2
+  ENV[WANDB_RUN_GROUP] = round2-qwen3-8b-paper
+  ENV[WANDB_NAME] = phase1-cpt-broad

@@ -1,0 +1,30 @@
+## recipe-sourced shell env
+WANDB_ENTITY=dalbit-ai
+WANDB_PROJECT=dalbitalba-round2
+TRAIN_REPORT_TO=wandb
+
+## env block that reaches train_cpt.py (phase1)
+=== stub:phase1_WANDB_check ===
+  ENV[CPT_LR] = 1e-4
+  ENV[CPT_WARMUP_RATIO] = 0.08
+  ENV[CPT_NUM_EPOCHS] = 1
+  ENV[CPT_USE_DORA] = 1
+  ENV[CPT_LORA_R] = <UNSET>
+  ENV[CPT_LORA_ALPHA] = <UNSET>
+  ENV[CPT_MAX_SEQ_LEN] = <UNSET>
+  ENV[BASE_MODEL] = Qwen/Qwen3-8B-Base
+  ENV[BASE_MODEL_REVISION] = 49e3418fbbbca6ecbdf9608b4d22e5a407081db4
+  ENV[INPUT_JSONL] = <UNSET>
+  ENV[TRAIN_REPORT_TO] = wandb
+  ENV[WANDB_ENTITY] = dalbit-ai
+  ENV[WANDB_PROJECT] = dalbitalba-round2
+  ENV[WANDB_RUN_GROUP] = round2-qwen3-8b-paper
+  ENV[WANDB_NAME] = phase1-cpt-broad
+
+## simulated W&B URL the chain notify() will produce
+URL = https://wandb.ai/dalbit-ai/dalbitalba-round2
+
+## wandb SDK env-honor proof: wandb.init reads WANDB_ENTITY env automatically
+(wandb >=0.16 docs: WANDB_ENTITY env overrides default-entity; equivalent to wandb.init(entity=))
+So with WANDB_ENTITY=dalbit-ai in the train_cpt.py environment, wandb.init() will
+produce a run under dalbit-ai/dalbitalba-round2/<run_id>.

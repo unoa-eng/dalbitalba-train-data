@@ -1,0 +1,4 @@
+all None, no skip → verdict = FAIL violations = 5
+all None, skip cma → verdict = FAIL violations = 4
+  details: ['punct_ratio_match_max=value_unavailable reason=value_unavailable', 'choseong_marker_match_max=value_unavailable reason=value_unavailable', 'reply_depth_kl=value_unavailable reason=value_unavailable', 'persona_consistency=value_unavailable reason=value_unavailable']
+persona only filled, skip cma → verdict = FAIL violations = 3
