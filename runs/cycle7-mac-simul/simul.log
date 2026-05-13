@@ -1,27 +1,21 @@
-/Users/unoa/dalbitalba-train-data/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
-  warnings.warn(
-/Users/unoa/dalbitalba-train-data/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
 wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
 wandb: Currently logged in as: dalbit (dalbit-ai) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
-wandb: setting up run m55w3tre
 wandb: Tracking run with wandb version 0.26.1
-wandb: Run data is saved locally in /Users/unoa/dalbitalba-train-data/runs/cycle7-mac-simul/adapter/wandb/run-20260513_141128-m55w3tre
+wandb: Run data is saved locally in runs/cycle7-mac-simul/adapter/wandb/run-20260513_145302-opoaeojg
 wandb: Run `wandb offline` to turn off syncing.
 wandb: Syncing run adapter
-wandb: ⭐️ View project at https://wandb.ai/dalbit-ai/dalbitalba-round2
-wandb: 🚀 View run at https://wandb.ai/dalbit-ai/dalbitalba-round2/runs/m55w3tre
+wandb: ⭐️ View project at https://wandb.ai/dalbit-ai/dalbitalba-v2
+wandb: 🚀 View run at https://wandb.ai/dalbit-ai/dalbitalba-v2/runs/opoaeojg
 Calling `python -m mlx_lm.lora...` directly is deprecated. Use `mlx_lm.lora...` or `python -m mlx_lm lora ...` instead.
 Loading pretrained model
 Loading datasets
 Training
 Trainable parameters: 0.007% (0.606M/8190.735M)
 Starting training..., iters: 1
-Calculating loss...:   0%|          | 0/20 [00:00<?, ?it/s]Calculating loss...:   5%|▌         | 1/20 [00:01<00:34,  1.80s/it]Calculating loss...:  10%|█         | 2/20 [00:02<00:19,  1.10s/it]Calculating loss...:  15%|█▌        | 3/20 [00:03<00:16,  1.06it/s]Calculating loss...:  20%|██        | 4/20 [00:03<00:13,  1.23it/s]Calculating loss...:  25%|██▌       | 5/20 [00:04<00:10,  1.45it/s]Calculating loss...:  30%|███       | 6/20 [00:04<00:09,  1.51it/s]Calculating loss...:  35%|███▌      | 7/20 [00:05<00:08,  1.55it/s]Calculating loss...:  40%|████      | 8/20 [00:06<00:07,  1.57it/s]Calculating loss...:  45%|████▌     | 9/20 [00:06<00:05,  1.87it/s]Calculating loss...:  50%|█████     | 10/20 [00:07<00:05,  1.79it/s]Calculating loss...:  55%|█████▌    | 11/20 [00:07<00:05,  1.73it/s]Calculating loss...:  60%|██████    | 12/20 [00:08<00:05,  1.58it/s]Calculating loss...:  65%|██████▌   | 13/20 [00:09<00:04,  1.60it/s]Calculating loss...:  70%|███████   | 14/20 [00:09<00:03,  1.61it/s]Calculating loss...:  75%|███████▌  | 15/20 [00:10<00:03,  1.62it/s]Calculating loss...:  80%|████████  | 16/20 [00:10<00:02,  1.62it/s]Calculating loss...:  85%|████████▌ | 17/20 [00:11<00:01,  1.62it/s]Calculating loss...:  90%|█████████ | 18/20 [00:12<00:01,  1.63it/s]Calculating loss...:  95%|█████████▌| 19/20 [00:12<00:00,  1.63it/s]Calculating loss...: 100%|██████████| 20/20 [00:13<00:00,  1.63it/s]Calculating loss...: 100%|██████████| 20/20 [00:13<00:00,  1.50it/s]
-Iter 1: Val loss 4.075, Val took 13.305s
-Iter 1: Train loss 3.755, Learning Rate 1.000e-04, It/sec 0.413, Tokens/sec 82.258, Trained Tokens 199, Peak mem 5.001 GB
+Calculating loss...:   0%|          | 0/20 [00:00<?, ?it/s]Calculating loss...:   5%|▌         | 1/20 [00:01<00:27,  1.43s/it]Calculating loss...:  10%|█         | 2/20 [00:02<00:17,  1.05it/s]Calculating loss...:  15%|█▌        | 3/20 [00:02<00:14,  1.15it/s]Calculating loss...:  20%|██        | 4/20 [00:03<00:12,  1.30it/s]Calculating loss...:  25%|██▌       | 5/20 [00:03<00:09,  1.52it/s]Calculating loss...:  30%|███       | 6/20 [00:04<00:09,  1.55it/s]Calculating loss...:  35%|███▌      | 7/20 [00:05<00:08,  1.58it/s]Calculating loss...:  40%|████      | 8/20 [00:05<00:07,  1.60it/s]Calculating loss...:  45%|████▌     | 9/20 [00:06<00:05,  1.89it/s]Calculating loss...:  50%|█████     | 10/20 [00:06<00:05,  1.81it/s]Calculating loss...:  55%|█████▌    | 11/20 [00:07<00:05,  1.75it/s]Calculating loss...:  60%|██████    | 12/20 [00:08<00:05,  1.59it/s]Calculating loss...:  65%|██████▌   | 13/20 [00:08<00:04,  1.60it/s]Calculating loss...:  70%|███████   | 14/20 [00:09<00:03,  1.61it/s]Calculating loss...:  75%|███████▌  | 15/20 [00:09<00:03,  1.61it/s]Calculating loss...:  80%|████████  | 16/20 [00:10<00:02,  1.62it/s]Calculating loss...:  85%|████████▌ | 17/20 [00:11<00:01,  1.63it/s]Calculating loss...:  90%|█████████ | 18/20 [00:11<00:01,  1.62it/s]Calculating loss...:  95%|█████████▌| 19/20 [00:12<00:00,  1.62it/s]Calculating loss...: 100%|██████████| 20/20 [00:12<00:00,  1.63it/s]Calculating loss...: 100%|██████████| 20/20 [00:12<00:00,  1.55it/s]
+Iter 1: Val loss 4.075, Val took 12.952s
+Iter 1: Train loss 3.755, Learning Rate 2.000e-04, It/sec 0.689, Tokens/sec 137.054, Trained Tokens 199, Peak mem 5.249 GB
 [1;34mwandb[0m: 
-[1;34mwandb[0m: 🚀 View run [33madapter[0m at: [34mhttps://wandb.ai/dalbit-ai/dalbitalba-round2/runs/m55w3tre[0m
-[1;34mwandb[0m: Find logs at: [1;35mruns/cycle7-mac-simul/adapter/wandb/run-20260513_141128-m55w3tre/logs[0m
-Iter 1: Saved adapter weights to /Users/unoa/dalbitalba-train-data/runs/cycle7-mac-simul/adapter/adapters.safetensors and /Users/unoa/dalbitalba-train-data/runs/cycle7-mac-simul/adapter/0000001_adapters.safetensors.
-Saved final weights to /Users/unoa/dalbitalba-train-data/runs/cycle7-mac-simul/adapter/adapters.safetensors.
+[1;34mwandb[0m: 🚀 View run [33madapter[0m at: [34mhttps://wandb.ai/dalbit-ai/dalbitalba-v2/runs/opoaeojg[0m
+Iter 1: Saved adapter weights to runs/cycle7-mac-simul/adapter/adapters.safetensors and runs/cycle7-mac-simul/adapter/0000001_adapters.safetensors.
+Saved final weights to runs/cycle7-mac-simul/adapter/adapters.safetensors.

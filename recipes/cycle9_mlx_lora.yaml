@@ -1,0 +1,26 @@
+# MLX-LM LoRA config for cycle-9 Phase-1/2 CPT (paper-grade Mac MLX path).
+# Used via: .venv/bin/python -m mlx_lm.lora -c recipes/cycle9_mlx_lora.yaml --train
+# Per cycle-8 architect: --lora-parameters is YAML-only (not a CLI flag).
+
+model: "runs/cycle7-mac-simul/qwen3-8b-mlx-4bit"
+train: true
+fine_tune_type: "dora"
+num_layers: -1          # all 36 Qwen3-8B transformer layers (paper-grade requires; default 16 leaves 20 layers untouched)
+batch_size: 1
+grad_accumulation_steps: 16
+iters: 45000            # set per dataset epoch; override per phase
+learning_rate: 0.0001
+warmup_ratio: 0.08       # cycle-6 cold-start mitigation (val loss spike fix)
+max_seq_length: 2048
+save_every: 250
+steps_per_eval: 500
+steps_per_report: 50
+seed: 42
+report_to: "wandb"
+project_name: "dalbitalba-round2"
+adapter_path: "runs/cycle9/phase1-cpt-broad"
+data: "runs/cycle9/data"
+lora_parameters:
+  rank: 64
+  scale: 8.0            # rsLoRA = alpha / sqrt(r); for r=64 alpha=64 → scale 8.0
+  dropout: 0.0
