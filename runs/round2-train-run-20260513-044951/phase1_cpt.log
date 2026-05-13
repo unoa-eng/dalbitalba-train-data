@@ -1,0 +1,63 @@
+2026-05-13 04:48:45,668 [INFO] ============================================================
+2026-05-13 04:48:45,669 [INFO] CPT v2 시작
+2026-05-13 04:48:45,669 [INFO]   base         : Qwen/Qwen3-8B-Base @ 49e3418fbbbca6ecbdf9608b4d22e5a407081db4
+2026-05-13 04:48:45,668 [INFO] ============================================================
+2026-05-13 04:48:45,669 [INFO] CPT v2 시작
+2026-05-13 04:48:45,669 [INFO]   base         : Qwen/Qwen3-8B-Base @ 49e3418fbbbca6ecbdf9608b4d22e5a407081db4
+2026-05-13 04:48:45,669 [INFO]   input        : /workspace/data/cpt_enriched.jsonl
+2026-05-13 04:48:45,669 [INFO]   input        : /workspace/data/cpt_enriched.jsonl
+2026-05-13 04:48:45,669 [INFO]   val          : /workspace/data/sft_thread_conditioned.eval.jsonl
+2026-05-13 04:48:45,669 [INFO]   val          : /workspace/data/sft_thread_conditioned.eval.jsonl
+2026-05-13 04:48:45,669 [INFO]   output       : /workspace/out/round2-phase1-cpt-lora
+2026-05-13 04:48:45,669 [INFO]   output       : /workspace/out/round2-phase1-cpt-lora
+2026-05-13 04:48:45,669 [INFO]   hub_model_id : (disabled)
+2026-05-13 04:48:45,669 [INFO]   hub_model_id : (disabled)
+2026-05-13 04:48:45,669 [INFO]   LoRA r=128 α=128 rsLoRA=True DoRA=False
+2026-05-13 04:48:45,669 [INFO]   LoRA r=128 α=128 rsLoRA=True DoRA=False
+2026-05-13 04:48:45,669 [INFO]   seq_len=2048 eff_batch=16 lr=0.0001 epochs=1
+2026-05-13 04:48:45,669 [INFO]   seq_len=2048 eff_batch=16 lr=0.0001 epochs=1
+2026-05-13 04:48:45,669 [INFO]   seed         : 42
+2026-05-13 04:48:45,669 [INFO]   seed         : 42
+2026-05-13 04:48:45,669 [INFO] ============================================================
+2026-05-13 04:48:45,669 [INFO] ============================================================
+2026-05-13 04:48:45,689 [INFO] GPU: NVIDIA L40S (47.8GB)
+2026-05-13 04:48:45,689 [INFO] GPU: NVIDIA L40S (47.8GB)
+2026-05-13 04:48:45,689 [INFO] loading tokenizer from: Qwen/Qwen3-8B-Base
+2026-05-13 04:48:45,689 [INFO] loading tokenizer from: Qwen/Qwen3-8B-Base
+2026-05-13 04:48:46,118 [INFO] tokenizer vocab size: 151643
+2026-05-13 04:48:46,118 [INFO] tokenizer vocab size: 151643
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:02<00:09,  2.28s/it]Loading checkpoint shards:  40%|████      | 2/5 [00:05<00:08,  2.69s/it]Loading checkpoint shards:  60%|██████    | 3/5 [00:08<00:05,  2.89s/it]Loading checkpoint shards:  80%|████████  | 4/5 [00:10<00:02,  2.77s/it]Loading checkpoint shards: 100%|██████████| 5/5 [00:11<00:00,  1.88s/it]Loading checkpoint shards: 100%|██████████| 5/5 [00:11<00:00,  2.26s/it]
+2026-05-13 04:49:41,350 [INFO] load_corpus(/workspace/data/cpt_enriched.jsonl) -> 48,247 rows (skipped 0)
+[resize] tokenizer=151669 model=151936 -> resizing
+trainable params: 349,175,808 || all params: 8,537,723,904 || trainable%: 4.0898
+2026-05-13 04:49:41,350 [INFO] load_corpus(/workspace/data/cpt_enriched.jsonl) -> 48,247 rows (skipped 0)
+2026-05-13 04:49:41,517 [INFO] load_corpus(/workspace/data/sft_thread_conditioned.eval.jsonl) -> 0 rows (skipped 0)
+2026-05-13 04:49:41,517 [INFO] load_corpus(/workspace/data/sft_thread_conditioned.eval.jsonl) -> 0 rows (skipped 0)
+tokenize train:   0%|          | 0/48247 [00:00<?, ? examples/s]tokenize train:   2%|▏         | 1000/48247 [00:00<00:07, 6593.76 examples/s]tokenize train:   4%|▍         | 2000/48247 [00:00<00:07, 6351.16 examples/s]tokenize train:   6%|▌         | 3000/48247 [00:00<00:07, 6182.95 examples/s]tokenize train:   8%|▊         | 4000/48247 [00:00<00:07, 6250.49 examples/s]tokenize train:  10%|█         | 5000/48247 [00:00<00:07, 6043.66 examples/s]tokenize train:  12%|█▏        | 6000/48247 [00:00<00:06, 6049.64 examples/s]tokenize train:  15%|█▍        | 7000/48247 [00:01<00:06, 6175.71 examples/s]tokenize train:  17%|█▋        | 8000/48247 [00:01<00:06, 6274.21 examples/s]tokenize train:  19%|█▊        | 9000/48247 [00:01<00:06, 6389.92 examples/s]tokenize train:  21%|██        | 10000/48247 [00:01<00:06, 6372.28 examples/s]tokenize train:  23%|██▎       | 11000/48247 [00:01<00:05, 6512.12 examples/s]tokenize train:  25%|██▍       | 12000/48247 [00:01<00:05, 6618.65 examples/s]tokenize train:  27%|██▋       | 13000/48247 [00:02<00:05, 6230.03 examples/s]tokenize train:  29%|██▉       | 14000/48247 [00:02<00:05, 6240.19 examples/s]tokenize train:  31%|███       | 15000/48247 [00:02<00:05, 6114.05 examples/s]tokenize train:  33%|███▎      | 16000/48247 [00:02<00:05, 5961.31 examples/s]tokenize train:  35%|███▌      | 17000/48247 [00:02<00:05, 6121.66 examples/s]tokenize train:  37%|███▋      | 18000/48247 [00:02<00:04, 6307.64 examples/s]tokenize train:  39%|███▉      | 19000/48247 [00:03<00:04, 6350.17 examples/s]tokenize train:  41%|████▏     | 20000/48247 [00:03<00:04, 6432.72 examples/s]tokenize train:  44%|████▎     | 21000/48247 [00:03<00:04, 6163.15 examples/s]tokenize train:  46%|████▌     | 22000/48247 [00:03<00:04, 6278.91 examples/s]tokenize train:  48%|████▊     | 23000/48247 [00:03<00:04, 6225.71 examples/s]tokenize train:  50%|████▉     | 24000/48247 [00:03<00:03, 6208.91 examples/s]tokenize train:  52%|█████▏    | 25000/48247 [00:04<00:07, 3298.91 examples/s]tokenize train:  54%|█████▍    | 26000/48247 [00:04<00:05, 3740.96 examples/s]tokenize train:  56%|█████▌    | 27000/48247 [00:04<00:05, 4141.42 examples/s]tokenize train:  58%|█████▊    | 28000/48247 [00:05<00:04, 4496.97 examples/s]tokenize train:  60%|██████    | 29000/48247 [00:05<00:03, 4966.99 examples/s]tokenize train:  62%|██████▏   | 30000/48247 [00:05<00:03, 5362.34 examples/s]tokenize train:  64%|██████▍   | 31000/48247 [00:05<00:03, 5606.14 examples/s]tokenize train:  66%|██████▋   | 32000/48247 [00:05<00:02, 5815.35 examples/s]tokenize train:  68%|██████▊   | 33000/48247 [00:05<00:02, 6075.05 examples/s]tokenize train:  70%|███████   | 34000/48247 [00:05<00:02, 6311.96 examples/s]tokenize train:  73%|███████▎  | 35000/48247 [00:06<00:02, 6296.13 examples/s]tokenize train:  75%|███████▍  | 36000/48247 [00:06<00:01, 6403.03 examples/s]tokenize train:  77%|███████▋  | 37000/48247 [00:06<00:01, 6446.96 examples/s]tokenize train:  79%|███████▉  | 38000/48247 [00:06<00:01, 6410.03 examples/s]tokenize train:  81%|████████  | 39000/48247 [00:06<00:01, 6403.88 examples/s]tokenize train:  83%|████████▎ | 40000/48247 [00:06<00:01, 6387.50 examples/s]tokenize train:  85%|████████▍ | 41000/48247 [00:07<00:01, 6393.37 examples/s]tokenize train:  87%|████████▋ | 42000/48247 [00:07<00:00, 6335.19 examples/s]tokenize train:  89%|████████▉ | 43000/48247 [00:07<00:00, 6434.23 examples/s]tokenize train:  91%|█████████ | 44000/48247 [00:07<00:00, 6392.06 examples/s]tokenize train:  93%|█████████▎| 45000/48247 [00:07<00:00, 6373.08 examples/s]tokenize train:  95%|█████████▌| 46000/48247 [00:07<00:00, 6247.88 examples/s]tokenize train:  97%|█████████▋| 47000/48247 [00:07<00:00, 6059.60 examples/s]tokenize train:  99%|█████████▉| 48000/48247 [00:08<00:00, 5925.23 examples/s]tokenize train: 100%|██████████| 48247/48247 [00:08<00:00, 5872.19 examples/s]
+Traceback (most recent call last):
+  File "/workspace/scripts/../train_cpt.py", line 389, in <module>
+    main()
+  File "/workspace/scripts/../train_cpt.py", line 269, in main
+    eval_ds = eval_raw.map(
+              ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/datasets/arrow_dataset.py", line 602, in wrapper
+    out: Union["Dataset", "DatasetDict"] = func(self, *args, **kwargs)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/datasets/arrow_dataset.py", line 567, in wrapper
+    out: Union["Dataset", "DatasetDict"] = func(self, *args, **kwargs)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/datasets/arrow_dataset.py", line 3064, in map
+    return self.remove_columns(remove_columns)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/datasets/arrow_dataset.py", line 602, in wrapper
+    out: Union["Dataset", "DatasetDict"] = func(self, *args, **kwargs)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/datasets/arrow_dataset.py", line 567, in wrapper
+    out: Union["Dataset", "DatasetDict"] = func(self, *args, **kwargs)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/datasets/fingerprint.py", line 482, in wrapper
+    out = func(dataset, *args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/datasets/arrow_dataset.py", line 2222, in remove_columns
+    raise ValueError(
+ValueError: Column name ['text'] not in the dataset. Current columns in the dataset: []

@@ -1,0 +1,14 @@
+timestamp=2026-05-13T04:49:51Z
+status=phase1_failed
+detail=rc=1 log=/workspace/round2_phase1_cpt.log
+base_model=Qwen/Qwen3-8B-Base
+hf_repo_round2=UNOA/dalbitalba-qwen3-round2-20260513-0447
+out_dir=/workspace/out
+phase1_out=/workspace/out/round2-phase1-cpt-lora
+phase2_out=/workspace/out/round2-phase2-cpt-lora
+phase2_merged=/workspace/out/round2-phase2-cpt-merged-fp16
+phase3_out=/workspace/out/round2-phase3-sft-lora
+phase3_merged=/workspace/out/round2-phase3-sft-merged-fp16
+phase4_out=/workspace/out/round2-phase4-orpo
+phase5_eval=/workspace/out/phase5-eval-v2.json
+pod_id=wizm77q1nm1obh

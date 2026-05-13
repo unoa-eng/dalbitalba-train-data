@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-05-13T04:50:03Z",
+  "status": "phase1_failed",
+  "base_model": "Qwen/Qwen3-8B-Base",
+  "pod_id": "wizm77q1nm1obh",
+  "hf_repo_round2": "UNOA/dalbitalba-qwen3-round2-20260513-0447",
+  "source_repo": "unoa-eng/dalbitalba-train-data",
+  "budget_profile": "budget30",
+  "budget_cap_usd": "60",
+  "wandb_project": "dalbitalba-budget30-probe",
+  "wandb_run_group": "budget30-probe",
+  "wandb_tags": "cpt-only,budget30,probe",
+  "wandb_username": "",
+  "git_commit": "7eca2ecf8364d564e93a4c20019fb4fb5345ffaf",
+  "git_branch": "main",
+  "python_version": "3.11.10",
+  "torch_version": "2.4.1+cu124",
+  "transformers_version": "4.51.3",
+  "peft_version": "0.13.2",
+  "bitsandbytes_version": "0.49.2",
+  "docker_image": "runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04",
+  "base_model_revision": "49e3418fbbbca6ecbdf9608b4d22e5a407081db4",
+  "data_sha256": {
+    "cpt_phase1": "68a60f9e5832346f4bee1b7f91c212690384c6fa46ebac58812f795a5127d7ed",
+    "cpt_phase2": "68a60f9e5832346f4bee1b7f91c212690384c6fa46ebac58812f795a5127d7ed",
+    "sft": "79a7c00fd5d558aabb351b704d7e108cfb0adaf1ce82f1a9c7c22e3e8be85ff5",
+    "val": "02d2d623b28007aa88834444d47f54656d5e3477173258c077604669d2a7c6e0",
+    "orpo": "fae20a8343cbb4ce6e0d0f591c5ba29b4cf77d26557f762a5cd54e9bfb47a211"
+  }
+}

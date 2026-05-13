@@ -1,0 +1,38 @@
+[OK ] import torch: 2.4.1+cu124
+[OK ] torch.cuda.is_available: True
+[OK ] torch.version.cuda: 12.4
+[OK ] device_name: NVIDIA L40S
+[OK ] device_capability: (8, 9)
+[OK ] import transformers: 4.51.3
+[OK ] import peft: 0.13.2
+[OK ] import bitsandbytes: 0.49.2
+[OK ] import trl: 0.12.1
+[OK ] import accelerate: 0.34.2
+[OK ] import datasets: 2.21.0
+[OK ] import huggingface_hub: 0.36.2
+[OK ] import safetensors: 0.7.0
+[OK ] import flash_attn: 2.6.3
+[OK ] bnb quantize 4bit: q.shape=(8192, 1) y.shape=(128, 128) mae=0.0732
+[OK ] HF whoami: UNOA
+[OK ] load base config: model=Qwen/Qwen3-8B-Base arch=['Qwen3ForCausalLM'] vocab=151936
+[OK ] load base tokenizer: vocab=151643 sample_ids=[126246, 144370, 91145, 11, 124685, 37087, 129413, 131793]...
+============================================================
+preflight result: 18 steps, 0 fatal FAIL
+  [OK  ] import torch: 2.4.1+cu124
+  [OK  ] torch.cuda.is_available: True
+  [OK  ] torch.version.cuda: 12.4
+  [OK  ] device_name: NVIDIA L40S
+  [OK  ] device_capability: (8, 9)
+  [OK  ] import transformers: 4.51.3
+  [OK  ] import peft: 0.13.2
+  [OK  ] import bitsandbytes: 0.49.2
+  [OK  ] import trl: 0.12.1
+  [OK  ] import accelerate: 0.34.2
+  [OK  ] import datasets: 2.21.0
+  [OK  ] import huggingface_hub: 0.36.2
+  [OK  ] import safetensors: 0.7.0
+  [OK  ] import flash_attn: 2.6.3
+  [OK  ] bnb quantize 4bit: q.shape=(8192, 1) y.shape=(128, 128) mae=0.0732
+  [OK  ] HF whoami: UNOA
+  [OK  ] load base config: model=Qwen/Qwen3-8B-Base arch=['Qwen3ForCausalLM'] vocab=151936
+  [OK  ] load base tokenizer: vocab=151643 sample_ids=[126246, 144370, 91145, 11, 124685, 37087, 129413, 131793]...
