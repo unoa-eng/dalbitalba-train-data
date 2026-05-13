@@ -188,8 +188,7 @@ def check_persona_identity_pass(failures: list[str]) -> None:
 
 
 def check_thread_holdout(failures: list[str]) -> None:
-    """Invariant: sft_thread_conditioned.eval root_ids ∩ train root_ids = ∅,
-    and val_set.v3 thread_keys ∩ sft_train root_ids = ∅. Rebuild safety gate."""
+    """Rebuild safety gate: sft_train ∩ sft_eval root_ids = ∅ AND sft_train ∩ val thread_keys = ∅."""
     sft_path = ROOT / "sft_thread_conditioned.jsonl"
     eval_path = ROOT / "sft_thread_conditioned.eval.jsonl"
     val_path = ROOT / "val_set.v3.jsonl"

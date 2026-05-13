@@ -198,9 +198,8 @@ def main() -> int:
         if val_texts and str(txt).strip() in val_texts:
             val_drop_count += 1
             continue
-        # Thread-level holdout: cpt_corpus.source_id ↔ sft_eval.root_id namespace.
-        # A thread containing any eval comment may not contribute other comments
-        # to ORPO chosen — prevents indirect leakage.
+        # Thread-level holdout: a thread containing any eval comment may not
+        # contribute other comments to ORPO chosen (indirect leak prevention).
         rid = v.get("source_id") or v.get("root_id") or v.get("thread_key")
         if val_root_ids and rid and str(rid) in val_root_ids:
             thread_drop_count += 1

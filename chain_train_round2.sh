@@ -1056,9 +1056,8 @@ run_main() {
     install_deps
     preflight
 
-    # cycle-7 US-C704: spawn cost watchdog in background. Polls RunPod API
-    # every 60s, warns at 95% of BUDGET_CAP_USD, calls stop_pod + writes
-    # .state/round2/COST_CAP_HIT on 100% so phase-loop callers can graceful_abort.
+    # Background cost watchdog: polls RunPod every 60s, warns at 95%, stops + writes
+    # .state/round2/COST_CAP_HIT at 100% so phase-loop callers can graceful_abort.
     if [ -n "${RUNPOD_POD_ID:-}" ] && [ -x "${SCRIPTS_DIR}/runpod_cost_watchdog.py" ] || [ -f "${SCRIPTS_DIR}/runpod_cost_watchdog.py" ]; then
         python3 "${SCRIPTS_DIR}/runpod_cost_watchdog.py" \
             --pod-id "${RUNPOD_POD_ID}" \
