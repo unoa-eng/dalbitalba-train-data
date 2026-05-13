@@ -1,0 +1,4 @@
+PRE-FIX phase6_eval_v2.evaluate_v2_gate({all_None})
+  verdict   = PASS
+  violations= []
+  expected behavior under B5a: verdict=FAIL, len(violations)>=5

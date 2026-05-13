@@ -1,0 +1,17 @@
+=== stub:phase1_PRE_FIX_no_recipe ===
+  ENV[CPT_LR] = <UNSET>
+  ENV[CPT_WARMUP_RATIO] = <UNSET>
+  ENV[CPT_NUM_EPOCHS] = 1
+  ENV[CPT_USE_DORA] = 0
+  ENV[CPT_LORA_R] = 64
+  ENV[CPT_LORA_ALPHA] = <UNSET>
+  ENV[CPT_MAX_SEQ_LEN] = 2048
+  ENV[BASE_MODEL] = Qwen/Qwen3-8B-Base
+  ENV[BASE_MODEL_REVISION] = <UNSET>
+  ENV[INPUT_JSONL] = cpt_enriched.jsonl
+  ENV[TRAIN_REPORT_TO] = none
+  ENV[WANDB_ENTITY] = <UNSET>
+  ENV[WANDB_PROJECT] = dalbitalba-round2
+  ENV[WANDB_RUN_GROUP] = <UNSET>
+  ENV[WANDB_NAME] = phase1-cpt-broad
+exit=0

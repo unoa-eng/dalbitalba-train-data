@@ -1,0 +1,21 @@
+--- check_data_paths paper8b ---
+Traceback (most recent call last):
+  File "/Users/unoa/dalbitalba-train-data/scripts/check_data_paths.py", line 106, in <module>
+    def resolve_data_path(recipe: dict, key: str) -> str | None:
+TypeError: unsupported operand type(s) for |: 'type' and 'NoneType'
+EXIT=1
+
+--- check_data_paths budget30 ---
+Traceback (most recent call last):
+  File "/Users/unoa/dalbitalba-train-data/scripts/check_data_paths.py", line 106, in <module>
+    def resolve_data_path(recipe: dict, key: str) -> str | None:
+TypeError: unsupported operand type(s) for |: 'type' and 'NoneType'
+EXIT=1
+
+--- round2_integrity ---
+[OK] TC-SFT schema rows=10245 eval_rows=322 weighted=1062 persona=10245
+[OK] ORPO leak audit pairs=1472 chosen_sources={'cpt_corpus.v3.jsonl': 1472}
+[OK] phase6_eval_v2 rejects missing persona tags when persona-list is required
+[OK] phase6_eval_v2 passes identity/persona fixture on thread-conditioned eval rows
+{"verdict": "PASS", "failures": []}
+EXIT=0

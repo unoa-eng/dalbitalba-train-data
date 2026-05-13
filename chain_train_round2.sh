@@ -624,6 +624,8 @@ phase1_cpt_broad() {
         INPUT_JSONL="${input}" \
         BASE_MODEL="${BASE_MODEL}" \
         CPT_NUM_EPOCHS="${CPT_NUM_EPOCHS:-1}" \
+        CPT_LR="${CPT_LR:-2e-4}" \
+        CPT_WARMUP_RATIO="${CPT_WARMUP_RATIO:-0.03}" \
         CPT_LORA_R="${LORA_R:-64}" \
         CPT_LORA_ALPHA="${LORA_ALPHA:-128}" \
         CPT_USE_DORA="0" \
@@ -632,6 +634,7 @@ phase1_cpt_broad() {
         CPT_CKPT_DIR="${OUT_DIR}/round2-phase1-cpt-ckpt" \
         CPT_LOG_FILE="${PHASE1_LOG}" \
         WANDB_NAME="${WANDB_NAME:-phase1-cpt-broad}" \
+        WANDB_ENTITY="${WANDB_ENTITY:-}" \
         TRAIN_REPORT_TO="${TRAIN_REPORT_TO:-none}" \
         WANDB_PROJECT="${WANDB_PROJECT:-dalbitalba-round2}" \
         WANDB_RUN_GROUP="${WANDB_RUN_GROUP:-}" \
@@ -657,6 +660,8 @@ phase2_cpt_clean() {
         INPUT_JSONL="${input}" \
         BASE_MODEL="${BASE_MODEL}" \
         CPT_NUM_EPOCHS="${CPT_NUM_EPOCHS:-1}" \
+        CPT_LR="${CPT_LR:-2e-4}" \
+        CPT_WARMUP_RATIO="${CPT_WARMUP_RATIO:-0.03}" \
         CPT_LORA_R="128" \
         CPT_LORA_ALPHA="128" \
         CPT_USE_DORA="1" \
@@ -665,6 +670,7 @@ phase2_cpt_clean() {
         CPT_CKPT_DIR="${OUT_DIR}/round2-phase2-cpt-ckpt" \
         CPT_LOG_FILE="${PHASE2_LOG}" \
         WANDB_NAME="${WANDB_NAME:-phase2-cpt-dora}" \
+        WANDB_ENTITY="${WANDB_ENTITY:-}" \
         TRAIN_REPORT_TO="${TRAIN_REPORT_TO:-none}" \
         WANDB_PROJECT="${WANDB_PROJECT:-dalbitalba-round2}" \
         WANDB_RUN_GROUP="${WANDB_RUN_GROUP:-}" \
@@ -780,6 +786,7 @@ phase3_sft_threaded() {
         SFT_CKPT_DIR="${OUT_DIR}/round2-phase3-sft-ckpt" \
         SFT_LOG_FILE="${PHASE3_LOG}" \
         WANDB_NAME="${WANDB_NAME:-phase3-tc-sft}" \
+        WANDB_ENTITY="${WANDB_ENTITY:-}" \
         TRAIN_REPORT_TO="${TRAIN_REPORT_TO:-none}" \
         WANDB_PROJECT="${WANDB_PROJECT:-dalbitalba-round2}" \
         WANDB_RUN_GROUP="${WANDB_RUN_GROUP:-}" \
@@ -856,6 +863,7 @@ phase4_orpo() {
         ORPO_OUTPUT_DIR="${out_dir}" \
         ORPO_MAX_SEQ_LEN="${SEQ_LEN:-2048}" \
         WANDB_NAME="${WANDB_NAME:-phase4-orpo}" \
+        WANDB_ENTITY="${WANDB_ENTITY:-}" \
         TRAIN_REPORT_TO="${TRAIN_REPORT_TO:-none}" \
         WANDB_PROJECT="${WANDB_PROJECT:-dalbitalba-round2}" \
         WANDB_RUN_GROUP="${WANDB_RUN_GROUP:-}" \

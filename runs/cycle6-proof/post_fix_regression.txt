@@ -1,0 +1,23 @@
+--- check_data_paths paper8b (system python3) ---
+[check_data_paths] profile=paper8b strict=True violations=0 warnings=0
+  ALL INVARIANTS PASS
+EXIT=0
+
+--- check_data_paths budget30 (system python3) ---
+[check_data_paths] profile=budget30 strict=True violations=0 warnings=0
+  ALL INVARIANTS PASS
+EXIT=0
+
+--- round2_integrity ---
+[OK] TC-SFT schema rows=10245 eval_rows=322 weighted=1062 persona=10245
+[OK] ORPO leak audit pairs=1472 chosen_sources={'cpt_corpus.v3.jsonl': 1472}
+[OK] phase6_eval_v2 rejects missing persona tags when persona-list is required
+[FAIL] phase6_eval_v2 identity/persona fixture failed rc=2
+{"verdict": "FAIL", "failures": ["phase6_eval_v2 identity/persona fixture failed rc=2"]}
+EXIT=2
+
+--- bash -n chain_train_round2.sh ---
+EXIT=0
+
+--- bash -n chain_train.sh ---
+EXIT=0

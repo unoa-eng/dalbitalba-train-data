@@ -258,11 +258,22 @@ def cross_machine_agreement(ai_rows: list[dict], secondary_rows: list[dict]) -> 
     return base.jsd(p, q), {"n_primary": len(a_t), "n_secondary": len(b_t)}
 
 
-def evaluate_v2_gate(metrics: dict[str, float | None]) -> tuple[str, list[str]]:
+def evaluate_v2_gate(
+    metrics: dict[str, float | None],
+    skipped_keys: frozenset[str] = frozenset(),
+) -> tuple[str, list[str]]:
+    # cycle-6 B5a parity: a v2 gate metric whose value is None means "we could
+    # not compute it" — that must FAIL, not silently PASS. Mirrors the v1 gate
+    # behaviour in phase6_eval.evaluate_gate. Callers pass `skipped_keys` for
+    # metrics that are legitimately optional (e.g. cross_machine_agreement
+    # when no --secondary-ai is provided).
     violations: list[str] = []
     for key, (op, threshold) in GATE_V2.items():
+        if key in skipped_keys:
+            continue
         value = metrics.get(key)
         if value is None:
+            violations.append(f"{key}=value_unavailable reason=value_unavailable")
             continue
         if op == "le" and value > threshold:
             violations.append(f"{key}={value:.4f} > {threshold}")
@@ -325,7 +336,13 @@ def main() -> int:
         "persona_consistency": persona_score,
         "cross_machine_agreement": cma,
     }
-    v2_verdict, v2_violations = evaluate_v2_gate(v2_metrics)
+    # cross_machine_agreement is optional: when --secondary-ai is not provided
+    # there are no secondary rows, so the metric is genuinely uncomputable and
+    # must be skipped rather than failing the gate (B5a parity).
+    v2_skipped: frozenset[str] = (
+        frozenset({"cross_machine_agreement"}) if not secondary_rows else frozenset()
+    )
+    v2_verdict, v2_violations = evaluate_v2_gate(v2_metrics, skipped_keys=v2_skipped)
 
     overall_violations = list(sample_violations) + list(base_violations) + list(v2_violations)
     overall_verdict = "PASS" if not overall_violations else "FAIL"
