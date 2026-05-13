@@ -9,8 +9,14 @@ import argparse
 import json
 import os
 import re
+import sys
 from collections import Counter
 from pathlib import Path
+
+try:
+    from statsmodels.stats.proportion import proportion_confint
+except ImportError:  # surfaced at runtime so callers see a clear message
+    proportion_confint = None
 
 
 LABEL_PATTERN = re.compile(r"\b(AI|HUMAN)\b", re.IGNORECASE)
@@ -174,36 +180,110 @@ def build_consensus(samples: list[dict], results: list[dict], output_path: Path)
     output_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
+def compute_h2_endpoint(
+    samples: list[dict],
+    consensus_path: Path,
+    min_rows: int = 200,
+) -> dict:
+    """H2 primary endpoint: AI detection rate (recall on truth=AI) with Wilson 95% CI.
+
+    H2 in TRAINING_DESIGN_V3.md §0:
+      threshold:  AI 식별률 ≤ 40% AND Wilson upper < 50% AND N ≥ 200
+      reject:     AI 식별률 > 50% OR Wilson upper ≥ 50%
+    """
+    if not consensus_path.exists():
+        return {"verdict": "NO_CONSENSUS", "reason": f"{consensus_path} missing"}
+    cons = json.loads(consensus_path.read_text(encoding="utf-8"))
+    rows = cons.get("predictions", [])
+    ai_rows = [r for r in rows if r.get("truth") == "AI"]
+    n = len(ai_rows)
+    correct = sum(1 for r in ai_rows if r.get("prediction") == "AI")
+    rate = correct / n if n > 0 else None
+
+    if n < min_rows:
+        return {
+            "verdict": "UNDERPOWERED",
+            "ai_detection_rate": rate,
+            "n_ai_samples": n,
+            "min_rows_required": min_rows,
+            "reason": f"truth=AI samples {n} < required {min_rows}",
+        }
+
+    if proportion_confint is None:
+        return {
+            "verdict": "MISSING_DEP",
+            "reason": "statsmodels not installed; `.venv/bin/pip install statsmodels`",
+        }
+
+    wilson_low, wilson_high = proportion_confint(correct, n, alpha=0.05, method="wilson")
+
+    if rate > 0.50 or wilson_high >= 0.50:
+        verdict = "REJECT_H2"
+    elif rate > 0.40 or wilson_high >= 0.50:
+        verdict = "MARGINAL"
+    else:
+        verdict = "PASS"
+
+    return {
+        "verdict": verdict,
+        "ai_detection_rate": round(rate, 4),
+        "wilson_ci_low": round(wilson_low, 4),
+        "wilson_ci_high": round(wilson_high, 4),
+        "n_ai_samples": n,
+        "correct_ai_predictions": correct,
+        "min_rows_required": min_rows,
+        "thresholds": {"pass_max": 0.40, "reject_min": 0.50, "ci_alpha": 0.05},
+    }
+
+
+def compute_stratification(samples: list[dict], min_per_stratum: int = 20) -> dict:
+    """Group by (kind × length_bucket × reply_depth) and flag under-covered strata."""
+    counts: Counter = Counter()
+    for s in samples:
+        key = (
+            s.get("kind", "?"),
+            s.get("length_bucket", "?"),
+            str(s.get("reply_depth", s.get("depth", "?"))),
+        )
+        counts[key] += 1
+    under = {f"{k[0]}|{k[1]}|{k[2]}": v for k, v in counts.items() if v < min_per_stratum}
+    return {
+        "n_strata": len(counts),
+        "min_per_stratum": min_per_stratum,
+        "strata_under_count": len(under),
+        "strata_under": under,
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run three blind judges")
     parser.add_argument("--samples", required=True, type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
+    parser.add_argument(
+        "--min-rows",
+        type=int,
+        default=200,
+        help="H2 primary endpoint requires N>=200 truth=AI samples (TRAINING_DESIGN_V3 §0)",
+    )
+    parser.add_argument("--strata-min", type=int, default=20)
     args = parser.parse_args()
 
     samples = load_samples(args.samples)
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
-    # pin to reproducible dated aliases — paper-grade requires fixed judge models
+    # pin to reproducible dated aliases — paper-grade requires fixed judge models.
+    # Defaults bumped 2026-05-13 (cycle-7) — older claude-3-x aliases may be retired.
     anthropic_model_primary = os.environ.get(
         "PAPER_GRADE_JUDGE_CLAUDE_PRIMARY",
-        os.environ.get(
-            "ANTHROPIC_PRIMARY_MODEL",
-            "claude-3-7-sonnet-20250219",  # verify alias is still served by API
-        ),
+        os.environ.get("ANTHROPIC_PRIMARY_MODEL", "claude-sonnet-4-5-20250929"),
     )
     anthropic_model_secondary = os.environ.get(
         "PAPER_GRADE_JUDGE_CLAUDE_SECONDARY",
-        os.environ.get(
-            "ANTHROPIC_SECONDARY_MODEL",
-            "claude-3-5-haiku-20241022",
-        ),
+        os.environ.get("ANTHROPIC_SECONDARY_MODEL", "claude-haiku-4-5-20251001"),
     )
     openai_model = os.environ.get(
         "PAPER_GRADE_JUDGE_GPT",
-        os.environ.get(
-            "OPENAI_MODEL",
-            "gpt-4o-2024-11-20",  # conservative well-known dated alias; gpt-4.1-2025-04-14 unverified
-        ),
+        os.environ.get("OPENAI_MODEL", "gpt-4o-2024-11-20"),
     )
 
     results: list[dict] = []
@@ -276,6 +356,17 @@ def main() -> None:
 
     build_consensus(samples, results, args.output_dir / "consensus.json")
     print(f"[done] wrote judge outputs to {args.output_dir}")
+
+    h2 = compute_h2_endpoint(samples, args.output_dir / "consensus.json", min_rows=args.min_rows)
+    strata = compute_stratification(samples, min_per_stratum=args.strata_min)
+    report = {"h2_primary_endpoint": h2, "stratification": strata}
+    (args.output_dir / "h2_report.json").write_text(
+        json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    print(json.dumps({"h2_verdict": h2.get("verdict"), "h2_report": str(args.output_dir / "h2_report.json")}, ensure_ascii=False))
+
+    if h2.get("verdict") in {"REJECT_H2", "UNDERPOWERED", "MISSING_DEP", "NO_CONSENSUS"}:
+        sys.exit(2)
 
 
 if __name__ == "__main__":

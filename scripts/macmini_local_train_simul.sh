@@ -24,10 +24,10 @@ LOG_FILE="${LOG_FILE:-runs/cycle7-mac-simul/simul.log}"
 
 mkdir -p "$ADAPTER_DIR" "$(dirname "$LOG_FILE")"
 
-if [ ! -d "$MLX_MODEL" ]; then
-    echo "[FATAL] MLX model dir missing: $MLX_MODEL"
-    echo "        Run: .venv/bin/python -m mlx_lm convert --hf-path Qwen/Qwen3-8B-Base -q --q-bits 4 --mlx-path $MLX_MODEL"
-    exit 2
+if [ ! -d "$MLX_MODEL" ] || ! .venv/bin/python -c "import mlx_lm" >/dev/null 2>&1; then
+    echo "[SKIP] mlx_lm or MLX model dir missing — simul skipped (not paper-grade blocker)"
+    echo "       To enable: .venv/bin/pip install mlx-lm && .venv/bin/python -m mlx_lm convert --hf-path Qwen/Qwen3-8B-Base -q --q-bits 4 --mlx-path $MLX_MODEL"
+    exit 0
 fi
 
 CPT_LR="${CPT_LR:-2e-4}"

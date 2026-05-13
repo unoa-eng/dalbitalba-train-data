@@ -212,6 +212,7 @@ def main() -> int:
                 "--strict",
             ],
         ),
+        ("macmini_train_simul", ["bash", "scripts/macmini_local_train_simul.sh"]),
     ]
 
     results = [run_check(name, cmd, run_dir) for name, cmd in checks]

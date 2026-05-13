@@ -119,9 +119,10 @@ while [ "$(date +%s)" -lt "${DEADLINE}" ]; do
 
     # budget cap
     BUDGET=$(get_budget)
-    if python3 -c "import sys; sys.exit(0 if float('${BUDGET}') >= 25.0 else 1)"; then
-        log "budget cap reached \$${BUDGET}"
-        notify "loop STOP: budget \$${BUDGET} >= \$25"
+    CAP_USD="${BUDGET_CAP_USD:-60}"
+    if python3 -c "import sys; sys.exit(0 if float('${BUDGET}') >= float('${CAP_USD}') else 1)"; then
+        log "budget cap reached \$${BUDGET} >= \$${CAP_USD}"
+        notify "loop STOP: budget \$${BUDGET} >= \$${CAP_USD}"
         break
     fi
 

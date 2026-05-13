@@ -242,19 +242,27 @@ def main():
     eval_leaked = []
 
     if SFT_EVAL_PATH.exists():
+        thread_leaked: list = []
         with open(SFT_EVAL_PATH, "r", encoding="utf-8") as f:
             for line in f:
                 row = json.loads(line)
                 eval_rows_orig.append(row)
                 out = (row.get("output") or row.get("target") or "").strip()
+                rid = row.get("root_id") or row.get("thread_key")
+                rid_str = str(rid) if rid else ""
+                # Exact-text leak OR thread-level (root_id) overlap → drop
                 if out in sft_outputs:
                     eval_leaked.append(row)
+                elif args.enforce_thread_holdout and rid_str and rid_str in sft_root_ids:
+                    thread_leaked.append(row)
                 else:
                     eval_kept.append(row)
 
         print(f"  Original eval rows:   {len(eval_rows_orig):,}")
-        print(f"  SFT leaked:           {len(eval_leaked):,}")
+        print(f"  SFT exact-text leaked:{len(eval_leaked):,}")
+        print(f"  Thread-level leaked:  {len(thread_leaked):,}")
         print(f"  Kept:                 {len(eval_kept):,}")
+        eval_leaked = eval_leaked + thread_leaked  # merge for downstream backup/write
 
         if not SFT_EVAL_BACKUP.exists():
             print(f"Backing up {SFT_EVAL_PATH.name} -> {SFT_EVAL_BACKUP.name}")

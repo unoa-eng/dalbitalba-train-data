@@ -187,10 +187,44 @@ def check_persona_identity_pass(failures: list[str]) -> None:
             ok("phase6_eval_v2 passes identity/persona fixture on thread-conditioned eval rows")
 
 
+def check_thread_holdout(failures: list[str]) -> None:
+    """Invariant: sft_thread_conditioned.eval root_ids ∩ train root_ids = ∅,
+    and val_set.v3 thread_keys ∩ sft_train root_ids = ∅. Rebuild safety gate."""
+    sft_path = ROOT / "sft_thread_conditioned.jsonl"
+    eval_path = ROOT / "sft_thread_conditioned.eval.jsonl"
+    val_path = ROOT / "val_set.v3.jsonl"
+
+    def root_set(path: Path, keys: tuple[str, ...]) -> set[str]:
+        out: set[str] = set()
+        if not path.exists():
+            return out
+        for row in load_jsonl(path):
+            for k in keys:
+                v = row.get(k)
+                if v:
+                    out.add(str(v))
+                    break
+        return out
+
+    sft_roots = root_set(sft_path, ("root_id", "thread_key"))
+    eval_roots = root_set(eval_path, ("root_id", "thread_key"))
+    val_roots = root_set(val_path, ("thread_key", "root_id"))
+
+    overlap_eval = sft_roots & eval_roots
+    overlap_val = sft_roots & val_roots
+    if overlap_eval:
+        fail(f"sft_eval root_id intersect sft_train: {len(overlap_eval)} (must be 0)", failures)
+    if overlap_val:
+        fail(f"val_set.v3 thread_key intersect sft_train: {len(overlap_val)} (must be 0)", failures)
+    if not overlap_eval and not overlap_val:
+        ok(f"thread holdout: sft_train={len(sft_roots)} eval={len(eval_roots)} val={len(val_roots)} intersect=0")
+
+
 def main() -> int:
     failures: list[str] = []
     check_tc_sft(failures)
     check_orpo_leak(failures)
+    check_thread_holdout(failures)
     check_persona_gate_fixture(failures)
     check_persona_identity_pass(failures)
     print(json.dumps({"verdict": "PASS" if not failures else "FAIL", "failures": failures}, ensure_ascii=False))

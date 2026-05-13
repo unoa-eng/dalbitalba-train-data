@@ -348,6 +348,27 @@ else
   log "[5/5] phase6 report ready"
 fi
 
+# H4 — KoBEST + HAE-RAE regression gate (paper-grade). Skipped when adapter
+# path or eval suite is unavailable; otherwise enforces Δ ≤ H4_MAX_DROP (5pp).
+if [[ -n "${H4_BASE_MODEL:-}" && -n "${H4_ADAPTER_PATH:-}" ]]; then
+  log "=== H4 regression gate ==="
+  H4_OUTPUT_DIR="${H4_OUTPUT_DIR:-${REPO_DIR}/runs/h4}" \
+    H4_TASKS="${H4_TASKS:-kobest,haerae}" \
+    H4_MAX_DROP="${H4_MAX_DROP:-0.05}" \
+    H4_DEVICE="${H4_DEVICE:-cuda}" \
+    PYBIN="${PY}" \
+    bash "${REPO_DIR}/eval/run_h4_full.sh" 2>&1 | tee -a "${LOG_FILE}" || H4_RC=$?
+  H4_RC="${H4_RC:-0}"
+  log "[H4] gate exit=${H4_RC}"
+  if [ "${H4_RC}" != "0" ]; then
+    persist_eval_artifacts "h4_gate_failed"
+    ARTIFACTS_PERSISTED=1
+    notify "dalbitalba H4 KoBEST/HAE-RAE regression rejected rc=${H4_RC}"
+    stop_pod "h4_gate_failed"
+    exit "${H4_RC}"
+  fi
+fi
+
 persist_eval_artifacts "done_ok"
 ARTIFACTS_PERSISTED=1
 notify "dalbitalba eval done"

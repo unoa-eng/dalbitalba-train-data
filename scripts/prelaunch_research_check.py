@@ -203,6 +203,57 @@ def check_runtime_wandb(failures: list[str]) -> None:
         ok("WANDB_API_KEY present in runtime env")
 
 
+def check_judge_alias_alive(failures: list[str]) -> None:
+    """Probe the dated judge aliases against the live API to avoid mid-eval 404.
+    Skipped (WARN) when API keys are absent — those runs cannot use real judges anyway."""
+    primary = os.environ.get(
+        "PAPER_GRADE_JUDGE_CLAUDE_PRIMARY",
+        os.environ.get("ANTHROPIC_PRIMARY_MODEL", "claude-sonnet-4-5-20250929"),
+    )
+    secondary = os.environ.get(
+        "PAPER_GRADE_JUDGE_CLAUDE_SECONDARY",
+        os.environ.get("ANTHROPIC_SECONDARY_MODEL", "claude-haiku-4-5-20251001"),
+    )
+    gpt = os.environ.get(
+        "PAPER_GRADE_JUDGE_GPT",
+        os.environ.get("OPENAI_MODEL", "gpt-4o-2024-11-20"),
+    )
+
+    anth_key = os.environ.get("ANTHROPIC_API_KEY")
+    if anth_key:
+        try:
+            import anthropic  # type: ignore
+            client = anthropic.Anthropic(api_key=anth_key)
+            for alias in (primary, secondary):
+                try:
+                    client.messages.create(
+                        model=alias, max_tokens=1,
+                        messages=[{"role": "user", "content": "."}],
+                    )
+                    ok(f"judge alias alive: {alias}")
+                except Exception as exc:
+                    fail(f"judge alias {alias} probe failed: {exc}", failures)
+        except ImportError:
+            print(f"[WARN] anthropic SDK not installed; skipping live probe for {primary}/{secondary}")
+    else:
+        print(f"[WARN] ANTHROPIC_API_KEY absent; skipping live probe for {primary}/{secondary}")
+
+    openai_key = os.environ.get("OPENAI_API_KEY")
+    if openai_key:
+        try:
+            from openai import OpenAI  # type: ignore
+            client = OpenAI(api_key=openai_key)
+            try:
+                client.responses.create(model=gpt, input=".", temperature=0)
+                ok(f"judge alias alive: {gpt}")
+            except Exception as exc:
+                fail(f"judge alias {gpt} probe failed: {exc}", failures)
+        except ImportError:
+            print(f"[WARN] openai SDK not installed; skipping live probe for {gpt}")
+    else:
+        print(f"[WARN] OPENAI_API_KEY absent; skipping live probe for {gpt}")
+
+
 def main() -> int:
     failures: list[str] = []
     check_docs(failures)
@@ -212,6 +263,7 @@ def main() -> int:
     check_required_artifacts(failures)
     check_phase6_generate_alignment(failures)
     check_runtime_wandb(failures)
+    check_judge_alias_alive(failures)
     result = {"verdict": "PASS" if not failures else "FAIL", "failures": failures}
     print(json.dumps(result, ensure_ascii=False))
     return 0 if not failures else 2

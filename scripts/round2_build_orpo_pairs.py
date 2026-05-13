@@ -28,6 +28,7 @@ from __future__ import annotations
 import argparse
 import glob
 import json
+import os
 import random
 import re
 import sys
@@ -95,26 +96,47 @@ def _index_val_completions(val_path: Path | None) -> set[str]:
     return out
 
 
+def _collect_root_ids(*paths: Path) -> set[str]:
+    """Union of root_id / thread_key / source_id across provided jsonl paths."""
+    out: set[str] = set()
+    for p in paths:
+        if not p or not p.exists():
+            continue
+        for r in load_jsonl(p):
+            for k in ("root_id", "thread_key", "source_id"):
+                v = r.get(k)
+                if v:
+                    out.add(str(v))
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--runs-glob", default="runs/refinement-2026042*")
     ap.add_argument("--val-set", type=Path, default=None,
                     help="held-out validation set; chosen candidates that exact-match a val completion are dropped pre-pair")
+    ap.add_argument("--sft-eval", type=Path, default=None,
+                    help="SFT eval jsonl; chosen candidates sharing root_id with eval rows are dropped (thread-level holdout)")
     ap.add_argument("--samples", type=Path, default=None,
                     help="optional samples_200.jsonl or similar AI sample pool")
     ap.add_argument("--cpt-corpus", type=Path, default=None,
                     help="optional cpt_corpus.v*.jsonl for additional 'chosen' / 'rejected' mining via marker heuristics")
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--max-pairs", type=int, default=2000)
+    ap.add_argument("--llm-judge-model", default=None,
+                    help="Anthropic alias (e.g. claude-sonnet-4-5-20250929) — when set, "
+                         "each chosen vs rejected pair is scored 0-5 by the judge and "
+                         "only pairs with score_chosen - score_rejected >= --min-judge-delta "
+                         "survive. Requires ANTHROPIC_API_KEY.")
+    ap.add_argument("--min-judge-delta", type=float, default=1.0)
     args = ap.parse_args()
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
 
-    # Pre-build forbidden-completion set from val (used to filter ALL chosen candidates,
-    # not just cpt_corpus backfill). Phase 5.7 G audit found 5/100 leaks because the
-    # refinement-runs path was never filtered against val.
     val_texts = _index_val_completions(args.val_set)
+    val_root_ids = _collect_root_ids(args.val_set, args.sft_eval)
     val_drop_count = 0
+    thread_drop_count = 0
 
     chosen_pool: list[dict[str, Any]] = []
     rejected_pool: list[dict[str, Any]] = []
@@ -176,6 +198,13 @@ def main() -> int:
         if val_texts and str(txt).strip() in val_texts:
             val_drop_count += 1
             continue
+        # Thread-level holdout: cpt_corpus.source_id ↔ sft_eval.root_id namespace.
+        # A thread containing any eval comment may not contribute other comments
+        # to ORPO chosen — prevents indirect leakage.
+        rid = v.get("source_id") or v.get("root_id") or v.get("thread_key")
+        if val_root_ids and rid and str(rid) in val_root_ids:
+            thread_drop_count += 1
+            continue
         candidates.append(v)
     target_chosen = args.max_pairs
     if candidates and len(chosen_pool) < target_chosen:
@@ -233,12 +262,45 @@ def main() -> int:
     random.shuffle(rejected_pool)
     n_pairs = min(len(chosen_pool), len(rejected_pool), args.max_pairs)
     pairs = []
+    judge_client = None
+    if args.llm_judge_model and os.environ.get("ANTHROPIC_API_KEY"):
+        try:
+            import anthropic  # type: ignore
+            judge_client = anthropic.Anthropic()
+        except ImportError:
+            print("[WARN] anthropic SDK missing; LLM judge skipped")
+
+    def judge_score(text: str) -> float | None:
+        if not judge_client:
+            return None
+        try:
+            resp = judge_client.messages.create(
+                model=args.llm_judge_model, max_tokens=8,
+                messages=[{
+                    "role": "user",
+                    "content": (
+                        "다음 한국어 댓글이 cb2 밤문화 커뮤니티의 자연스러운 톤인지 0-5점으로만 답하라:\n"
+                        f"{text}\n점수:"
+                    ),
+                }],
+            )
+            raw = resp.content[0].text if resp.content else "0"
+            return float(re.search(r"[0-5](?:\.\d+)?", raw).group())
+        except Exception as exc:
+            print(f"[judge] error: {exc}")
+            return None
+
+    judged_drop = 0
     for i in range(n_pairs):
         c = chosen_pool[i]
         r = rejected_pool[i]
-        # Use a generic prompt frame
         prompt = ("다음 한국어 댓글을 cb2 밤문화 커뮤니티 톤으로 한 줄 생성:")
-        pairs.append({
+        sc = judge_score(c["text"])
+        sr = judge_score(r["text"])
+        if sc is not None and sr is not None and (sc - sr) < args.min_judge_delta:
+            judged_drop += 1
+            continue
+        entry = {
             "prompt": prompt,
             "chosen": c["text"],
             "rejected": r["text"],
@@ -246,7 +308,13 @@ def main() -> int:
             "source_run_chosen": c.get("source_run"),
             "source_run_rejected": r.get("source_run"),
             "reason": r.get("reason", "formal-AI ratio"),
-        })
+        }
+        if sc is not None and sr is not None:
+            entry["judge"] = "llm"
+            entry["judge_model"] = args.llm_judge_model
+            entry["score_chosen"] = sc
+            entry["score_rejected"] = sr
+        pairs.append(entry)
 
     with args.out.open("w", encoding="utf-8") as fh:
         for p in pairs:

@@ -76,10 +76,17 @@ def main() -> int:
     print(f"[orpo] loaded {len(rows)} preference pairs")
 
     ds = Dataset.from_list(rows)
-    tokenizer = AutoTokenizer.from_pretrained(base_model)
+    # Match train_cpt/train_sft: load tokenizer_v4 when present (+265 domain tokens)
+    # and resize embeddings so token IDs ≥ 151643 do not OOB at inference.
+    tokenizer_path = os.environ.get("TOKENIZER_PATH") or (
+        "tokenizer_v4" if os.path.isdir("tokenizer_v4") else base_model
+    )
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
     model = AutoModelForCausalLM.from_pretrained(base_model, torch_dtype="auto", revision=base_model_revision)
+    if len(tokenizer) != model.config.vocab_size:
+        model.resize_token_embeddings(len(tokenizer))
 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
 

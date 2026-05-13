@@ -243,7 +243,7 @@ persist_run_artifacts() {
   "hf_repo_round2": "${HF_REPO_ROUND2:-}",
   "source_repo": "${GITHUB_REPO}",
   "budget_profile": "${BUDGET_PROFILE:-budget30}",
-  "budget_cap_usd": "${BUDGET_CAP_USD:-25}",
+  "budget_cap_usd": "${BUDGET_CAP_USD:-60}",
   "wandb_project": "${WANDB_PROJECT:-dalbitalba-round2}",
   "wandb_run_group": "${WANDB_RUN_GROUP:-}",
   "wandb_tags": "${WANDB_TAGS:-}",
@@ -1047,7 +1047,7 @@ run_main() {
     log "pod=${RUNPOD_POD_ID:-unknown}"
     log "base=${BASE_MODEL:-unset}"
     log "hf_repo_round2=${HF_REPO_ROUND2}"
-    log "budget=${BUDGET_PROFILE:-budget30} cap_usd=${BUDGET_CAP_USD:-25}"
+    log "budget=${BUDGET_PROFILE:-budget30} cap_usd=${BUDGET_CAP_USD:-60}"
     log "timeouts cpt=${CPT_TIMEOUT_HOURS:-36}h merge=${MERGE_TIMEOUT_HOURS:-8}h sft=${SFT_TIMEOUT_HOURS:-96}h orpo=${ORPO_TIMEOUT_HOURS:-48}h eval=${EVAL_TIMEOUT_HOURS:-12}h upload=${HF_UPLOAD_TIMEOUT_HOURS:-4}h"
     log "=========================================="
 
@@ -1055,6 +1055,20 @@ run_main() {
     validate_inputs || fail_with_logs "env_or_data_error" "${ROUND2_LOG}" 2
     install_deps
     preflight
+
+    # cycle-7 US-C704: spawn cost watchdog in background. Polls RunPod API
+    # every 60s, warns at 95% of BUDGET_CAP_USD, calls stop_pod + writes
+    # .state/round2/COST_CAP_HIT on 100% so phase-loop callers can graceful_abort.
+    if [ -n "${RUNPOD_POD_ID:-}" ] && [ -x "${SCRIPTS_DIR}/runpod_cost_watchdog.py" ] || [ -f "${SCRIPTS_DIR}/runpod_cost_watchdog.py" ]; then
+        python3 "${SCRIPTS_DIR}/runpod_cost_watchdog.py" \
+            --pod-id "${RUNPOD_POD_ID}" \
+            --cap "${BUDGET_CAP_USD:-60}" \
+            --state-dir ".state/round2" \
+            >> "${WORKSPACE}/logs/cost_watchdog.log" 2>&1 &
+        WATCHDOG_PID=$!
+        log "cost watchdog pid=${WATCHDOG_PID} cap=\$${BUDGET_CAP_USD:-60}"
+        trap 'kill ${WATCHDOG_PID} 2>/dev/null; true' EXIT
+    fi
 
     phase1_cpt_broad || fail_with_logs "phase1_failed" "${PHASE1_LOG}" "$?"
     phase2_cpt_clean || fail_with_logs "phase2_failed" "${PHASE2_LOG}" "$?"
