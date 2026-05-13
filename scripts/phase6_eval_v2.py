@@ -262,11 +262,8 @@ def evaluate_v2_gate(
     metrics: dict[str, float | None],
     skipped_keys: frozenset[str] = frozenset(),
 ) -> tuple[str, list[str]]:
-    # cycle-6 B5a parity: a v2 gate metric whose value is None means "we could
-    # not compute it" — that must FAIL, not silently PASS. Mirrors the v1 gate
-    # behaviour in phase6_eval.evaluate_gate. Callers pass `skipped_keys` for
-    # metrics that are legitimately optional (e.g. cross_machine_agreement
-    # when no --secondary-ai is provided).
+    # Mirrors phase6_eval.evaluate_gate: None means "could not compute" → FAIL.
+    # Callers pass skipped_keys for legitimately optional metrics.
     violations: list[str] = []
     for key, (op, threshold) in GATE_V2.items():
         if key in skipped_keys:
@@ -336,9 +333,7 @@ def main() -> int:
         "persona_consistency": persona_score,
         "cross_machine_agreement": cma,
     }
-    # cross_machine_agreement is optional: when --secondary-ai is not provided
-    # there are no secondary rows, so the metric is genuinely uncomputable and
-    # must be skipped rather than failing the gate (B5a parity).
+    # cross_machine_agreement is uncomputable without --secondary-ai; skip it.
     v2_skipped: frozenset[str] = (
         frozenset({"cross_machine_agreement"}) if not secondary_rows else frozenset()
     )

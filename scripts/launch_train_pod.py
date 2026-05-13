@@ -498,9 +498,7 @@ def main() -> None:
         env["WANDB_API_KEY"] = wandb_api_key
         env["TRAIN_REPORT_TO"] = "wandb"
         env["WANDB_PROJECT"] = wandb_project
-        # cycle-6 follow-up: WANDB_ENTITY must reach the pod so wandb.init does
-        # not fall back to anonymous. Recipe pins it; launcher propagates only
-        # when present (no hardcoded default — lets recipe be authoritative).
+        # Forward entity so in-pod wandb.init does not fall back to anonymous.
         wandb_entity = os.environ.get("WANDB_ENTITY", "").strip()
         if wandb_entity:
             env["WANDB_ENTITY"] = wandb_entity
