@@ -1,0 +1,36 @@
+{
+  "phase": "phase1-claude-direct-seed",
+  "status": "v3-FINAL",
+  "completed": 3204,
+  "target": 3204,
+  "batches_done": 161,
+  "started_at": "2026-06-09T00:11:00",
+  "v3_finalized_at": "2026-06-10T15:05:00",
+  "curve": "peak10_stable6.5_decline480",
+  "site_simul": {
+    "start": "2024-10-01",
+    "peak_day": 285,
+    "peak_daily_threads": 10.0,
+    "stable_daily_threads": 6.5,
+    "decline_end_day": 480
+  },
+  "tier_dist": {"hi": 336, "mid": 1637, "low": 1231},
+  "v3_quality_gates": {
+    "hi_content_uniq_pct": 100.0,
+    "mid_content_uniq_pct": 97.4,
+    "low_content_uniq_pct": 85.0,
+    "hi_len_mean": 103.0,
+    "mid_len_mean": 29.0,
+    "low_len_mean": 18.8,
+    "comments_uniq_pct": 50.1
+  },
+  "jamo_injection": {
+    "hh": 1335,
+    "oj": 1059,
+    "gc": 817,
+    "mc": 395,
+    "sb": 661,
+    "rio": 816
+  },
+  "next_phase": "phase2-cycle9-orpo-expansion-to-63k"
+}
