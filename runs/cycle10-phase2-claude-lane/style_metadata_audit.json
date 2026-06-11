@@ -1,0 +1,228 @@
+{
+  "final_comments": {
+    "n": 10008,
+    "avg_len": 36.18,
+    "median_len": 25.0,
+    "p90_len": 74,
+    "newline_pct": 15.42,
+    "honorific_pct": 27.67,
+    "digit_pct": 16.26,
+    "compat_jamo_rows": 0,
+    "old_jamo_k_rows": 1484,
+    "unique_pct": 100.0,
+    "slang_pct": 27.0,
+    "initialism_pct": 11.44,
+    "ad_contact_rows": 0
+  },
+  "source_comments": {
+    "n": 39301,
+    "avg_len": 36.58,
+    "median_len": 25,
+    "p90_len": 74,
+    "newline_pct": 16.16,
+    "honorific_pct": 31.78,
+    "digit_pct": 23.39,
+    "compat_jamo_rows": 0,
+    "old_jamo_k_rows": 5482,
+    "unique_pct": 94.59,
+    "slang_pct": 27.49,
+    "initialism_pct": 10.64,
+    "ad_contact_rows": 0
+  },
+  "source_audit_all_texts": {
+    "n": 49274,
+    "avg_len": 43.43,
+    "median_len": 27.0,
+    "p90_len": 91,
+    "newline_pct": 22.31,
+    "honorific_pct": 33.31,
+    "digit_pct": 23.88,
+    "compat_jamo_rows": 0,
+    "old_jamo_k_rows": 6459,
+    "unique_pct": 95.58,
+    "slang_pct": 30.31,
+    "initialism_pct": 11.31,
+    "ad_contact_rows": 0
+  },
+  "final_comment_slang_counts": {
+    "언니": 1242,
+    "손님": 396,
+    "가게": 326,
+    "하퍼": 255,
+    "출근": 234,
+    "초이스": 200,
+    "담당": 186,
+    "룸": 100,
+    "마담": 81,
+    "팁": 77,
+    "텐카": 74,
+    "티씨": 73,
+    "퇴근": 72,
+    "진상": 64,
+    "떼초": 50,
+    "셔츠": 40,
+    "콜": 39,
+    "보도": 34,
+    "롱치": 18,
+    "퍼블릭": 18,
+    "오카": 10,
+    "베팅": 7,
+    "웨터": 6,
+    "정산": 4,
+    "tc": 2,
+    "풀티": 1
+  },
+  "source_comment_slang_counts": {
+    "언니": 4672,
+    "손님": 1415,
+    "가게": 1232,
+    "팁": 979,
+    "하퍼": 955,
+    "출근": 893,
+    "초이스": 778,
+    "담당": 736,
+    "룸": 373,
+    "티씨": 319,
+    "텐카": 309,
+    "진상": 279,
+    "마담": 271,
+    "퇴근": 243,
+    "떼초": 185,
+    "셔츠": 151,
+    "보도": 146,
+    "콜": 114,
+    "퍼블릭": 66,
+    "롱치": 55,
+    "오카": 35,
+    "베팅": 29,
+    "정산": 16,
+    "웨터": 15,
+    "tc": 6,
+    "TC": 3,
+    "풀티": 1
+  },
+  "final_comment_initialism_counts": {
+    "ᄌᄂ": 285,
+    "ᄅᄋ": 155,
+    "ᄋᄌ": 142,
+    "ᄉᄇ": 130,
+    "ᄋᄋ": 122,
+    "ᄂᄃ": 83,
+    "ᄀᄀ": 73,
+    "ᄂᄂ": 69,
+    "ᄀᄎ": 66,
+    "ᄃᄃ": 53,
+    "ᄇᄃ": 27,
+    "ᄎᄎ": 19,
+    "개꿀": 10,
+    "존맛": 3,
+    "ᄌ됨": 2
+  },
+  "source_comment_initialism_counts": {
+    "ᄌᄂ": 1032,
+    "ᄅᄋ": 564,
+    "ᄋᄌ": 559,
+    "ᄉᄇ": 460,
+    "ᄋᄋ": 440,
+    "ᄂᄃ": 279,
+    "ᄀᄀ": 274,
+    "ᄂᄂ": 268,
+    "ᄀᄎ": 248,
+    "ᄃᄃ": 195,
+    "ᄇᄃ": 96,
+    "개꿀": 56,
+    "ᄎᄎ": 52,
+    "ᄌ됨": 11,
+    "존맛": 11,
+    "ᄒᄃᄃ": 10
+  },
+  "final_posts": {
+    "n": 6408,
+    "avg_len": 24.54,
+    "median_len": 18.0,
+    "p90_len": 38,
+    "newline_pct": 0.89,
+    "honorific_pct": 33.13,
+    "digit_pct": 27.79,
+    "compat_jamo_rows": 0,
+    "old_jamo_k_rows": 161,
+    "unique_pct": 98.66,
+    "slang_pct": 16.64,
+    "initialism_pct": 15.71,
+    "ad_contact_rows": 0
+  },
+  "final_metadata": {
+    "threads": 3204,
+    "views": {
+      "mean": 67.15,
+      "median": 46.0,
+      "p90": 158,
+      "max": 361
+    },
+    "likes": {
+      "mean": 0.82,
+      "median": 0.0,
+      "p90": 3,
+      "max": 14
+    },
+    "commentCount": {
+      "mean": 3.12,
+      "median": 3.0,
+      "p90": 8,
+      "max": 15
+    },
+    "likes_zero_pct": 64.67,
+    "comment_timing_order_errors": 0,
+    "comment_hour_top": [
+      [
+        0,
+        770
+      ],
+      [
+        1,
+        751
+      ],
+      [
+        2,
+        700
+      ],
+      [
+        22,
+        677
+      ],
+      [
+        3,
+        661
+      ],
+      [
+        23,
+        624
+      ],
+      [
+        21,
+        603
+      ],
+      [
+        4,
+        561
+      ]
+    ],
+    "gap_hours_median": 0.497,
+    "gap_hours_p90": 3.149
+  },
+  "source_metadata_reference": {
+    "posts": 10532,
+    "views_empirical": {
+      "mean": 61.23,
+      "median": 43.0,
+      "p90": 141,
+      "max": 294
+    },
+    "comment_count_empirical": {
+      "mean": 4.97,
+      "median": 4.0,
+      "p90": 10,
+      "max": 93
+    }
+  }
+}

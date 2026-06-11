@@ -30,7 +30,13 @@ KRUN_W = [14, 29, 20, 13, 7, 9, 5, 3]
 def _resample_runs(text: str, ch: str, rng) -> str:
     return re.sub(ch + "{2,}", lambda m: ch * rng.choices(KRUN_POP[1:], KRUN_W[1:])[0], text)
 
-def normalize(text: str, key: str, p_newline: float = 0.5) -> str:
+def normalize(
+    text: str,
+    key: str,
+    p_newline: float = 0.5,
+    collapse_mu: float = 0.30,
+    collapse_sd: float = 0.18,
+) -> str:
     rng = random.Random(zlib.crc32(key.encode()) ^ 0x7A30)
     # 1. 자모 변환 (원천 인코딩과 동일하게)
     text = "".join(COMPAT_TO_HANGUL.get(c, c) for c in text)
@@ -47,7 +53,7 @@ def normalize(text: str, key: str, p_newline: float = 0.5) -> str:
             m = rng.choice(matches)
             text = text[: m.end(1)] + "\n" + text[m.end(1) + 1:]
     # 4. 띄어쓰기 붕괴: 댓글별 가변 비율 (전체 space_ratio ~0.16 목표)
-    collapse = max(0.0, rng.gauss(0.30, 0.18))
+    collapse = max(0.0, rng.gauss(collapse_mu, collapse_sd))
     out = []
     for ch in text:
         if ch == " " and rng.random() < collapse:

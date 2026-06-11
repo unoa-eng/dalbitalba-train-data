@@ -1,0 +1,13 @@
+{
+  "path": "runs/cycle10-phase2-claude-lane/threads_v4.jsonl",
+  "threads": 3204,
+  "comments": 10008,
+  "post_rework_ids": 2246,
+  "bulk_pairs": 9453,
+  "title_unique_pct": 99.75,
+  "body_unique_pct": 97.57,
+  "comment_unique_pct": 100.0,
+  "warnings": [],
+  "errors": [],
+  "error_count": 0
+}

@@ -1,0 +1,12 @@
+gen pool 10008 | src pool 39238 | sample N=800
+  seed= 11: AUC=0.507
+  seed= 27: AUC=0.562
+  seed= 53: AUC=0.551
+  seed=101: AUC=0.517
+  seed=151: AUC=0.540
+  seed=173: AUC=0.541
+  seed=211: AUC=0.521
+
+=== v4 comments vs source: AUC 0.534 ± 0.020 (7 seeds, N=800) ===
+기존 local-LLM ceiling: 0.579 | target: ≤0.55
+PASS

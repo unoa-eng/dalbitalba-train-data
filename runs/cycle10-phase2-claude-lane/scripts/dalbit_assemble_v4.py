@@ -3,8 +3,8 @@
 
 순서:
 1. seed threads_v3 로드
-2. 게시글 rework (/tmp/dalbit_post_out/out*.jsonl) 적용 — title/content 교체
-3. 댓글 교체: early(/tmp/dalbit_phase2_early_merged.jsonl) + bulk(/tmp/dalbit_bulk_out/out*.jsonl)
+2. 게시글 rework (phase2 post_out/out*.jsonl) 적용 — title/content 교체
+3. 댓글 교체: early(phase2 dalbit_phase2_early_merged.jsonl) + bulk(phase2 bulk_out/out*.jsonl)
    → content = "[i+1] " + text (원천 인덱스 prefix 양식)
 4. 메타데이터 고도화는 별도 단계(dalbit_metadata_refine.py)로 체인
 출력: 중간본 (메타데이터 전) — refine까지 돌리려면:
@@ -19,15 +19,19 @@ from collections import Counter
 from pathlib import Path
 
 REPO = Path("/Users/unoa/dalbitalba-train-data")
+BASE = REPO / "runs/cycle10-phase2-claude-lane"
 SEED = REPO / "runs/cycle10-phase1-claude-direct/threads_v3.jsonl"
 out_path = Path(sys.argv[1])
+
+sys.path.insert(0, str(BASE / "scripts"))
+from dalbit_gen_normalize import normalize
 
 threads = [json.loads(l) for l in SEED.open()]
 by_id = {t["id"]: t for t in threads}
 
 # 1. 게시글 rework 적용
 post_n = 0
-for f in sorted(glob.glob("/tmp/dalbit_post_out/out*.jsonl")):
+for f in sorted((BASE / "post_out").glob("out*.jsonl")):
     for line in open(f):
         r = json.loads(line)
         t = by_id.get(str(r["id"]))
@@ -37,9 +41,16 @@ for f in sorted(glob.glob("/tmp/dalbit_post_out/out*.jsonl")):
         t["content"] = r["content"]
         post_n += 1
 
+# 1b. 게시글 제목/본문도 원천 인코딩으로 정규화한다. 댓글보다 약하게 처리해서
+# 원문 구조는 보존하고 compatibility 자모 흔적만 제거한다.
+for t in threads:
+    t["title"] = normalize(t["title"], f"post-title:{t['id']}", p_newline=0.0, collapse_mu=0.0, collapse_sd=0.0)
+    t["content"] = normalize(t["content"], f"post-body:{t['id']}", p_newline=0.04, collapse_mu=0.06, collapse_sd=0.04)
+
 # 2. 댓글 교체 (early + bulk)
 cmt = {}
-for f in ["/tmp/dalbit_phase2_early_merged.jsonl"] + sorted(glob.glob("/tmp/dalbit_bulk_out/out*.jsonl")):
+comment_files = [BASE / "dalbit_phase2_early_merged.jsonl"] + sorted((BASE / "bulk_out").glob("out*.jsonl"))
+for f in comment_files:
     for line in open(f):
         r = json.loads(line)
         cmt[(str(r["root_id"]), int(r["comment_index"]))] = r["content"].strip()
