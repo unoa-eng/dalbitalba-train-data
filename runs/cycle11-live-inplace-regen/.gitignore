@@ -1,0 +1,12 @@
+batch_in/
+batch_out/
+requeue_in/
+requeue_out/
+pilot_in/
+pilot_out/
+canary_out/
+*.log
+loaded.json
+requeue*.json
+*.err
+*.raw
