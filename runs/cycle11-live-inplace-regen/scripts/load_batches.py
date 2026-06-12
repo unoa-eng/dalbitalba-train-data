@@ -91,6 +91,8 @@ def check_batch(n):
     return reg, post_errs, structural
 
 def patch(table, idv, payload):
+    payload = {k: (v.replace("\x00", "").replace("​", "") if isinstance(v, str) else v)
+               for k, v in payload.items()}
     req = urllib.request.Request(f"{URL}/rest/v1/{table}?id=eq.{idv}", data=json.dumps(payload).encode(),
                                  headers=HDR, method="PATCH")
     urllib.request.urlopen(req, timeout=60).read()
@@ -116,9 +118,13 @@ def main():
         for pid, p in reg.items():
             if pid in post_errs:
                 requeue_posts.append({"batch": n, "id": pid, "reason": post_errs[pid][:3]}); continue
+            if not (p.get("title") or "").strip() or not (p.get("body") or "").strip():
+                requeue_posts.append({"batch": n, "id": pid, "reason": ["empty title/body"]}); continue
             tasks.append(("community_posts", pid, {"title": p["title"], "body": p["body"]})); loaded_p += 1
             for c in p.get("comments", []):
-                tasks.append(("community_comments", c["id"], {"body": c["body"]})); loaded_c += 1
+                if not isinstance(c.get("id"), str) or len(c["id"]) != 36:
+                    continue  # malformed comment id -> skip (post text still loads)
+                tasks.append(("community_comments", c["id"], {"body": (c.get("body") or "").strip() or "…"})); loaded_c += 1
         ok_names.append(n)  # good posts of this batch are queued; its bad posts go to requeue_posts
     reasons = {}
     for rp in requeue_posts:
@@ -138,12 +144,16 @@ def main():
     RQB.write_text(json.dumps(sorted(bb), ensure_ascii=False))
     if dry:
         print("DRY — no DB writes. requeue ->", BASE / "requeue.json"); return
-    done = [0]
+    done = [0]; fails = []
     def run(t):
-        patch(*t); done[0] += 1
-        if done[0] % 2000 == 0: print(f"  patched {done[0]}/{len(tasks)}")
+        try:
+            patch(*t); done[0] += 1
+        except Exception as e:
+            fails.append((t[0], t[1], str(e)[:30]))
+        if (done[0] + len(fails)) % 3000 == 0: print(f"  patched {done[0]}/{len(tasks)} (fail {len(fails)})")
     with ThreadPoolExecutor(max_workers=16) as ex:
         list(ex.map(run, tasks))
+    if fails: print(f"  PATCH failures: {len(fails)} e.g. {fails[:3]}")
     loaded_set.update(ok_names)
     LOADED_F.write_text(json.dumps(sorted(loaded_set), ensure_ascii=False))
     print(f"DONE patched {done[0]} rows. loaded batches total={len(loaded_set)} | requeue posts={len(requeue_posts)} bad batches={len(bad_batches)}")

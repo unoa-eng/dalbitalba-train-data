@@ -57,9 +57,12 @@ def gate_post(s, r):
 def codex_gen(chunk_path, out_path):
     src = chunk_path.read_text()
     prompt = STRICT + f"\n\n아래 입력 JSON 배열의 모든 post를 재작성하라. 출력은 유효한 JSON 배열 하나만(코드펜스/설명 금지).\n형식: [{{\"id\",\"title\",\"body\",\"comments\":[{{\"id\",\"parent_id\",\"body\"}}]}}]\n\n입력:\n{src}"
-    raw = subprocess.run(["codex", "exec", "--skip-git-repo-check",
-                          "--dangerously-bypass-approvals-and-sandbox", prompt],
-                         capture_output=True, text=True, timeout=900).stdout
+    try:
+        raw = subprocess.run(["codex", "exec", "--skip-git-repo-check",
+                              "--dangerously-bypass-approvals-and-sandbox", prompt],
+                             capture_output=True, text=True, timeout=600).stdout
+    except Exception:
+        return None
     raw = raw.replace("```json", "").replace("```", "")
     i, j = raw.find("["), raw.rfind("]")
     if i < 0 or j <= i: return None
@@ -72,25 +75,42 @@ def main():
     idx = src_index(); ids = sorted(targets())
     print(f"requeue targets: {len(ids)} posts")
     if not ids: print("nothing to do"); return
-    chunks = [ids[i:i+25] for i in range(0, len(ids), 25)]
-    residual, patched = [], 0
-    for ci, ch in enumerate(chunks):
+    import threading
+    from concurrent.futures import ThreadPoolExecutor
+    chunks = [ids[i:i+12] for i in range(0, len(ids), 12)]
+    residual = []; patched = [0]; lock = threading.Lock()
+    def do_chunk(arg):
+        ci, ch = arg
         cin = RQI / f"rq_{ci:04d}.json"; cout = RQO / f"rq_{ci:04d}.json"
         cin.write_text(json.dumps([idx[i] for i in ch if i in idx], ensure_ascii=False))
         data = codex_gen(cin, cout)
-        if not data: print(f"rq_{ci:04d}: codex/parse FAIL"); residual += [{"id": i, "reason": ["regen-fail"]} for i in ch]; continue
-        rmap = {p["id"]: p for p in data}
-        for pid in ch:
-            s, r = idx.get(pid), rmap.get(pid)
-            if not s or not r: residual.append({"id": pid, "reason": ["no-output"]}); continue
-            e = gate_post(s, r)
-            if e: residual.append({"id": pid, "reason": e[:3]}); continue
-            patch("community_posts", pid, {"title": r["title"], "body": r["body"]}); patched += 1
-            for c in r.get("comments", []): patch("community_comments", c["id"], {"body": c["body"]})
-        print(f"rq_{ci:04d}: done ({ci+1}/{len(chunks)}) patched so far {patched}")
+        loc_res = []; loc_pat = 0
+        if not data:
+            loc_res = [{"id": i, "reason": ["regen-fail"]} for i in ch]
+        else:
+            rmap = {p["id"]: p for p in data}
+            for pid in ch:
+                s, r = idx.get(pid), rmap.get(pid)
+                if not s or not r: loc_res.append({"id": pid, "reason": ["no-output"]}); continue
+                e = gate_post(s, r)
+                if not (r.get("title") or "").strip() or not (r.get("body") or "").strip(): e = e + ["empty"]
+                if e: loc_res.append({"id": pid, "reason": e[:3]}); continue
+                try:
+                    patch("community_posts", pid, {"title": r["title"], "body": r["body"]})
+                    for c in r.get("comments", []):
+                        if isinstance(c.get("id"), str) and len(c["id"]) == 36:
+                            patch("community_comments", c["id"], {"body": (c.get("body") or "").strip() or "…"})
+                    loc_pat += 1
+                except Exception:
+                    loc_res.append({"id": pid, "reason": ["patch-fail"]})
+        with lock:
+            residual.extend(loc_res); patched[0] += loc_pat
+            print(f"rq_{ci:04d} done | patched={patched[0]} residual={len(residual)}", flush=True)
+    with ThreadPoolExecutor(max_workers=6) as ex:
+        list(ex.map(do_chunk, enumerate(chunks)))
     (BASE / "requeue_posts.json").write_text(json.dumps(residual, ensure_ascii=False))
     (BASE / "requeue.json").write_text("[]")
-    print(f"REQUEUE DONE: patched {patched} posts | residual still-failing {len(residual)}")
+    print(f"REQUEUE DONE: patched {patched[0]} posts | residual still-failing {len(residual)}", flush=True)
 
 if __name__ == "__main__":
     main()
