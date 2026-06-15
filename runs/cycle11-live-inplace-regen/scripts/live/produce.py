@@ -38,7 +38,9 @@ def dirty(t):
 
 def gen_batch(n, salt):
     rng = random.Random(zlib.crc32(salt.encode()))
-    seeds = [rng.choice(SEEDS) for _ in range(n)]
+    # distinct seeds per batch (no back-to-back topic repeats); sample without replacement
+    pool = SEEDS[:]; rng.shuffle(pool)
+    seeds = (pool * ((n // len(pool)) + 1))[:n]
     cats = rng.choices(["FREE","QNA","TIP","NEWS"], weights=[88,9,2,1], k=n)
     specs = [{"topic_seed": s, "category": c, "planned_comments": rng.choices([0,1,2,3,4,5,7],weights=[8,14,20,20,16,12,10])[0]}
              for s, c in zip(seeds, cats)]
