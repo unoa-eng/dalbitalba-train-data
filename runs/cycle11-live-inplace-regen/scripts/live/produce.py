@@ -7,11 +7,17 @@ Run standalone: produce.py [N]   (default 12 posts). The daemon calls this when 
 import json, re, sys, subprocess, random, zlib, time
 from pathlib import Path
 
-import os
+import os, shutil
 HERE = Path(__file__).parent
 BASE = HERE.parent.parent  # cycle11-live-inplace-regen
 RECIPE = (HERE / "recipe_gen.md").read_text()
 BUFFER = Path(os.environ.get("PRODUCE_BUFFER") or (HERE / "buffer.jsonl"))
+# pin to a codex new enough for the current default model. /opt/homebrew/bin/codex is an
+# OLD 0.118 that 400s on gpt-5.5; the nvm build (0.134+) works headless. Prefer explicit.
+_CODEX_CANDS = [os.environ.get("CODEX_BIN"),
+                "/Users/unoa/.nvm/versions/node/v24.14.1/bin/codex",
+                shutil.which("codex")]
+CODEX = next((c for c in _CODEX_CANDS if c and os.path.exists(c)), "codex")
 
 # domain topic seeds — diverse angles; producer expands each into an original post
 SEEDS = [
@@ -55,7 +61,7 @@ def gen_batch(n, salt):
 사양:
 {json.dumps(specs, ensure_ascii=False)}"""
     try:
-        raw = subprocess.run(["codex","exec","--skip-git-repo-check","--dangerously-bypass-approvals-and-sandbox",prompt],
+        raw = subprocess.run([CODEX,"exec","--skip-git-repo-check","--dangerously-bypass-approvals-and-sandbox",prompt],
                              capture_output=True, text=True, timeout=600).stdout
     except Exception as e:
         sys.stderr.write(f"codex fail: {e}\n"); return []
