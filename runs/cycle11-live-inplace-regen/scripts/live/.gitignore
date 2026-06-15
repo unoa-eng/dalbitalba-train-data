@@ -7,3 +7,9 @@ released_map.json
 .gapfilled
 .env.prod
 gap_state.json
+reports/
+.notify.json
+report.out
+report.err
+launchd.out
+launchd.err
