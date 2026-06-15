@@ -1,0 +1,7 @@
+buffer.jsonl
+gap_buffer.jsonl
+comment_queue.json
+released_map.json
+*.log
+*.txt
+.gapfilled
