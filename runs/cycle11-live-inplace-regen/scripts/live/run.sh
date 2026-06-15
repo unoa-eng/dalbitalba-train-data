@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# Launch the live ops pipeline: gap backfill (once) then the real-time daemon.
-# Single-instance guarded. Restart-safe (daemon persists state).
+# Single-instance launcher for the live ops daemon (gap backfill is folded INTO daemon.py).
+# Used directly or by the launchd KeepAlive agent (auto-restart on crash/login).
 HERE="/Users/unoa/dalbitalba-train-data/runs/cycle11-live-inplace-regen/scripts/live"
 cd "$HERE" || exit 1
 
+# refresh prod env (service key) if a refresher exists; tolerate absence
+[ -f /tmp/dalbit.env.prod ] || { echo "WARN: /tmp/dalbit.env.prod missing" >> "$HERE/run.log"; }
+
 if pgrep -f "live/daemon.py" >/dev/null 2>&1; then
-  echo "daemon already running (pid $(pgrep -f 'live/daemon.py' | tr '\n' ' '))"; exit 0
+  echo "[$(date '+%F %T')] daemon already running" >> "$HERE/run.log"
+  exit 0
 fi
 
-# 1) one-time gap backfill (marker-guarded inside)
-python3 "$HERE/gapfill.py" >> "$HERE/gapfill.log" 2>&1
-
-# 2) real-time daemon forever
 exec python3 "$HERE/daemon.py"

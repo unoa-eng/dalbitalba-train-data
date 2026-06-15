@@ -5,3 +5,5 @@ released_map.json
 *.log
 *.txt
 .gapfilled
+.env.prod
+gap_state.json

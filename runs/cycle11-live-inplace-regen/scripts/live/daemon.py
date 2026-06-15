@@ -13,7 +13,8 @@ import json, re, os, sys, time, math, random, subprocess, urllib.request, dateti
 from pathlib import Path
 
 HERE = Path(__file__).parent
-ENV = "/tmp/dalbit.env.prod"
+# persistent env (survives reboot) preferred; /tmp fallback for first run
+ENV = str(HERE / ".env.prod") if (HERE / ".env.prod").exists() else "/tmp/dalbit.env.prod"
 d = dict(re.findall(r'^(\w+)=\"?([^\"\n]*)', open(ENV).read(), re.M))
 URL = d["NEXT_PUBLIC_SUPABASE_URL"].rstrip("/"); KEY = d["SUPABASE_SERVICE_ROLE_KEY"]
 TENANT = d.get("NEXT_PUBLIC_TENANT_ID") or "dalbitalba"
@@ -22,7 +23,9 @@ HDR = {"apikey": KEY, "Authorization": f"Bearer {KEY}", "Content-Type": "applica
 BUFFER = HERE / "buffer.jsonl"
 CQUEUE = HERE / "comment_queue.json"
 RELEASED = HERE / "released_map.json"
+GAP_STATE = HERE / "gap_state.json"
 LOG = HERE / "daemon.log"
+GAP_PER_TICK = 2   # backdated gap posts published per live tick (fills 3-day gap in ~1.5d, single codex)
 
 POSTS_PER_DAY = 75
 KSTW = [8,7,5,3,2,1,1,1,2,3,4,4,4,4,4,4,5,6,7,9,11,12,12,10]  # KST hour weights
@@ -124,6 +127,67 @@ def release_due_comments():
     if n: log(f"  released {n} comment(s)")
     return n
 
+# ---------- gap backfill (folded in: single process, no codex contention) ----------
+def init_gap():
+    """On first start, compute backdated hour-weighted timestamps for the quiet window
+    [latest-pre-live-post .. now-2h] and persist. Ascending (fill chronologically)."""
+    if GAP_STATE.exists():
+        return
+    from urllib.parse import quote
+    cutoff = quote((now() - dt.timedelta(hours=2)).isoformat(), safe="")
+    latest = get_req(f"community_posts?created_at=lt.{cutoff}&select=created_at&order=created_at.desc&limit=1")
+    if not latest:
+        GAP_STATE.write_text("[]"); return
+    last_t = dt.datetime.fromisoformat(latest[0]["created_at"].replace("Z","+00:00"))
+    end = now() - dt.timedelta(hours=2)
+    gap_days = (end - last_t).total_seconds()/86400
+    if gap_days < 0.3:
+        GAP_STATE.write_text("[]"); log(f"gap {gap_days:.2f}d — nothing to backfill"); return
+    n = int(gap_days * POSTS_PER_DAY)
+    rng = random.Random(); span = (end - last_t).total_seconds(); ts = []
+    while len(ts) < n:
+        t = last_t + dt.timedelta(seconds=rng.random()*span)
+        if rng.random() < KSTW[(t.hour+9)%24]/max(KSTW): ts.append(t)
+    ts.sort()
+    GAP_STATE.write_text(json.dumps([t.isoformat() for t in ts]))
+    log(f"gap backfill queued: {len(ts)} posts across {gap_days:.2f}d [{last_t:%m-%d} .. {end:%m-%d}]")
+
+def publish_gap(rng, k):
+    if not GAP_STATE.exists(): return 0
+    ts = json.loads(GAP_STATE.read_text())
+    if not ts: return 0
+    done = 0
+    for _ in range(min(k, len(ts))):
+        if not ts: break
+        iso = ts.pop(0); t = dt.datetime.fromisoformat(iso)
+        p = pop_post()
+        if not p: break
+        age_days = (now()-t).total_seconds()/86400
+        views = max(1, int(rng.gauss(1822, 700) * min(1.0, age_days/5)))
+        row = {"tenant_id": TENANT, "user_id": None, "category": p.get("category","FREE"),
+               "title": p["title"], "body": p["body"], "is_anon": True, "source_author": None,
+               "view_count": views, "like_count": rng.choice([0,0,0,1]),
+               "created_at": t.isoformat(), "updated_at": t.isoformat()}
+        try:
+            pid = post_req("community_posts", [row])[0]["id"]
+        except Exception as e:
+            log(f"  gap post fail: {str(e)[:40]}"); continue
+        rel = {}
+        for idx, c in enumerate(p.get("comments") or []):
+            dly = min(math.exp(rng.gauss(math.log(3), 1.0)), 24*8)
+            ct = t + dt.timedelta(hours=dly)
+            if ct >= now(): ct = now() - dt.timedelta(minutes=rng.randint(1,120))
+            parent = rel.get(c.get("parent_index"))
+            try:
+                cid = post_req("community_comments", [{"tenant_id":TENANT,"post_id":pid,"user_id":None,
+                    "parent_id":parent,"body":c["body"],"is_anon":True,"source_author":None,"created_at":ct.isoformat()}])[0]["id"]
+                rel[idx] = cid
+            except Exception: pass
+        done += 1
+    GAP_STATE.write_text(json.dumps(ts))
+    if done: log(f"  GAP backfill +{done} ({len(ts)} remaining)")
+    return done
+
 # ---------- view aging ----------
 def age_views(rng):
     # bump views on recent posts (age < 8d) so fresh posts climb toward the corpus median
@@ -151,6 +215,8 @@ def next_interval(rng):
 def main():
     rng = random.Random()
     log(f"daemon start | tenant={TENANT} target={POSTS_PER_DAY}/day buffer={buffer_count()}")
+    try: init_gap()
+    except Exception as e: log(f"init_gap fail: {str(e)[:50]}")
     last_age = 0
     while True:
         refill_if_low()
@@ -166,7 +232,8 @@ def main():
                 except Exception as e: log(f"  age fail {str(e)[:40]}")
                 last_age = time.time()
         try:
-            publish_post(rng)
+            publish_post(rng)                  # real-time live post
+            publish_gap(rng, GAP_PER_TICK)     # backdated gap catch-up (until queue empty)
         except Exception as e:
             log(f"publish fail: {str(e)[:60]}")
             time.sleep(15)

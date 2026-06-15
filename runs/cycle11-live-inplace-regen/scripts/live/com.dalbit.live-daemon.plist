@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.dalbit.live-daemon</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/unoa/dalbitalba-train-data/runs/cycle11-live-inplace-regen/scripts/live/run.sh</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key><string>/opt/homebrew/bin:/Users/unoa/.nvm/versions/node/v24.14.1/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>30</integer>
+  <key>StandardOutPath</key><string>/Users/unoa/dalbitalba-train-data/runs/cycle11-live-inplace-regen/scripts/live/launchd.out</string>
+  <key>StandardErrorPath</key><string>/Users/unoa/dalbitalba-train-data/runs/cycle11-live-inplace-regen/scripts/live/launchd.err</string>
+</dict>
+</plist>
