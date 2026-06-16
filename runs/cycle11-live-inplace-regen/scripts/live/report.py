@@ -76,7 +76,7 @@ def build():
         f"",
         f"상태: {health}  | 데몬 pid {pid or '없음'} · launchd {la}",
         f"",
-        f"최근 24h: 글 {posts_24} · 댓글 {cmts_24}  (목표 ~75글/일)",
+        f"최근 24h: 글 {posts_24} · 댓글 {cmts_24}  (목표 ~16글/일)",
         f"누적(공개): 글 {total_p:,} · 댓글 {total_c:,}",
         f"시간대(KST 0→23h): {spark}",
         f"갭 백필 잔여: {gap} 글",

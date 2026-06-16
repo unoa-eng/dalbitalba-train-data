@@ -27,7 +27,7 @@ GAP_STATE = HERE / "gap_state.json"
 LOG = HERE / "daemon.log"
 GAP_PER_TICK = 2   # backdated gap posts published per live tick (fills 3-day gap in ~1.5d, single codex)
 
-POSTS_PER_DAY = 75
+POSTS_PER_DAY = 16
 KSTW = [8,7,5,3,2,1,1,1,2,3,4,4,4,4,4,4,5,6,7,9,11,12,12,10]  # KST hour weights
 AVGW = sum(KSTW)/24
 BUFFER_LOW = 8
