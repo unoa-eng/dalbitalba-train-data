@@ -210,10 +210,10 @@ def age_views(rng):
 def day_factor():
     """Per-KST-day random multiplier on the daily rate — gives organic 'busy/quiet day'
     overdispersion on top of the Poisson noise. Stable within a day (seeded by the date),
-    varies day to day. ~N(1, 0.22) clamped to [0.55, 1.6]."""
+    varies day to day. ~N(1, 0.16) clamped to [0.65, 1.45]."""
     kday = (now() + dt.timedelta(hours=9)).strftime("%Y-%m-%d")
     r = random.Random(zlib.crc32(("dayfac:" + kday).encode()))
-    return max(0.55, min(1.6, r.gauss(1.0, 0.22)))
+    return max(0.65, min(1.45, r.gauss(1.0, 0.16)))
 
 def next_interval(rng):
     h = (now().hour + 9) % 24                       # KST hour
