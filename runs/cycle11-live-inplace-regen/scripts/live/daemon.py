@@ -9,7 +9,7 @@ with randomized, KST-hour-weighted spacing (Poisson), matching the meta-graph de
 
 Run: daemon.py   (loops forever; launch under nohup). Ctrl-C / SIGTERM safe.
 """
-import json, re, os, sys, time, math, random, subprocess, urllib.request, datetime as dt
+import json, re, os, sys, time, math, random, zlib, subprocess, urllib.request, datetime as dt
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -207,10 +207,19 @@ def age_views(rng):
     return bumped
 
 # ---------- scheduling ----------
+def day_factor():
+    """Per-KST-day random multiplier on the daily rate — gives organic 'busy/quiet day'
+    overdispersion on top of the Poisson noise. Stable within a day (seeded by the date),
+    varies day to day. ~N(1, 0.22) clamped to [0.55, 1.6]."""
+    kday = (now() + dt.timedelta(hours=9)).strftime("%Y-%m-%d")
+    r = random.Random(zlib.crc32(("dayfac:" + kday).encode()))
+    return max(0.55, min(1.6, r.gauss(1.0, 0.22)))
+
 def next_interval(rng):
-    h = (now().hour + 9) % 24                 # KST hour
-    mean = (86400.0 / POSTS_PER_DAY) * (AVGW / KSTW[h])
-    return rng.expovariate(1.0/mean)
+    h = (now().hour + 9) % 24                       # KST hour
+    eff_per_day = POSTS_PER_DAY * day_factor()      # today's randomized target (mean = POSTS_PER_DAY)
+    mean = (86400.0 / eff_per_day) * (AVGW / KSTW[h])
+    return rng.expovariate(1.0/mean)                # + Poisson noise on arrivals
 
 def main():
     rng = random.Random()
