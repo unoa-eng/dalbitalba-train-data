@@ -4,11 +4,13 @@ gate them (HARD/VENUE/jamo only — net-new so no verbatim/integrity), append to
 
 Run standalone: produce.py [N]   (default 12 posts). The daemon calls this when buffer is low.
 """
-import json, re, sys, subprocess, random, zlib, time
+import json, re, sys, subprocess, random, zlib, time, tempfile
 from pathlib import Path
 
 import os, shutil
 HERE = Path(__file__).parent
+sys.path.insert(0, str(HERE))
+import verbatim_gate as VG  # 원천 verbatim 검수 게이트
 BASE = HERE.parent.parent  # cycle11-live-inplace-regen
 RECIPE = (HERE / "recipe_gen.md").read_text()
 BUFFER = Path(os.environ.get("PRODUCE_BUFFER") or (HERE / "buffer.jsonl"))
@@ -18,6 +20,44 @@ _CODEX_CANDS = [os.environ.get("CODEX_BIN"),
                 "/Users/unoa/.nvm/versions/node/v24.14.1/bin/codex",
                 shutil.which("codex")]
 CODEX = next((c for c in _CODEX_CANDS if c and os.path.exists(c)), "codex")
+# claude CLI — codex usage-limit/실패 시 자동 폴백. Anthropic 한도는 OpenAI(codex)와 별개 풀이라
+# 한쪽이 막혀도 다른 쪽이 생성 지속. shell function 아닌 실제 바이너리 경로 필요.
+_CLAUDE_CANDS = [os.environ.get("CLAUDE_BIN"),
+                 "/Users/unoa/.local/bin/claude",
+                 shutil.which("claude")]
+CLAUDE = next((c for c in _CLAUDE_CANDS if c and os.path.exists(c)), "claude")
+
+def _run_codex(prompt):
+    # stdin=DEVNULL: codex 0.141은 stdin 안 닫히면 "Reading additional input from stdin..." 대기.
+    # -o/--output-last-message: 0.141 exec 는 입력 프롬프트를 stdout에 에코한다. 프롬프트 안에
+    # JSON 예시/specs 의 '['가 있어 stdout 첫'['~마지막']' 추출이 깨진다(파싱 0개). 최종 메시지를
+    # 파일로 받아 클린 JSON만 파싱. 파일이 비면(usage-limit/오류) stdout+stderr 로 폴백(why 감지용).
+    with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as _f:
+        outpath = _f.name
+    try:
+        p = subprocess.run([CODEX,"exec","--skip-git-repo-check","--dangerously-bypass-approvals-and-sandbox",
+                            "-o",outpath,prompt],
+                           capture_output=True, text=True, timeout=600, stdin=subprocess.DEVNULL)
+        msg = ""
+        try: msg = Path(outpath).read_text(encoding="utf-8")
+        except Exception: msg = ""
+        if msg.strip():
+            return msg
+        return (p.stdout or "") + "\n" + (p.stderr or "")
+    finally:
+        try: os.unlink(outpath)
+        except Exception: pass
+
+def _run_claude(prompt):
+    # -p: 비대화형 print. </dev/null 로 stdin 닫아 블록 방지.
+    p = subprocess.run([CLAUDE,"-p",prompt],
+                       capture_output=True, text=True, timeout=600, stdin=subprocess.DEVNULL)
+    return (p.stdout or "") + "\n" + (p.stderr or "")
+
+# 폴백 순서(앞→뒤). PRODUCE_ENGINES=claude,codex 로 우선순위 뒤집기 가능.
+_ENGINE_MAP = {"codex": _run_codex, "claude": _run_claude}
+_ORDER = [e.strip() for e in (os.environ.get("PRODUCE_ENGINES") or "codex,claude").split(",") if e.strip() in _ENGINE_MAP]
+ENGINES = [(name, _ENGINE_MAP[name]) for name in _ORDER] or [("codex",_run_codex),("claude",_run_claude)]
 
 # domain topic seeds — diverse angles; producer expands each into an original post
 SEEDS = [
@@ -42,6 +82,28 @@ def dirty(t):
     if PHONE.search(t or "") or jamo(t or ""): return True
     return False
 
+def _parse_and_gate(raw):
+    """엔진 출력(raw, stderr 섞여도 무방)에서 JSON 배열 추출 + HARD/VENUE/jamo/verbatim 게이트."""
+    raw = raw.replace("```json","").replace("```","")
+    i,j = raw.find("["), raw.rfind("]")
+    if i<0 or j<=i: return []
+    try: data = json.loads(raw[i:j+1])
+    except Exception: return []
+    out = []
+    for p in data:
+        if not isinstance(p, dict): continue
+        title=(p.get("title") or "").strip(); body=(p.get("body") or "").strip()
+        if not title or not body or dirty(title) or dirty(body): continue
+        if VG.is_verbatim(title) or VG.is_verbatim(body): continue
+        cmts=[]
+        for c in p.get("comments") or []:
+            b=(c.get("body") or "").strip()
+            if not b or dirty(b) or VG.is_verbatim(b): continue
+            cmts.append({"parent_index": c.get("parent_index"), "body": b})
+        out.append({"category": p.get("category","FREE") if p.get("category") in ("FREE","QNA","TIP","NEWS") else "FREE",
+                    "title": title, "body": body, "comments": cmts})
+    return out
+
 def gen_batch(n, salt):
     rng = random.Random(zlib.crc32(salt.encode()))
     # distinct seeds per batch (no back-to-back topic repeats); sample without replacement
@@ -60,29 +122,27 @@ def gen_batch(n, salt):
 
 사양:
 {json.dumps(specs, ensure_ascii=False)}"""
-    try:
-        raw = subprocess.run([CODEX,"exec","--skip-git-repo-check","--dangerously-bypass-approvals-and-sandbox",prompt],
-                             capture_output=True, text=True, timeout=600).stdout
-    except Exception as e:
-        sys.stderr.write(f"codex fail: {e}\n"); return []
-    raw = raw.replace("```json","").replace("```","")
-    i,j = raw.find("["), raw.rfind("]")
-    if i<0 or j<=i: return []
-    try: data = json.loads(raw[i:j+1])
-    except Exception: return []
-    out = []
-    for p in data:
-        if not isinstance(p, dict): continue
-        title=(p.get("title") or "").strip(); body=(p.get("body") or "").strip()
-        if not title or not body or dirty(title) or dirty(body): continue
-        cmts=[]
-        for c in p.get("comments") or []:
-            b=(c.get("body") or "").strip()
-            if not b or dirty(b): continue
-            cmts.append({"parent_index": c.get("parent_index"), "body": b})
-        out.append({"category": p.get("category","FREE") if p.get("category") in ("FREE","QNA","TIP","NEWS") else "FREE",
-                    "title": title, "body": body, "comments": cmts})
-    return out
+    # 엔진 폴백: codex → claude (또는 PRODUCE_ENGINES 순서). 한쪽 usage-limit/실패 시 자동 전환.
+    for name, fn in ENGINES:
+        try:
+            raw = fn(prompt)
+        except Exception as e:
+            sys.stderr.write(f"[{name}] 실행오류: {str(e)[:80]} -> 다음 엔진\n"); continue
+        posts = _parse_and_gate(raw)
+        if posts:
+            sys.stderr.write(f"[{name}] produced {len(posts)}/{n}\n")
+            # 어떤 엔진이 생성했는지 기록 (가시성/codex 복귀 감지용)
+            try:
+                (HERE / ".last_engine.json").write_text(
+                    json.dumps({"engine": name, "ts": int(time.time()), "n": len(posts)}))
+            except Exception:
+                pass
+            return posts
+        low = raw.lower()
+        why = "usage limit" if "usage limit" in low else ("rate limit" if "rate limit" in low else "0개/파싱실패")
+        sys.stderr.write(f"[{name}] 실패({why}) -> 다음 엔진\n")
+    sys.stderr.write("모든 엔진 실패 — buffer 리필 0\n")
+    return []
 
 def main():
     n = int(sys.argv[1]) if len(sys.argv)>1 else 12
