@@ -82,6 +82,15 @@ def dirty(t):
     if PHONE.search(t or "") or jamo(t or ""): return True
     return False
 
+# 자기감사 게이트: 익명 게시판에서 '평면' 댓글이 원글/팁/정보에 고마워하면 글쓴이 자화자찬으로 읽힌다.
+# 답글(parent_index 지정)이면 다른 댓글에 대한 감사이므로 허용. 평면+감사+정보지시어 → 드롭.
+_THANKS = re.compile(r"(고마|감사|ㄱㅅ|땡큐)")
+_OPOBJ  = re.compile(r"(팁|꿀팁|정보|정리글|올려줘|올려주|적어줘|적어주|알려줘|알려주|(?<!댓)글 고마|(?<!댓)글 감사|공유)")
+def _self_thanks_flat(parent_index, body):
+    if parent_index is not None: return False
+    b = body or ""
+    return bool(_THANKS.search(b) and _OPOBJ.search(b))
+
 def _parse_and_gate(raw):
     """엔진 출력(raw, stderr 섞여도 무방)에서 JSON 배열 추출 + HARD/VENUE/jamo/verbatim 게이트."""
     raw = raw.replace("```json","").replace("```","")
@@ -99,6 +108,7 @@ def _parse_and_gate(raw):
         for c in p.get("comments") or []:
             b=(c.get("body") or "").strip()
             if not b or dirty(b) or VG.is_verbatim(b): continue
+            if _self_thanks_flat(c.get("parent_index"), b): continue
             cmts.append({"parent_index": c.get("parent_index"), "body": b})
         out.append({"category": p.get("category","FREE") if p.get("category") in ("FREE","QNA","TIP","NEWS") else "FREE",
                     "title": title, "body": body, "comments": cmts})
