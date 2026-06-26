@@ -97,7 +97,7 @@ def publish_post(rng):
     row = {"tenant_id": TENANT, "user_id": None, "category": p.get("category","FREE"),
            "title": p["title"], "body": p["body"], "is_anon": True, "source_author": None,
            "origin": "synthetic",
-           "view_count": rng.randint(1, 22), "like_count": 0,
+           "view_count": rng.randint(1, 22), "like_count": 0, "synthetic_like_count": 0,
            "created_at": t.isoformat(), "updated_at": t.isoformat()}
     res = post_req("community_posts", [row])
     pid = res[0]["id"]
@@ -180,7 +180,7 @@ def publish_gap(rng, k):
         row = {"tenant_id": TENANT, "user_id": None, "category": p.get("category","FREE"),
                "title": p["title"], "body": p["body"], "is_anon": True, "source_author": None,
                "origin": "synthetic",
-               "view_count": views, "like_count": likes,
+               "view_count": views, "like_count": likes, "synthetic_like_count": likes,
                "created_at": t.isoformat(), "updated_at": t.isoformat()}
         try:
             pid = post_req("community_posts", [row])[0]["id"]
@@ -221,7 +221,7 @@ def age_views(rng):
     # 최근글(8d 이내) 조회수를 글별 상한까지 천천히 증가. 상한 도달 시 멈춤(천단위 인플레 방지).
     from urllib.parse import quote
     since = quote((now() - dt.timedelta(days=8)).isoformat(), safe="")
-    rows = get_req(f"community_posts?created_at=gte.{since}&select=id,view_count,created_at,like_count&order=created_at.desc&limit=60")
+    rows = get_req(f"community_posts?created_at=gte.{since}&select=id,view_count,created_at,like_count,synthetic_like_count&order=created_at.desc&limit=60")
     bumped = 0
     for r in rows:
         vc = int(r["view_count"]); cap = view_ceiling(r["id"])
@@ -231,7 +231,7 @@ def age_views(rng):
                 patch_req("community_posts", r["id"], {"view_count": vc + inc}); vc += inc; bumped += 1
         # 좋아요: 조회수 비례 소프트상한 미만일 때만 가끔 +1 (난수, 하드캡 아님)
         if rng.random() < 0.04 and int(r["like_count"]) < like_ceiling(vc):
-            patch_req("community_posts", r["id"], {"like_count": int(r["like_count"]) + 1})
+            patch_req("community_posts", r["id"], {"like_count": int(r["like_count"]) + 1, "synthetic_like_count": int(r.get("synthetic_like_count", 0)) + 1})
     return bumped
 
 # ---------- scheduling ----------
