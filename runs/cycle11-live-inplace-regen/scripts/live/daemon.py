@@ -13,6 +13,8 @@ import json, re, os, sys, time, math, random, zlib, subprocess, urllib.request, 
 from pathlib import Path
 
 HERE = Path(__file__).parent
+sys.path.insert(0, str(HERE))
+import verbatim_gate as VG  # 발행 직전 원천 verbatim 검수 게이트
 # persistent env (survives reboot) preferred; /tmp fallback for first run
 ENV = str(HERE / ".env.prod") if (HERE / ".env.prod").exists() else "/tmp/dalbit.env.prod"
 d = dict(re.findall(r'^(\w+)=\"?([^\"\n]*)', open(ENV).read(), re.M))
@@ -86,9 +88,15 @@ def save_rel(r): RELEASED.write_text(json.dumps(r, ensure_ascii=False))
 def publish_post(rng):
     p = pop_post()
     if not p: return None
+    # 발행 직전 원천 verbatim 최종 검수 — 통과 못하면 폐기하고 다음 후보로
+    ok, why = VG.review_post(p)
+    if not ok:
+        log(f"  PREPUB REJECT [{why}] «{(p.get('title') or '')[:24]}» -> 폐기")
+        return publish_post(rng)
     t = now()
     row = {"tenant_id": TENANT, "user_id": None, "category": p.get("category","FREE"),
            "title": p["title"], "body": p["body"], "is_anon": True, "source_author": None,
+           "origin": "synthetic",
            "view_count": rng.randint(1, 22), "like_count": 0,
            "created_at": t.isoformat(), "updated_at": t.isoformat()}
     res = post_req("community_posts", [row])
@@ -116,7 +124,7 @@ def release_due_comments():
             parent_id = pmap.get(str(item["parent_index"]))
         t = now()
         row = {"tenant_id": TENANT, "post_id": pid, "user_id": None, "parent_id": parent_id,
-               "body": item["body"], "is_anon": True, "source_author": None, "created_at": t.isoformat()}
+               "body": item["body"], "is_anon": True, "source_author": None, "origin": "synthetic", "created_at": t.isoformat()}
         try:
             res = post_req("community_comments", [row])
             cid = res[0]["id"]
@@ -162,11 +170,17 @@ def publish_gap(rng, k):
         iso = ts.pop(0); t = dt.datetime.fromisoformat(iso)
         p = pop_post()
         if not p: break
-        age_days = (now()-t).total_seconds()/86400
-        views = max(1, int(rng.gauss(1822, 700) * min(1.0, age_days/5)))
+        ok, why = VG.review_post(p)  # 백필 글도 원천 verbatim 검수
+        if not ok:
+            log(f"  GAP PREPUB REJECT [{why}] «{(p.get('title') or '')[:24]}» -> 폐기"); continue
+        # 현실적 조회수: 글별 상한의 일부(가시 직후~성숙). 천단위 기본 금지.
+        cap = view_ceiling("gap:"+iso)
+        views = max(3, int(cap * (0.5 + rng.random()*0.5)))
+        likes = min(like_ceiling(views), int(rng.expovariate(1/1.5)))  # 대부분 0~2, 난수
         row = {"tenant_id": TENANT, "user_id": None, "category": p.get("category","FREE"),
                "title": p["title"], "body": p["body"], "is_anon": True, "source_author": None,
-               "view_count": views, "like_count": rng.choice([0,0,0,1]),
+               "origin": "synthetic",
+               "view_count": views, "like_count": likes,
                "created_at": t.isoformat(), "updated_at": t.isoformat()}
         try:
             pid = post_req("community_posts", [row])[0]["id"]
@@ -180,7 +194,7 @@ def publish_gap(rng, k):
             parent = rel.get(c.get("parent_index"))
             try:
                 cid = post_req("community_comments", [{"tenant_id":TENANT,"post_id":pid,"user_id":None,
-                    "parent_id":parent,"body":c["body"],"is_anon":True,"source_author":None,"created_at":ct.isoformat()}])[0]["id"]
+                    "parent_id":parent,"body":c["body"],"is_anon":True,"source_author":None,"origin":"synthetic","created_at":ct.isoformat()}])[0]["id"]
                 rel[idx] = cid
             except Exception: pass
         done += 1
@@ -188,21 +202,35 @@ def publish_gap(rng, k):
     if done: log(f"  GAP backfill +{done} ({len(ts)} remaining)")
     return done
 
+# ---------- realistic meta model (현실적 메타: 조회수 대부분 100언더, 인기글만 높게) ----------
+def view_ceiling(post_id):
+    """글별 결정론적 조회수 상한. 대부분 40~150(100 전후), 일부 수백, 드물게 천단위.
+    aging은 이 상한까지만 천천히 증가 → median ~60, 천단위는 극소수."""
+    r = (zlib.crc32(("vc:"+str(post_id)).encode()) % 100000) / 100000.0
+    if   r < 0.78:  return 20 + int(r/0.78 * 100)          # 20~120 (다수, 100 전후)
+    elif r < 0.95:  return 120 + int((r-0.78)/0.17 * 330)  # 120~450
+    elif r < 0.995: return 450 + int((r-0.95)/0.045 * 650) # 450~1100 (희소)
+    else:           return 1100 + int((r-0.995)/0.005 * 1300) # 1100~2400 (극소수)
+
+def like_ceiling(view_count):
+    """조회수 비례 좋아요 소프트상한 — 대부분 한 자리수, 인기글만 두 자리(난수). 하드캡 아님."""
+    return max(1, view_count // 60)   # 60뷰당 ~1 좋아요 상한 (300뷰=5, 600=10, 1500=25)
+
 # ---------- view aging ----------
 def age_views(rng):
-    # bump views on recent posts (age < 8d) so fresh posts climb toward the corpus median
+    # 최근글(8d 이내) 조회수를 글별 상한까지 천천히 증가. 상한 도달 시 멈춤(천단위 인플레 방지).
     from urllib.parse import quote
     since = quote((now() - dt.timedelta(days=8)).isoformat(), safe="")
     rows = get_req(f"community_posts?created_at=gte.{since}&select=id,view_count,created_at,like_count&order=created_at.desc&limit=60")
     bumped = 0
     for r in rows:
-        age_h = (now() - dt.datetime.fromisoformat(r["created_at"].replace("Z","+00:00"))).total_seconds()/3600
-        rate = max(1, int(40 * math.exp(-age_h/120)))      # heavier when fresh, decays
-        inc = rng.randint(0, rate)
-        if inc:
-            patch_req("community_posts", r["id"], {"view_count": int(r["view_count"]) + inc})
-            bumped += 1
-        if rng.random() < 0.03:  # occasional like
+        vc = int(r["view_count"]); cap = view_ceiling(r["id"])
+        if vc < cap:
+            inc = min(rng.randint(0, 4), cap - vc)   # 작은 증분, 상한 초과 금지
+            if inc:
+                patch_req("community_posts", r["id"], {"view_count": vc + inc}); vc += inc; bumped += 1
+        # 좋아요: 조회수 비례 소프트상한 미만일 때만 가끔 +1 (난수, 하드캡 아님)
+        if rng.random() < 0.04 and int(r["like_count"]) < like_ceiling(vc):
             patch_req("community_posts", r["id"], {"like_count": int(r["like_count"]) + 1})
     return bumped
 
