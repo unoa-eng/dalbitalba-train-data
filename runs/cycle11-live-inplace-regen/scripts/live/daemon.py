@@ -199,12 +199,17 @@ def publish_gap(rng, k):
         for idx, c in enumerate(p.get("comments") or []):
             dly = min(math.exp(rng.gauss(math.log(3), 1.0)), 24*8)
             ct = t + dt.timedelta(hours=dly)
-            if ct >= now(): ct = now() - dt.timedelta(minutes=rng.randint(1,120))
+            nowt = now()
             pi = c.get("parent_index")
             if pi is not None and isinstance(pi, int) and 0 <= pi < idx:
-                ct = max(ct, ct_times[pi] + dt.timedelta(minutes=rng.uniform(1, 90)))
-            if ct >= now():
-                ct = now() - dt.timedelta(seconds=rng.randint(30, 600))
+                # 답글은 반드시 (부모 ct, 현재) 사이에 위치 — 경계 클램프로도 역전 불가.
+                # 부모는 귀납적으로 항상 현재 이전이므로 span>0 보장.
+                lo = ct_times[pi]
+                if ct <= lo or ct >= nowt:
+                    span = (nowt - lo).total_seconds()
+                    ct = lo + dt.timedelta(seconds=span * rng.uniform(0.1, 0.9))
+            elif ct >= nowt:
+                ct = nowt - dt.timedelta(seconds=rng.randint(30, 600))
             ct_times.append(ct)
             parent = rel.get(c.get("parent_index"))
             try:
