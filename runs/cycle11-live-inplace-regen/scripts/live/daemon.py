@@ -104,10 +104,18 @@ def publish_post(rng):
     # schedule planned comments with lognormal real-time delays, parents before children
     q = load_q()
     base = time.time()
+    rel_times = []
     for idx, c in enumerate(p.get("comments") or []):
         delay_min = min(math.exp(rng.gauss(math.log(CMT_DELAY_MEDIAN_MIN), 0.9)), 60*40)
+        own = base + delay_min*60 + idx*30
+        pi = c.get("parent_index")
+        if pi is not None and isinstance(pi, int) and 0 <= pi < idx:
+            release = max(own, rel_times[pi] + rng.uniform(60, 600))
+        else:
+            release = own
+        rel_times.append(release)
         q.append({"post_id": pid, "idx": idx, "parent_index": c.get("parent_index"),
-                  "body": c["body"], "release": base + delay_min*60 + idx*30})
+                  "anon_seq": c.get("anon_seq"), "body": c["body"], "release": release})
     save_q(q)
     log(f"POST  {pid[:8]} [{row['category']}] +{len(p.get('comments') or [])}cmt  «{p['title'][:30]}»")
     return pid
@@ -124,7 +132,7 @@ def release_due_comments():
             parent_id = pmap.get(str(item["parent_index"]))
         t = now()
         row = {"tenant_id": TENANT, "post_id": pid, "user_id": None, "parent_id": parent_id,
-               "body": item["body"], "is_anon": True, "source_author": None, "origin": "synthetic", "created_at": t.isoformat()}
+               "body": item["body"], "is_anon": True, "source_author": None, "origin": "synthetic", "anon_seq": item.get("anon_seq"), "created_at": t.isoformat()}
         try:
             res = post_req("community_comments", [row])
             cid = res[0]["id"]
@@ -187,14 +195,21 @@ def publish_gap(rng, k):
         except Exception as e:
             log(f"  gap post fail: {str(e)[:40]}"); continue
         rel = {}
+        ct_times = []
         for idx, c in enumerate(p.get("comments") or []):
             dly = min(math.exp(rng.gauss(math.log(3), 1.0)), 24*8)
             ct = t + dt.timedelta(hours=dly)
             if ct >= now(): ct = now() - dt.timedelta(minutes=rng.randint(1,120))
+            pi = c.get("parent_index")
+            if pi is not None and isinstance(pi, int) and 0 <= pi < idx:
+                ct = max(ct, ct_times[pi] + dt.timedelta(minutes=rng.uniform(1, 90)))
+            if ct >= now():
+                ct = now() - dt.timedelta(seconds=rng.randint(30, 600))
+            ct_times.append(ct)
             parent = rel.get(c.get("parent_index"))
             try:
                 cid = post_req("community_comments", [{"tenant_id":TENANT,"post_id":pid,"user_id":None,
-                    "parent_id":parent,"body":c["body"],"is_anon":True,"source_author":None,"origin":"synthetic","created_at":ct.isoformat()}])[0]["id"]
+                    "parent_id":parent,"body":c["body"],"is_anon":True,"source_author":None,"origin":"synthetic","anon_seq":c.get("anon_seq"),"created_at":ct.isoformat()}])[0]["id"]
                 rel[idx] = cid
             except Exception: pass
         done += 1

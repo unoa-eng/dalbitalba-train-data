@@ -99,6 +99,24 @@ def _self_thanks_flat(parent_index, body):
     b = body or ""
     return bool(_THANKS.search(b) and _OPOBJ.search(b))
 
+def _norm_anon_seq(author, parent_index):
+    """생성 모델의 author 값을 저장용 anon_seq 로 정규화.
+    0=글쓴이(OP) — 답글일 때만 유효(평면이면 무효 None). 1..K=스레드 내 익명 페르소나.
+    미지정/무효 → None(표시단 폴백; 평면은 절대 OP 아님)."""
+    if isinstance(author, str):
+        a = author.strip().lower()
+        if a in ("op", "글쓴이"):
+            return 0 if parent_index is not None else None
+        try: author = int(a)
+        except (TypeError, ValueError): return None
+    if author == 0:
+        return 0 if parent_index is not None else None
+    try:
+        v = int(author)
+        return v if v >= 1 else None
+    except (TypeError, ValueError):
+        return None
+
 def _parse_and_gate(raw):
     """엔진 출력(raw, stderr 섞여도 무방)에서 JSON 배열 추출 + HARD/VENUE/jamo/verbatim 게이트."""
     raw = raw.replace("```json","").replace("```","")
@@ -115,9 +133,11 @@ def _parse_and_gate(raw):
         cmts=[]
         for c in p.get("comments") or []:
             b=(c.get("body") or "").strip()
+            pi=c.get("parent_index")
             if not b or dirty(b) or VG.is_verbatim(b): continue
-            if _self_thanks_flat(c.get("parent_index"), b): continue
-            cmts.append({"parent_index": c.get("parent_index"), "body": b})
+            if _self_thanks_flat(pi, b): continue
+            cmts.append({"parent_index": pi, "body": b,
+                         "anon_seq": _norm_anon_seq(c.get("author"), pi)})
         out.append({"category": p.get("category","FREE") if p.get("category") in ("FREE","QNA","TIP","NEWS") else "FREE",
                     "title": title, "body": body, "comments": cmts})
     return out
@@ -134,8 +154,12 @@ def gen_batch(n, salt):
 
 작업: 아래 {n}개 사양으로 서로 다른 새 글을 창작하라. 각 사양: topic_seed(출발 소재), category, planned_comments(만들 댓글 수).
 출력은 **유효한 JSON 배열 하나만**(코드펜스/설명 금지):
-[{{"category":"FREE","title":"...","body":"...","comments":[{{"parent_index":null,"body":"..."}}]}}]
-- comments 길이 = 해당 사양 planned_comments. parent_index 는 같은 글 안 다른 댓글의 0-based 인덱스(답글) 또는 null(평면).
+[{{"category":"FREE","title":"...","body":"...","comments":[{{"parent_index":null,"author":1,"body":"..."}}]}}]
+- comments 길이 = 해당 사양 planned_comments. parent_index 는 같은 글 안 **앞선(더 작은 0-based 인덱스)** 다른 댓글의 인덱스(답글) 또는 null(평면).
+- **author (작성자 정체성, 필수)**: 정수 1,2,3…(서로 다른 익명. **같은 정수=같은 사람** 재등장) 또는 "op"(원글 작성자 자답).
+  · 대부분의 댓글은 **서로 다른 사람** → 대체로 서로 다른 정수. 같은 사람이 다시 말할 때(자기 댓글 부연, OP와 주고받기)만 같은 정수 재사용.
+  · "op"는 **원글 작성자가 자기 글의 댓글에 답하는 경우에만**, 반드시 **답글(parent_index 지정)** 로만. 평면 댓글(parent_index=null)엔 **절대 "op" 금지**.
+  · 남이 원글에 다는 의견·위로·반박·질문은 전부 정수(다른 사람)다.
 - id 는 넣지 마라(서버가 부여). 식별정보 절대 금지 규칙 엄수.
 
 사양:
