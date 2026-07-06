@@ -156,17 +156,48 @@ def _parse_and_gate(raw):
                     "title": title, "body": body, "comments": cmts})
     return out
 
+# ── 루틴화 방지: 글마다 형식/감정/길이/문체 축을 랜덤 부여 → 같은 topic도 매번 다른 글이 되게 ──
+# form: 글의 뼈대(질문/하소연만 반복되는 걸 깨는 게 핵심)
+FORMS = [
+    ("hasoyeon", "하소연·푸념(답 안 구하고 그냥 털어놓기, 끝에 질문 없이 마무리해도 됨)"),
+    ("question", "질문(구체적으로 뭐 하나 물어봄)"),
+    ("review", "후기·경험담(있었던 일 서술 위주, 질문 없이)"),
+    ("info", "정보·꿀팁 공유(내가 아는 거 알려주기)"),
+    ("banzzak", "짧은 한 줄 잡담·드립(1~2문장 툭 던지기)"),
+    ("balance", "밸런스게임·투표 유도(짧게 던지고 댓글로 편 갈리게)"),
+    ("brag", "은근한 자랑/기쁜 일(자랑인데 티 안 나게 or 대놓고 신남)"),
+    ("rant", "화남·빡침(진상·실장·담당한테 열받은 걸 쏟아냄)"),
+    ("tmi", "TMI·일상(오늘 뭐 먹었네, 이런 시시콜콜)"),
+    ("ask_opinion", "의견 물음(A vs B 뭐가 나아? 다들 어떻게 생각?)"),
+]
+TONES = ["담담함", "예민·짜증", "울적·자조", "신남·들뜸", "웃김·드립", "무덤덤 시크", "따뜻·다정", "냉소·시니컬"]
+# length: 글자 수 대략 타깃(좁게 몰리지 않게 넓게)
+LENGTHS = [("아주짧게","15~35자, 한 줄"), ("짧게","35~70자"), ("보통","70~130자"), ("길게","130~240자, 서너 문장")]
+
 def gen_batch(n, salt):
     rng = random.Random(zlib.crc32(salt.encode()))
     # distinct seeds per batch (no back-to-back topic repeats); sample without replacement
     pool = SEEDS[:]; rng.shuffle(pool)
     seeds = (pool * ((n // len(pool)) + 1))[:n]
     cats = rng.choices(["FREE","QNA","TIP","NEWS"], weights=[88,9,2,1], k=n)
-    specs = [{"topic_seed": s, "category": c, "planned_comments": rng.choices([0,1,2,3,4,5,7],weights=[8,14,20,20,16,12,10])[0]}
-             for s, c in zip(seeds, cats)]
+    # form 은 편향 완화를 위해 셔플·순환(질문/하소연 쏠림 방지). tone/length 는 독립 랜덤.
+    fpool = FORMS[:]; rng.shuffle(fpool)
+    specs = []
+    for k, (s, c) in enumerate(zip(seeds, cats)):
+        form_key, form_desc = fpool[k % len(fpool)]
+        tone = rng.choice(TONES)
+        _, len_desc = rng.choice(LENGTHS)
+        specs.append({"topic_seed": s, "category": c,
+                      "planned_comments": rng.choices([0,1,2,3,4,5,7],weights=[8,14,20,20,16,12,10])[0],
+                      "형식": form_desc, "감정톤": tone, "길이": len_desc})
     prompt = RECIPE + f"""
 
-작업: 아래 {n}개 사양으로 서로 다른 새 글을 창작하라. 각 사양: topic_seed(출발 소재), category, planned_comments(만들 댓글 수).
+작업: 아래 {n}개 사양으로 서로 다른 새 글을 창작하라. 각 사양: topic_seed(출발 소재), category, planned_comments(만들 댓글 수), 형식(글의 뼈대), 감정톤, 길이.
+**중요(루틴화 금지)**: 각 글은 사양의 **형식·감정톤·길이를 실제로 반영**해 서로 확연히 다른 글이 되게 하라. 특히:
+- 모든 글이 "[상황 서술] + 나만그런가?/어떻게들함?" 질문으로 끝나는 판박이 금지. 형식이 하소연/후기/정보/잡담/드립이면 **질문 없이** 끝내도 된다.
+- 시작을 매번 "요새/요즘/오늘/어제/다들"로 열지 마라. 본론부터, 감탄사, 한 단어, 대사 인용 등 도입을 다양하게.
+- 길이 사양을 지켜 짧은 글은 진짜 짧게(한 줄), 긴 글은 여러 문장으로. 다 비슷한 길이로 수렴 금지.
+- 이모티콘(ㅋㅋ/ㅠㅠ)도 감정톤 맞을 때만. 매 글 기계적으로 붙이지 마라.
 출력은 **유효한 JSON 배열 하나만**(코드펜스/설명 금지):
 [{{"category":"FREE","title":"...","body":"...","comments":[{{"parent_index":null,"author":1,"body":"..."}}]}}]
 - comments 길이 = 해당 사양 planned_comments. parent_index 는 같은 글 안 **앞선(더 작은 0-based 인덱스)** 다른 댓글의 인덱스(답글) 또는 null(평면).
