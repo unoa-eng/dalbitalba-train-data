@@ -173,6 +173,14 @@ FORMS = [
 TONES = ["담담함", "예민·짜증", "울적·자조", "신남·들뜸", "웃김·드립", "무덤덤 시크", "따뜻·다정", "냉소·시니컬"]
 # length: 글자 수 대략 타깃(좁게 몰리지 않게 넓게)
 LENGTHS = [("아주짧게","15~35자, 한 줄"), ("짧게","35~70자"), ("보통","70~130자"), ("길게","130~240자, 서너 문장")]
+# 시간대 감성: 발행 시각(KST hour)에 맞춰 글의 결이 달라지게(새벽 퇴근감성 vs 낮 일상). 없으면 무관.
+def _timeflavor(kst_hour):
+    if kst_hour is None: return None
+    if 0 <= kst_hour < 6:   return "새벽(퇴근 직후/취기/피곤·울적, 담배·집 가는 길·잠 안 옴 같은 결). 낮 얘기하듯 쓰지 말 것"
+    if 6 <= kst_hour < 11:  return "아침·오전(자다 깸/전날 여파/해장, 늘어진 톤). 출근 각오는 아직 이름"
+    if 11 <= kst_hour < 17: return "낮(오프·일상·준비, 병원·쇼핑·집안일 등 일 밖 얘기 어울림)"
+    if 17 <= kst_hour < 20: return "초저녁(출근 준비/각오/긴장, 오늘 자리 어떨까)"
+    return "밤(일하는 중 잠깐 짬/대기실에서/방금 있었던 일 실시간 느낌)"
 
 def gen_batch(n, salt):
     rng = random.Random(zlib.crc32(salt.encode()))
@@ -182,22 +190,30 @@ def gen_batch(n, salt):
     cats = rng.choices(["FREE","QNA","TIP","NEWS"], weights=[88,9,2,1], k=n)
     # form 은 편향 완화를 위해 셔플·순환(질문/하소연 쏠림 방지). tone/length 는 독립 랜덤.
     fpool = FORMS[:]; rng.shuffle(fpool)
+    # 발행 시각대 가중치(데몬 KSTW와 정합) — 버퍼 글이 반나절 걸쳐 나가므로 시각 감성도 이 분포로.
+    KSTW = [8,7,5,3,2,1,1,1,2,3,4,4,4,4,4,4,5,6,7,9,11,12,12,10]
     specs = []
     for k, (s, c) in enumerate(zip(seeds, cats)):
         form_key, form_desc = fpool[k % len(fpool)]
         tone = rng.choice(TONES)
         _, len_desc = rng.choice(LENGTHS)
-        specs.append({"topic_seed": s, "category": c,
-                      "planned_comments": rng.choices([0,1,2,3,4,5,7],weights=[8,14,20,20,16,12,10])[0],
-                      "형식": form_desc, "감정톤": tone, "길이": len_desc})
+        kst_h = rng.choices(range(24), weights=KSTW, k=1)[0]
+        spec = {"topic_seed": s, "category": c,
+                "planned_comments": rng.choices([0,1,2,3,4,5,7],weights=[8,14,20,20,16,12,10])[0],
+                "형식": form_desc, "감정톤": tone, "길이": len_desc, "시간대": _timeflavor(kst_h)}
+        specs.append(spec)
     prompt = RECIPE + f"""
 
-작업: 아래 {n}개 사양으로 서로 다른 새 글을 창작하라. 각 사양: topic_seed(출발 소재), category, planned_comments(만들 댓글 수), 형식(글의 뼈대), 감정톤, 길이.
-**중요(루틴화 금지)**: 각 글은 사양의 **형식·감정톤·길이를 실제로 반영**해 서로 확연히 다른 글이 되게 하라. 특히:
+작업: 아래 {n}개 사양으로 서로 다른 새 글을 창작하라. 각 사양: topic_seed(출발 소재), category, planned_comments(만들 댓글 수), 형식(글의 뼈대), 감정톤, 길이, 시간대(글이 올라온 시간 결).
+**중요(루틴화 금지)**: 각 글은 사양의 **형식·감정톤·길이·시간대를 실제로 반영**해 서로 확연히 다른 글이 되게 하라. 특히:
 - 모든 글이 "[상황 서술] + 나만그런가?/어떻게들함?" 질문으로 끝나는 판박이 금지. 형식이 하소연/후기/정보/잡담/드립이면 **질문 없이** 끝내도 된다.
 - 시작을 매번 "요새/요즘/오늘/어제/다들"로 열지 마라. 본론부터, 감탄사, 한 단어, 대사 인용 등 도입을 다양하게.
 - 길이 사양을 지켜 짧은 글은 진짜 짧게(한 줄), 긴 글은 여러 문장으로. 다 비슷한 길이로 수렴 금지.
 - 이모티콘(ㅋㅋ/ㅠㅠ)도 감정톤 맞을 때만. 매 글 기계적으로 붙이지 마라.
+- **시간대 감성 반영**: 사양의 시간대 결에 맞춰라(새벽 글을 낮 얘기처럼 쓰지 말 것).
+- **구체 디테일로 리얼하게**(글의 절반 이상): 두루뭉술("좀 많이", "요즘")만 쓰지 말고 대충의 숫자·시간·금액·횟수·연차를 자연스럽게 박아라 — "3만원 깎임", "새벽 4시까지", "떼초 세 번 밀림", "5년째", "두 시간 대기", "10만원 꽁". 사람 말은 원래 구체적이다. 단 업소 특정될 정보(실명·위치·연락처)는 금지.
+- **일 밖 세계도 가끔**: 24시간 일 얘기만 하는 사람은 없다. 드라마·유튜브·인스타·피부과·다이어트·연애·집·가족 같은 **커뮤 밖 일상**도 자연스럽게 섞어라(특히 낮/오프 글).
+- **시기감 가끔**: 성수기/비수기, 명절, 연말, 날씨(더위·장마·추위) 같은 시점 얘기를 이따금.
 출력은 **유효한 JSON 배열 하나만**(코드펜스/설명 금지):
 [{{"category":"FREE","title":"...","body":"...","comments":[{{"parent_index":null,"author":1,"body":"..."}}]}}]
 - comments 길이 = 해당 사양 planned_comments. parent_index 는 같은 글 안 **앞선(더 작은 0-based 인덱스)** 다른 댓글의 인덱스(답글) 또는 null(평면).
