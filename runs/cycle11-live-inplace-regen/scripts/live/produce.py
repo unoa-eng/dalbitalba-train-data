@@ -165,10 +165,12 @@ def gen_batch(n, salt):
 사양:
 {json.dumps(specs, ensure_ascii=False)}"""
     # 엔진 폴백: codex → claude (또는 PRODUCE_ENGINES 순서). 한쪽 usage-limit/실패 시 자동 전환.
+    fails = []  # (engine, why) — 모든 엔진 실패 시 텔레그램 경보용
     for name, fn in ENGINES:
         try:
             raw = fn(prompt)
         except Exception as e:
+            fails.append((name, f"실행오류:{str(e)[:40]}"))
             sys.stderr.write(f"[{name}] 실행오류: {str(e)[:80]} -> 다음 엔진\n"); continue
         posts = _parse_and_gate(raw)
         if posts:
@@ -177,13 +179,23 @@ def gen_batch(n, salt):
             try:
                 (HERE / ".last_engine.json").write_text(
                     json.dumps({"engine": name, "ts": int(time.time()), "n": len(posts)}))
+                # 직전 실패 마커 제거 (회복)
+                (HERE / ".produce_fail.json").unlink(missing_ok=True)
             except Exception:
                 pass
             return posts
         low = raw.lower()
         why = "usage limit" if "usage limit" in low else ("rate limit" if "rate limit" in low else "0개/파싱실패")
+        fails.append((name, why))
         sys.stderr.write(f"[{name}] 실패({why}) -> 다음 엔진\n")
+    # 모든 엔진 실패 — 실패 마커 기록(watchdog/buffer_alert 가 읽어 텔레그램 즉시 경보)
     sys.stderr.write("모든 엔진 실패 — buffer 리필 0\n")
+    try:
+        (HERE / ".produce_fail.json").write_text(json.dumps(
+            {"ts": int(time.time()), "engines": [{"engine": e, "why": w} for e, w in fails]},
+            ensure_ascii=False))
+    except Exception:
+        pass
     return []
 
 def main():
