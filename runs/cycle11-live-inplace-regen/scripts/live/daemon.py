@@ -27,6 +27,7 @@ CQUEUE = HERE / "comment_queue.json"
 RELEASED = HERE / "released_map.json"
 GAP_STATE = HERE / "gap_state.json"
 LOG = HERE / "daemon.log"
+HEARTBEAT = HERE / ".daemon_heartbeat"  # 살아있으면 ~30s마다 갱신. hang 감지의 진짜 신호(로그는 활동시만 갱신돼 유휴/hang 구분 못함)
 GAP_PER_TICK = 2   # backdated gap posts published per live tick (fills 3-day gap in ~1.5d, single codex)
 
 POSTS_PER_DAY = 16
@@ -42,6 +43,12 @@ def log(m):
     with LOG.open("a") as f: f.write(line+"\n")
 
 def now(): return dt.datetime.now(dt.timezone.utc)
+
+def beat():
+    """하트비트 갱신 — 데몬이 살아 루프 도는 한 발행 여부와 무관하게 찍힘.
+    watchdog/모니터가 이 파일 mtime 으로 진짜 hang(살아있으나 멈춤) 판별."""
+    try: HEARTBEAT.write_text(str(int(time.time())))
+    except Exception: pass
 
 def post_req(table, rows, prefer="return=representation"):
     h = dict(HDR); h["Prefer"] = prefer
@@ -275,6 +282,7 @@ def main():
     try: init_gap()
     except Exception as e: log(f"init_gap fail: {str(e)[:50]}")
     last_age = 0
+    beat()
     while True:
         refill_if_low()
         iv = next_interval(rng)
@@ -283,6 +291,7 @@ def main():
         while waited < iv:
             chunk = min(30, iv - waited)
             time.sleep(chunk); waited += chunk
+            beat()                       # 살아있음 신호 — 유휴여도 매 틱 갱신(hang 오판 방지)
             release_due_comments()
             if time.time() - last_age > 600:
                 try: age_views(rng)

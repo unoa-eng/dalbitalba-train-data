@@ -21,25 +21,16 @@ if [ "$n" -lt 1 ]; then
 fi
 
 # 1a) HANG 감지: 프로세스는 살아있으나(count>=1) 발행 루프가 멈춘 경우.
-#     daemon.log 가 150분+ 정체 & comment_queue 에 overdue(release<=now 미방출) 존재하면 hang 확정.
-#     (2026-07-06 count=1인데 26h 로그정체 실제 hang 발생 — count 체크만으론 못 잡던 사각지대.)
-if [ "$n" -ge 1 ]; then
-  stale=$(find "$HERE/daemon.log" -mmin +150 -print 2>/dev/null)
-  if [ -n "$stale" ]; then
-    hung=$("$PY" - <<PYEOF
-import json, time, os
-q = json.load(open("$HERE/comment_queue.json")) if os.path.exists("$HERE/comment_queue.json") else []
-now = time.time()
-overdue = sum(1 for x in q if x.get("release", 9e18) <= now)
-# 로그 150분+ 정체 + overdue 방출 대기 = hang 확정. overdue 없으면(정상 유휴) 0.
-print(1 if overdue > 0 else 0)
-PYEOF
-)
-    if [ "$hung" = "1" ]; then
-      echo "[$(ts)] daemon HANG 감지 (log 150m+ stale, queue overdue) -> 강제 재시작" >> "$LOG"
-      launchctl kickstart -k "gui/$(id -u)/com.dalbit.live-daemon" >> "$LOG" 2>&1
-      "$PY" -c "import sys;sys.path.insert(0,'$HERE');import report;report.send_telegram('🔴 달빛알바 데몬 HANG 감지(로그 150분+ 정체, 발행대기 밀림) → 강제 재시작. 발행 자동 재개.')" >> "$LOG" 2>&1
-    fi
+#     하트비트(.daemon_heartbeat)는 데몬이 살아 루프 도는 한 ~30s마다 갱신되므로,
+#     유휴/hang 을 명확히 구분한다(로그 mtime 은 활동시만 갱신돼 저활동 시간대 오판 유발).
+#     하트비트가 300s+ 정체 = 진짜 hang. (2026-07-06 26h 로그정체 hang & 07-07 아침
+#     저활동 164분 로그정체 오판 — 둘 다 하트비트로 정확 판별.)
+if [ "$n" -ge 1 ] && [ -f "$HERE/.daemon_heartbeat" ]; then
+  hb_stale=$(find "$HERE/.daemon_heartbeat" -mmin +5 -print 2>/dev/null)
+  if [ -n "$hb_stale" ]; then
+    echo "[$(ts)] daemon HANG 감지 (heartbeat 5m+ stale) -> 강제 재시작" >> "$LOG"
+    launchctl kickstart -k "gui/$(id -u)/com.dalbit.live-daemon" >> "$LOG" 2>&1
+    "$PY" -c "import sys;sys.path.insert(0,'$HERE');import report;report.send_telegram('🔴 달빛알바 데몬 HANG 감지(하트비트 5분+ 정체=발행루프 멈춤) → 강제 재시작. 발행 자동 재개.')" >> "$LOG" 2>&1
   fi
 fi
 
